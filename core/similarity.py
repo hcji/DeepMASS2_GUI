@@ -6,23 +6,13 @@ Created on Wed Sep  7 14:55:39 2022
 """
 
 
-import json
-import requests
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
 from tqdm import tqdm
-from scipy.spatial.distance import cosine
-from scipy.stats import pearsonr
 
-from matchms import calculate_scores
 from matchms.Spectrum import Spectrum
-from matchms.similarity import CosineGreedy, PrecursorMzMatch
+from matchms.similarity import CosineGreedy
 
-import multiprocessing
-from joblib import Parallel, delayed
-
-from itertools import chain
 from rdkit import Chem, DataStructs
 from rdkit.Chem import AllChem
 from rdkit.Chem import rdFMCS
@@ -281,9 +271,10 @@ def calc_aligned_similarity(smiles_1, smiles_2, spectrum_1, spectrum_2, mz_tol=0
             a = y_mz_
             b = x_mz[np.argmin(np.abs(y_mz_ - x_mz))]
             c = abs(a - b)
+            d = y_intensities[i]
             y_mz_new.append(y_mz_)
             y_intensities_new.append(y_intensities[i])
-            matching_data.append([a, b, c])
+            matching_data.append([a, b, c, d])
         else:
             matched = False
             for loss_ in loss['loss']:
@@ -296,9 +287,10 @@ def calc_aligned_similarity(smiles_1, smiles_2, spectrum_1, spectrum_2, mz_tol=0
                     a = y_mz_
                     b = x_mz[np.argmin(np.abs(y_mz_ - loss_ - x_mz))]
                     c = abs(a - b)
+                    d = y_intensities[i]
                     y_mz_new.append(y_mz_ - loss_)
                     y_intensities_new.append(y_intensities[i])
-                    matching_data.append([a, b, c])
+                    matching_data.append([a, b, c, d])
                     break
             if not matched:
                 y_mz_new.append(y_mz_)
@@ -315,47 +307,5 @@ def calc_aligned_similarity(smiles_1, smiles_2, spectrum_1, spectrum_2, mz_tol=0
                                   metadata = spectrum_2.metadata)
     
     similarity = float(similarity_function.pair(spectrum_1, spectrum_2_aligned)['score'])
-    matching_data = pd.DataFrame(matching_data, columns = ['reference', 'query', 'loss'])
+    matching_data = pd.DataFrame(matching_data, columns = ['reference', 'query', 'loss', 'intensity'])
     return similarity, matching_data
-
-
-def get_candidate_score(candidate, query_spectrum, reference_smile, reference_spectrum, top_k = 50):
-    """
-    Calculate similarity between two spectrums.
-    Arguments:
-        candidate: DataFrame, two different smiles of compounds.
-        query_spectrum: matchms::Spectrum object. Query spectrum.
-        reference_smile: List of reference smiles.
-        reference_spectrum: List of reference spectrums (matchms::Spectrum objects).
-    Returns:
-        DataFrame,
-    """
-    
-    reference_mol = [Chem.MolFromSmiles(s) for s in reference_smile]
-    reference_fp = [get_fp(m) for m in reference_mol]
-    
-    candidate_mol = [Chem.MolFromSmiles(s) for s in candidate['CanonicalSMILES']]
-    candidate_fp = [get_fp(m) for m in candidate_mol]
-    candidate_fp_sim = np.array([[get_sim(f1, f2) for f1 in reference_fp] for f2 in candidate_fp])
-    candidate_fp_sim_best = np.max(candidate_fp_sim, axis = 1)
-
-    top_k = min(top_k, len(candidate_mol))
-    tops = np.argsort(-candidate_fp_sim_best)[:top_k]
-    candidate_fp_sim = candidate_fp_sim[tops,:]
-    candidate_fp_sim_best = np.max(candidate_fp_sim, axis = 1)
-    
-    candidate_spec_sim = []
-    for i, j in enumerate(tqdm(tops)):
-        candi_smi = Chem.MolToSmiles(candidate_mol[j])
-        k = np.argmax(candidate_fp_sim[i,:])
-        true_spec_sim = calc_aligned_similarity(candi_smi, reference_smile[k], query_spectrum, reference_spectrum[k])[0]
-        candidate_spec_sim.append(true_spec_sim)
-    candidate_spec_sim = np.array(candidate_spec_sim)
-    
-    candidate_avg_sim = np.sqrt(np.multiply(candidate_fp_sim_best, candidate_spec_sim))
-    candidate_score = candidate_avg_sim
-    candidate_bests = candidate.loc[tops,:]
-    candidate_bests['Scores'] = candidate_score
-    candidate_bests = candidate_bests.sort_values(by = 'Scores', ignore_index = True, ascending = False)
-
-    return candidate_bests

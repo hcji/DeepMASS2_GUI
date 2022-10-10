@@ -227,9 +227,14 @@ class Ui_MainWindow(object):
         self.page_matching.setObjectName("page_matching")
         self.gridLayout_5 = QtWidgets.QGridLayout(self.page_matching)
         self.gridLayout_5.setObjectName("gridLayout_5")
+        self.butt_match = QtWidgets.QPushButton(self.page_matching)
+        self.butt_match.setObjectName("butt_match")
+        self.gridLayout_5.addWidget(self.butt_match, 1, 1, 1, 1)
+        spacerItem4 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
+        self.gridLayout_5.addItem(spacerItem4, 1, 0, 1, 1)
         self.tab_matching = QtWidgets.QTableView(self.page_matching)
         self.tab_matching.setObjectName("tab_matching")
-        self.gridLayout_5.addWidget(self.tab_matching, 0, 0, 1, 1)
+        self.gridLayout_5.addWidget(self.tab_matching, 0, 0, 1, 2)
         self.tabWidget.addTab(self.page_matching, "")
         self.gridLayout.addWidget(self.splitter_4, 0, 0, 1, 1)
         MainWindow.setCentralWidget(self.centralwidget)
@@ -238,7 +243,7 @@ class Ui_MainWindow(object):
         MainWindow.setStatusBar(self.statusbar)
 
         self.retranslateUi(MainWindow)
-        self.tabWidget.setCurrentIndex(2)
+        self.tabWidget.setCurrentIndex(0)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
@@ -260,6 +265,7 @@ class Ui_MainWindow(object):
         self.butt_plotComm.setText(_translate("MainWindow", "Highlight"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.page_structure), _translate("MainWindow", "Structure"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.page_compound), _translate("MainWindow", "Information"))
+        self.butt_match.setText(_translate("MainWindow", "Matching"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.page_matching), _translate("MainWindow", "Matching"))
 
 

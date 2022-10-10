@@ -41,10 +41,10 @@ def refine_compound_list(res):
         smi = res.loc[i, 'CanonicalSMILES']
         formula = res.loc[i, 'MolecularFormula']
         mol = Chem.MolFromSmiles(smi)
+        if mol is None:
+            continue
         formula_cal = AllChem.CalcMolFormula(mol)
         if formula != formula_cal:
-            continue
-        if mol is None:
             continue
         else:
             pass
@@ -76,7 +76,6 @@ def retrieve_by_exact_mass(mass, ppm = 10):
 
 
 def retrieve_by_formula(formula, timeout=999):
-
     url = '''https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/fastformula/{}/cids/json'''.format(formula)
     try:
         res = requests.get(url).text

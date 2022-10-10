@@ -36,6 +36,7 @@ from ms2deepscore.models import load_model
 
 from uic import main, parameter
 from core.identification import identify_unknown
+from core.similarity import calc_aligned_similarity
 
 
 class Parameter(QtWidgets.QWidget, parameter.Ui_Form):
@@ -92,6 +93,7 @@ class DeepMASS2(QMainWindow, main.Ui_MainWindow):
         self.identified_spectrums = []
         self.reference_positive = None
         self.reference_negative = None
+        self.chemical_space = 'biodatabase'
         self.default_database = 'data/MsfinderStructureDB-VS15-plus-GNPS.csv'
         self.default_index_positive = 'data/references_index_positive.bin'
         self.default_index_negative = 'data/references_index_negative.bin'
@@ -116,6 +118,7 @@ class DeepMASS2(QMainWindow, main.Ui_MainWindow):
         self.butt_spectrum.clicked.connect(self.plot_spectrum)
         self.butt_loss.clicked.connect(self.plot_loss)
         self.butt_plotComm.clicked.connect(self.plot_mol_with_highlight)
+        self.butt_match.clicked.connect(self.calc_spectrum_matching)
         self.list_spectrum.itemClicked.connect(self.fill_reference_table)
         self.tab_formula.itemClicked.connect(self.fill_structural_table)
         self.tab_reference.itemClicked.connect(self.plot_spectrum)
@@ -158,7 +161,16 @@ class DeepMASS2(QMainWindow, main.Ui_MainWindow):
         msg.setText(Text)
         msg.setWindowTitle("Error")
         msg.exec_()
-        
+
+
+    def InforMsg(self, Text):
+        msg = QtWidgets.QMessageBox()
+        msg.resize(550, 200)
+        msg.setIcon(QtWidgets.QMessageBox.Information)
+        msg.setText(Text)
+        msg.setWindowTitle("Information")
+        msg.exec_()
+
       
     def _set_index_positive(self, msg):
         self.pp = msg
@@ -221,6 +233,10 @@ class DeepMASS2(QMainWindow, main.Ui_MainWindow):
     def set_parameter(self):
         self.n_ref = int(self.ParameterUI.spinBox_nref.value())
         self.sim_metric = str(self.ParameterUI.comboBox.currentText())
+        if self.ParameterUI.radioButton_1.isChecked():
+            self.chemical_space = 'biodatabase'
+        if self.ParameterUI.radioButton_2.isChecked():
+            self.chemical_space = 'pubchem'
         self.priority = []
         if self.ParameterUI.checkBox_1.isChecked():
             self.priority.append('HMDB')
@@ -318,16 +334,19 @@ class DeepMASS2(QMainWindow, main.Ui_MainWindow):
         
     def load_spectrums(self):
         self._set_busy()
+        self.progressBar.setValue(24)
+        self.progressBar.setFormat('Loading data')
         options = QtWidgets.QFileDialog.Options()
         options |= QtWidgets.QFileDialog.DontUseNativeDialog
-        fileName, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Load", "","MGF Files (*.mgf)", options=options)
-        if fileName:
-            self.progressBar.setValue(24)
-            self.progressBar.setFormat('Loading data')
-            spectrums = [s for s in load_from_mgf(fileName) if 'title' in list(s.metadata.keys())]
-            titles = [s.metadata['title'] for s in spectrums]
-            self.spectrums = pd.DataFrame({'title': titles, 'spectrum': spectrums})
-            self.set_list_spectrums()
+        fileNames, _ = QtWidgets.QFileDialog.getOpenFileNames(self, "Load", "","MGF Files (*.mgf)", options=options)
+        if len(fileNames) == 0:
+            return
+        spectrums = []
+        for fileName in fileNames:
+            spectrums += [s for s in load_from_mgf(fileName) if 'compound_name' in list(s.metadata.keys())]
+        titles = [s.metadata['compound_name'] for s in spectrums]
+        self.spectrums = pd.DataFrame({'title': titles, 'spectrum': spectrums})
+        self.set_list_spectrums()
         self._set_finished()
 
 
@@ -347,6 +366,7 @@ class DeepMASS2(QMainWindow, main.Ui_MainWindow):
         self.identified_spectrums = []
         if len(self.spectrums) == 0:
             self.ErrorMsg('Please load unknown spectrums first')
+            self._set_finished()
             return
         self.progressBar.setValue(0)
         self.progressBar.setFormat('Identifying unknowns')
@@ -359,10 +379,11 @@ class DeepMASS2(QMainWindow, main.Ui_MainWindow):
         model_positive = self.deepmass_positive
         model_negative = self.deepmass_negative
         reference_positive = self.reference_positive
-        reference_negative = self.reference_negative 
+        reference_negative = self.reference_negative
+        chemical_space = self.chemical_space
         self.Thread_Identification = Thread_Identification(spectrums, p_positive, p_negative, n, database, 
                                                            priority, model_positive, model_negative, 
-                                                           reference_positive, reference_negative)  
+                                                           reference_positive, reference_negative, chemical_space)  
         self.Thread_Identification._result.connect(self._set_succeed_annotation)
         self.Thread_Identification._i.connect(self._set_process_bar)
         self.Thread_Identification.start()
@@ -508,6 +529,22 @@ class DeepMASS2(QMainWindow, main.Ui_MainWindow):
         
     def plot_mol_with_highlight(self):
         self.plot_mol(highlight = True)
+        self.InforMsg('Finished')
+        
+        
+    def calc_spectrum_matching(self):
+        i = self.tab_reference.currentRow()
+        spectrum = self.current_spectrum
+        reference = self.current_spectrum.metadata['reference'][i]
+        
+        i = self.tab_structure.currentRow()
+        header = [self.tab_structure.horizontalHeaderItem(i).text() for i in range(self.tab_structure.columnCount())]
+        j = list(header).index('CanonicalSMILES')
+        smiles_anno = self.tab_structure.item(i, j).text()
+        smiles_ref = reference.metadata['smiles']
+        
+        similarity, matching_tab = calc_aligned_similarity(smiles_anno, smiles_ref, spectrum, reference)
+        self._set_table_widget(self.tab_matching, matching_tab)
         
         
     def save_identification(self):
@@ -515,13 +552,20 @@ class DeepMASS2(QMainWindow, main.Ui_MainWindow):
         options |= QtWidgets.QFileDialog.DontUseNativeDialog
         savePath = QtWidgets.QFileDialog.getExistingDirectory(self, "Save", options=options)
         if savePath:
+            if savePath == '':
+                self.WarnMsg('Invalid path')
+                return
             for s in self.identified_spectrums:
-                name = s.metadata['title']
+                name = s.metadata['compound_name']
                 name = re.sub(r'[^ \w+]', '', name)
-                annotation = s.metadata['annotation']
+                if 'annotation' in s.metadata.keys():
+                    annotation = s.metadata['annotation']
+                else:
+                    annotation = pd.DataFrame(columns=['Title', 'MolecularFormula', 'CanonicalSMILES', 'InChIKey'])
                 path = "{}/{}.csv".format(savePath, name)
                 annotation.to_csv(path)        
-        
+        self.InforMsg('Finished')
+
 
 class Thread_LoadReference(QThread): 
     _reference_positive = QtCore.pyqtSignal(list)
@@ -569,7 +613,8 @@ class Thread_Identification(QThread):
     _result = QtCore.pyqtSignal(Spectrum)
 
     def __init__(self, spectrums, p_positive, p_negative, n, database, priority, 
-                 model_positive, model_negative, reference_positive, reference_negative):
+                 model_positive, model_negative, reference_positive, reference_negative,
+                 chemical_space):
         super(Thread_Identification, self).__init__()
         self.p_positive = p_positive
         self.p_negative = p_negative
@@ -581,6 +626,7 @@ class Thread_Identification(QThread):
         self.model_negative = model_negative
         self.reference_positive = reference_positive
         self.reference_negative = reference_negative
+        self.chemical_space = chemical_space
 
     def __del__(self):
         self.wait()
@@ -591,13 +637,13 @@ class Thread_Identification(QThread):
             if 'ionmode' in s.metadata.keys():
                 if s.metadata['ionmode'] == 'negative':
                     sn = identify_unknown(s, self.p_negative, self.n, self.database, self.priority, 
-                                          self.model_negative, self.reference_negative)
+                                          self.model_negative, self.reference_negative, self.chemical_space)
                 else:
                     sn = identify_unknown(s, self.p_positive, self.n, self.database, self.priority, 
-                                          self.model_positive, self.reference_positive)
+                                          self.model_positive, self.reference_positive, self.chemical_space)
             else:
                 sn = identify_unknown(s, self.p_positive, self.n, self.database, self.priority, 
-                                          self.model_positive, self.reference_positive)
+                                          self.model_positive, self.reference_positive, self.chemical_space)
             self._i.emit(int(100 * i / len(self.spectrums)))
             self._result.emit(sn)
 

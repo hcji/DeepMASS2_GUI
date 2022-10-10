@@ -12,6 +12,7 @@ from rdkit.Chem import DataStructs, AllChem
 from sklearn.metrics.pairwise import cosine_similarity
 import matchms.filtering as msfilters
 
+from core.pubchem import retrieve_by_formula, retrieve_by_exact_mass
 from core.pubchem import retrieve_by_formula_database, retrieve_by_exact_mass_database
 
 
@@ -25,7 +26,7 @@ def spectrum_processing(s):
     return s
 
 
-def identify_unknown(s, p, n, database, priority, model, reference):
+def identify_unknown(s, p, n, database, priority, model, reference, chemical_space):
     """
     Example:
         import hnswlib
@@ -55,10 +56,24 @@ def identify_unknown(s, p, n, database, priority, model, reference):
     
     if 'formula' in s.metadata.keys():
         formula = s.metadata['formula']
-        candidate = retrieve_by_formula_database(formula, database, priority = priority)
+        if chemical_space == 'biodatabase':
+            candidate = retrieve_by_formula_database(formula, database, priority = priority)
+        else:
+            try:
+                candidate = retrieve_by_formula(formula)
+            except:
+                candidate = retrieve_by_formula_database(formula, database, priority = [])
+             
     elif 'parent_mass' in s.metadata.keys():
         mass = s.metadata['parent_mass']
-        candidate = retrieve_by_exact_mass_database(mass, database, ppm = 10, priority = priority)
+        if chemical_space == 'biodatabase':
+            candidate = retrieve_by_exact_mass_database(mass, database, ppm = 10, priority = priority)
+        else:
+            try:
+                candidate = retrieve_by_exact_mass(mass)
+            except:
+                candidate = retrieve_by_exact_mass_database(mass, database, ppm = 10, priority = [])
+
     else:
         return s
     if len(candidate) == 0:
