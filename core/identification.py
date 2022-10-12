@@ -30,6 +30,7 @@ def identify_unknown(s, p, n, database, priority, model, reference, chemical_spa
     """
     Example:
         import hnswlib
+        import pandas as pd
         from ms2deepscore import MS2DeepScore
         from ms2deepscore.models import load_model
         
@@ -43,7 +44,7 @@ def identify_unknown(s, p, n, database, priority, model, reference, chemical_spa
         p.load_index('data/references_index_positive.bin')
         reference = np.load('data/references_spectrums_positive.npy', allow_pickle=True)
         s = spectrums[2]
-        sn = identify_unknown(s, p, n, database, priority, model, reference)
+        sn = identify_unknown(s, p, n, database, priority, model, reference, 'custom')
     """
     s = spectrum_processing(s)
     query_vector = model.calculate_vectors([s])
@@ -58,6 +59,15 @@ def identify_unknown(s, p, n, database, priority, model, reference, chemical_spa
         formula = s.metadata['formula']
         if chemical_space == 'biodatabase':
             candidate = retrieve_by_formula_database(formula, database, priority = priority)
+        elif chemical_space == 'biodatabase plus':
+            candidate = retrieve_by_formula_database(formula, database, priority = priority)
+            if len(candidate) == 0:
+                try:
+                    candidate = retrieve_by_formula(formula)
+                except:
+                    candidate = retrieve_by_formula_database(formula, database, priority = [])
+        elif chemical_space == 'custom':
+            candidate = retrieve_by_formula_database(formula, database, priority = [])
         else:
             try:
                 candidate = retrieve_by_formula(formula)
@@ -68,14 +78,23 @@ def identify_unknown(s, p, n, database, priority, model, reference, chemical_spa
         mass = s.metadata['parent_mass']
         if chemical_space == 'biodatabase':
             candidate = retrieve_by_exact_mass_database(mass, database, ppm = 10, priority = priority)
+        elif chemical_space == 'biodatabase plus':
+            candidate = retrieve_by_exact_mass_database(mass, database, ppm = 10, priority = priority)
+            if len(candidate) == 0:
+                try:
+                    candidate = retrieve_by_exact_mass(mass)
+                except:
+                    candidate = retrieve_by_exact_mass_database(mass, database, ppm = 10, priority = [])        
+        elif chemical_space == 'custom':
+            candidate = retrieve_by_exact_mass_database(mass, database, ppm = 10, priority = [])
         else:
             try:
                 candidate = retrieve_by_exact_mass(mass)
             except:
                 candidate = retrieve_by_exact_mass_database(mass, database, ppm = 10, priority = [])
-
     else:
         return s
+    
     if len(candidate) == 0:
         return s
     reference_spectrum = np.array(reference)[I[0,:]]
@@ -107,8 +126,8 @@ def identify_unknown(s, p, n, database, priority, model, reference, chemical_spa
     candidate_fp_sim = np.array([[get_sim(f1, f2) for f1 in reference_fp] for f2 in candidate_fp])
     candidate_fp_score = [np.sqrt(reference_corr * s) for s in candidate_fp_sim]
     candidate_fp_deepmass = np.sum(candidate_fp_score, axis = 1)
-    candidate['DeepMass Score'] = np.round(candidate_fp_deepmass / n, 2)
     candidate = candidate.sort_values('DeepMass Score', ignore_index = True, ascending = False)
+    candidate['DeepMass Score'] = np.round(candidate_fp_deepmass / n, 4)
     
     s.set('reference', reference_spectrum)
     s.set('annotation', candidate)

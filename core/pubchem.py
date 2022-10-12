@@ -103,11 +103,6 @@ def retrieve_by_exact_mass_database(mass, database, ppm = 10, priority=[]):
             result = result.loc[list(k),:]
     result = result[['Title', 'Formula', 'SMILES', 'InChIkey']]
     if len(result) == 0:
-        try:
-            result = retrieve_by_exact_mass(mass, ppm)
-        except:
-            pass
-    if len(result) == 0:
         return []
     result.columns = ['Title', 'MolecularFormula', 'CanonicalSMILES', 'InChIKey']
     result = refine_compound_list(result)
@@ -125,11 +120,6 @@ def retrieve_by_formula_database(formula, database, priority=[]):
         if len(k) > 0:
             result = result.loc[list(k),:]
     result = result[['Title', 'Formula', 'SMILES', 'InChIkey']]
-    if len(result) == 0:
-        try:
-            result = retrieve_by_formula(formula)
-        except:
-            pass
     if len(result) == 0:
         return []
     result.columns = ['Title', 'MolecularFormula', 'CanonicalSMILES', 'InChIKey']

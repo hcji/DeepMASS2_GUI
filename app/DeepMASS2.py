@@ -228,7 +228,20 @@ class DeepMASS2(QMainWindow, main.Ui_MainWindow):
         self.butt_open.setDisabled(False)
         self.butt_run.setDisabled(False)
         self.butt_save.setDisabled(False)
-        
+    
+    
+    def set_custom_database(self):
+        options = QtWidgets.QFileDialog.Options()
+        options |= QtWidgets.QFileDialog.DontUseNativeDialog
+        fileName, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Select custom database", "","CSV Files (*.csv)", options=options)
+        if fileName:
+            self.progressBar.setValue(50)
+            self.progressBar.setFormat('Loading database')
+            self.Thread_LoadDatabase = Thread_LoadDatabase(fileName)
+            self.Thread_LoadDatabase._compounds.connect(self._set_database)
+            self.Thread_LoadDatabase.start()
+            self.Thread_LoadDatabase.finished.connect(self._set_finished)
+            
     
     def set_parameter(self):
         self.n_ref = int(self.ParameterUI.spinBox_nref.value())
@@ -237,6 +250,11 @@ class DeepMASS2(QMainWindow, main.Ui_MainWindow):
             self.chemical_space = 'biodatabase'
         if self.ParameterUI.radioButton_2.isChecked():
             self.chemical_space = 'pubchem'
+        if self.ParameterUI.radioButton_4.isChecked():
+            self.chemical_space = 'biodatabase plus'
+        if self.ParameterUI.radioButton_3.isChecked():
+            self.chemical_space = 'custom'
+            self.set_custom_database()
         self.priority = []
         if self.ParameterUI.checkBox_1.isChecked():
             self.priority.append('HMDB')
@@ -340,6 +358,7 @@ class DeepMASS2(QMainWindow, main.Ui_MainWindow):
         options |= QtWidgets.QFileDialog.DontUseNativeDialog
         fileNames, _ = QtWidgets.QFileDialog.getOpenFileNames(self, "Load", "","MGF Files (*.mgf)", options=options)
         if len(fileNames) == 0:
+            self._set_finished()
             return
         spectrums = []
         for fileName in fileNames:
@@ -437,10 +456,10 @@ class DeepMASS2(QMainWindow, main.Ui_MainWindow):
         formula = np.unique(annotation['MolecularFormula'])
         mass = [self.get_formula_mass(f) for f in formula]
         if 'parent_mass' in self.current_spectrum.metadata.keys():
-            diff = [abs(m - self.current_spectrum.metadata['parent_mass']) for m in mass]
+            diff = np.array([abs(m - self.current_spectrum.metadata['parent_mass']) for m in mass])
         else:
             diff = np.repeat(np.nan, len(mass))
-        formula_table = pd.DataFrame({'formula': formula, 'mass': mass})
+        formula_table = pd.DataFrame({'formula': formula, 'mass': mass, 'error (mDa)': 1000*diff})
         self._set_table_widget(self.tab_formula, formula_table)
         self.tab_formula.setCurrentCell(0, 0)
         self.fill_structural_table()
