@@ -126,8 +126,9 @@ def identify_unknown(s, p, n, database, priority, model, reference, chemical_spa
     candidate_fp_sim = np.array([[get_sim(f1, f2) for f1 in reference_fp] for f2 in candidate_fp])
     candidate_fp_score = [np.sqrt(reference_corr * s) for s in candidate_fp_sim]
     candidate_fp_deepmass = np.sum(candidate_fp_score, axis = 1)
+    candidate['DeepMass Score'] = candidate_fp_deepmass / n
     candidate = candidate.sort_values('DeepMass Score', ignore_index = True, ascending = False)
-    candidate['DeepMass Score'] = np.round(candidate_fp_deepmass / n, 4)
+    candidate['DeepMass Score'] = np.round(candidate['DeepMass Score'], 4)
     
     s.set('reference', reference_spectrum)
     s.set('annotation', candidate)
