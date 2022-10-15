@@ -29,6 +29,7 @@ import matchms.filtering as msfilters
 from hnswlib import Index
 from rdkit import Chem
 from rdkit.Chem import Draw, rdFMCS
+from molmass import Formula
 from matchms.Spectrum import Spectrum
 from matchms.importing import load_from_mgf
 from ms2deepscore import MS2DeepScore
@@ -84,6 +85,7 @@ class DeepMASS2(QMainWindow, main.Ui_MainWindow):
         self.n_ref = 30
         self.sim_metric = 'Jaccard'
         self.priority = ['HMDB', 'KNApSAcK', 'BLEXP']
+        self.in_silicon_only = False
         
         # data
         self.pn = None
@@ -255,6 +257,10 @@ class DeepMASS2(QMainWindow, main.Ui_MainWindow):
         if self.ParameterUI.radioButton_3.isChecked():
             self.chemical_space = 'custom'
             self.set_custom_database()
+        if self.ParameterUI.radioButton_true.isChecked():
+            self.in_silicon_only = True
+        if self.ParameterUI.radioButton_false.isChecked():
+            self.in_silicon_only = False        
         self.priority = []
         if self.ParameterUI.checkBox_1.isChecked():
             self.priority.append('HMDB')
@@ -311,21 +317,14 @@ class DeepMASS2(QMainWindow, main.Ui_MainWindow):
     
     
     def get_formula_mass(self, formula):
-        parts = re.findall("[A-Z][a-z]?|[0-9]+", formula)
-        mass = 0
-        for index in range(len(parts)):
-            if parts[index].isnumeric():
-                continue
-            atom = Chem.Atom(parts[index])
-            multiplier = int(parts[index + 1]) if len(parts) > index + 1 and parts[index + 1].isnumeric() else 1
-            mass += atom.GetMass() * multiplier
-        return mass
+        f = Formula(formula)
+        return f.isotope.mass
     
         
     def load_references_positive(self):
         self.progressBar.setValue(22)
         self.progressBar.setFormat('Loading positive references')   
-        self.Thread_LoadIndexPositive = Thread_LoadIndex(self.default_index_positive)           
+        self.Thread_LoadIndexPositive = Thread_LoadIndex(self.default_index_positive)
         self.Thread_LoadIndexPositive._index.connect(self._set_index_positive)
         self.Thread_LoadIndexPositive.start()
         self.Thread_LoadIndexPositive.finished.connect(self.load_references_negative)
@@ -400,9 +399,11 @@ class DeepMASS2(QMainWindow, main.Ui_MainWindow):
         reference_positive = self.reference_positive
         reference_negative = self.reference_negative
         chemical_space = self.chemical_space
+        in_silicon_only = self.in_silicon_only
         self.Thread_Identification = Thread_Identification(spectrums, p_positive, p_negative, n, database, 
                                                            priority, model_positive, model_negative, 
-                                                           reference_positive, reference_negative, chemical_space)  
+                                                           reference_positive, reference_negative, chemical_space, 
+                                                           in_silicon_only)  
         self.Thread_Identification._result.connect(self._set_succeed_annotation)
         self.Thread_Identification._i.connect(self._set_process_bar)
         self.Thread_Identification.start()
@@ -633,7 +634,7 @@ class Thread_Identification(QThread):
 
     def __init__(self, spectrums, p_positive, p_negative, n, database, priority, 
                  model_positive, model_negative, reference_positive, reference_negative,
-                 chemical_space):
+                 chemical_space, in_silicon_only):
         super(Thread_Identification, self).__init__()
         self.p_positive = p_positive
         self.p_negative = p_negative
@@ -646,6 +647,7 @@ class Thread_Identification(QThread):
         self.reference_positive = reference_positive
         self.reference_negative = reference_negative
         self.chemical_space = chemical_space
+        self.in_silicon_only = in_silicon_only
 
     def __del__(self):
         self.wait()
@@ -656,13 +658,16 @@ class Thread_Identification(QThread):
             if 'ionmode' in s.metadata.keys():
                 if s.metadata['ionmode'] == 'negative':
                     sn = identify_unknown(s, self.p_negative, self.n, self.database, self.priority, 
-                                          self.model_negative, self.reference_negative, self.chemical_space)
+                                          self.model_negative, self.reference_negative, self.chemical_space,
+                                          self.in_silicon_only)
                 else:
                     sn = identify_unknown(s, self.p_positive, self.n, self.database, self.priority, 
-                                          self.model_positive, self.reference_positive, self.chemical_space)
+                                          self.model_positive, self.reference_positive, self.chemical_space,
+                                          self.in_silicon_only)
             else:
                 sn = identify_unknown(s, self.p_positive, self.n, self.database, self.priority, 
-                                          self.model_positive, self.reference_positive, self.chemical_space)
+                                          self.model_positive, self.reference_positive, self.chemical_space,
+                                          self.in_silicon_only)
             self._i.emit(int(100 * i / len(self.spectrums)))
             self._result.emit(sn)
 

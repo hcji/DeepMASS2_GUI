@@ -26,17 +26,18 @@ def spectrum_processing(s):
     return s
 
 
-def identify_unknown(s, p, n, database, priority, model, reference, chemical_space):
+def identify_unknown(s, p, n, database, priority, model, reference, chemical_space, in_silicon_only=False):
     """
     Example:
         import hnswlib
         import pandas as pd
         from ms2deepscore import MS2DeepScore
         from ms2deepscore.models import load_model
+        from matchms.importing import load_from_mgf
         
         n = 30
         priority = ['HMDB', 'KNApSAcK', 'BLEXP']
-        spectrums = np.load('data/casmi_2022_challenge_priority.npy', allow_pickle=True)[:,9]
+        spectrums = [s for s in load_from_mgf('example/casmi_2022_priority_new.mgf')]
         model = load_model("model/MS2DeepScore_allGNPSpositive.hdf5")
         model = MS2DeepScore(model)
         database = pd.read_csv('data/MsfinderStructureDB-VS15-plus-GNPS.csv')
@@ -44,7 +45,7 @@ def identify_unknown(s, p, n, database, priority, model, reference, chemical_spa
         p.load_index('data/references_index_positive.bin')
         reference = np.load('data/references_spectrums_positive.npy', allow_pickle=True)
         s = spectrums[2]
-        sn = identify_unknown(s, p, n, database, priority, model, reference, 'custom')
+        sn = identify_unknown(s, p, n, database, priority, model, reference, 'custom', True)
     """
     s = spectrum_processing(s)
     query_vector = model.calculate_vectors([s])
@@ -102,6 +103,12 @@ def identify_unknown(s, p, n, database, priority, model, reference, chemical_spa
     reference_mol = [Chem.MolFromSmiles(s) for s in reference_smile]
     k, reference_fp = [], []
     for i, m in enumerate(reference_mol):
+        if in_silicon_only:
+            if 'inchikey' in s.metadata.keys():
+                que_key = s.metadata['inchikey']
+                ref_key = reference_spectrum[i].metadata['inchikey'][:14]
+                if que_key == ref_key:
+                    continue
         try:
             reference_fp.append(get_fp(m))
             k.append(i)
