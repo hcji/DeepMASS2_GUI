@@ -260,7 +260,7 @@ class DeepMASS2(QMainWindow, main.Ui_MainWindow):
         if self.ParameterUI.radioButton_true.isChecked():
             self.in_silicon_only = True
         if self.ParameterUI.radioButton_false.isChecked():
-            self.in_silicon_only = False        
+            self.in_silicon_only = False
         self.priority = []
         if self.ParameterUI.checkBox_1.isChecked():
             self.priority.append('HMDB')

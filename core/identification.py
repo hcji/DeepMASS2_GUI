@@ -8,7 +8,7 @@ Created on Fri Sep 30 11:27:02 2022
 
 import numpy as np
 from rdkit import Chem
-from rdkit.Chem import DataStructs, AllChem
+from rdkit.Chem import DataStructs, AllChem, inchi
 from sklearn.metrics.pairwise import cosine_similarity
 import matchms.filtering as msfilters
 
@@ -104,9 +104,12 @@ def identify_unknown(s, p, n, database, priority, model, reference, chemical_spa
     k, reference_fp = [], []
     for i, m in enumerate(reference_mol):
         if in_silicon_only:
-            if 'inchikey' in s.metadata.keys():
-                que_key = s.metadata['inchikey']
+            if 'inchikey' not in reference_spectrum[i].metadata.keys():
+                ref_key = inchi.MolToInchiKey(Chem.MolFromSmiles(reference_spectrum[i].metadata['smiles']))[:14]
+            else:
                 ref_key = reference_spectrum[i].metadata['inchikey'][:14]
+            if 'inchikey' in s.metadata.keys():
+                que_key = s.metadata['inchikey'][:14]
                 if que_key == ref_key:
                     continue
         try:
@@ -116,7 +119,7 @@ def identify_unknown(s, p, n, database, priority, model, reference, chemical_spa
             pass
     reference_spectrum = np.array(reference_spectrum)[np.array(k)]
     reference_smile = np.array(reference_smile)[np.array(k)]
-    reference_vec = p.get_items(I[0,:])
+    reference_vec = p.get_items(I[0, np.array(k)])
     reference_corr = [get_corr(query_vector[0,:], v) for v in reference_vec]
     
     candidate_mol = [Chem.MolFromSmiles(s) for s in candidate['CanonicalSMILES']]
@@ -129,6 +132,7 @@ def identify_unknown(s, p, n, database, priority, model, reference, chemical_spa
             pass
     if len(k) == 0:
         return s
+
     candidate = candidate.loc[np.array(k),:].reset_index(drop = True)
     candidate_fp_sim = np.array([[get_sim(f1, f2) for f1 in reference_fp] for f2 in candidate_fp])
     candidate_fp_score = [np.sqrt(reference_corr * s) for s in candidate_fp_sim]
