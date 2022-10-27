@@ -46,10 +46,7 @@ def refine_compound_list(res):
         formula_cal = AllChem.CalcMolFormula(mol)
         if formula != formula_cal:
             continue
-        else:
-            pass
-            # smi = Chem.MolToSmiles(mol, isomericSmiles=False)
-        if ('.' in smi) or ('+' in smi) or ('-' in smi):
+        if ('.' in smi) or (Chem.GetFormalCharge(mol) != 0):
             continue
         key = res.loc[i, 'InChIKey'].split('-')[0]
         if key not in keys:

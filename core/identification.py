@@ -37,14 +37,14 @@ def identify_unknown(s, p, n, database, priority, model, reference, chemical_spa
         
         n = 30
         priority = ['HMDB', 'KNApSAcK', 'BLEXP']
-        spectrums = [s for s in load_from_mgf('example/casmi_2022_priority_new.mgf')]
-        model = load_model("model/MS2DeepScore_allGNPSpositive.hdf5")
+        spectrums = [s for s in load_from_mgf("D:/All_CASMI/save/casmi_2016_challenge_test.mgf")]
+        model = load_model("model/MS2DeepScore_allGNPSnegative.hdf5")
         model = MS2DeepScore(model)
         database = pd.read_csv('data/MsfinderStructureDB-VS15-plus-GNPS.csv')
         p = hnswlib.Index(space='l2', dim=200) 
-        p.load_index('data/references_index_positive.bin')
-        reference = np.load('data/references_spectrums_positive.npy', allow_pickle=True)
-        s = spectrums[2]
+        p.load_index('data/references_index_negative.bin')
+        reference = np.load('data/references_spectrums_negative.npy', allow_pickle=True)
+        s = spectrums[4]
         sn = identify_unknown(s, p, n, database, priority, model, reference, 'custom', True)
     """
     s = spectrum_processing(s)
@@ -103,20 +103,20 @@ def identify_unknown(s, p, n, database, priority, model, reference, chemical_spa
     reference_mol = [Chem.MolFromSmiles(s) for s in reference_smile]
     k, reference_fp = [], []
     for i, m in enumerate(reference_mol):
+        if reference_smile[i] == '':
+            continue
         if in_silicon_only:
-            if 'inchikey' not in reference_spectrum[i].metadata.keys():
-                ref_key = inchi.MolToInchiKey(Chem.MolFromSmiles(reference_spectrum[i].metadata['smiles']))[:14]
-            else:
-                ref_key = reference_spectrum[i].metadata['inchikey'][:14]
-            if 'inchikey' in s.metadata.keys():
-                que_key = s.metadata['inchikey'][:14]
-                if que_key == ref_key:
+            if len(reference_spectrum[i].mz) == len(s.mz):
+                if (max(np.abs(reference_spectrum[i].mz - s.mz)) <= 0.01) and (max(np.abs(reference_spectrum[i].intensities - s.intensities)) <= 0.01): 
                     continue
         try:
             reference_fp.append(get_fp(m))
             k.append(i)
         except:
             pass
+    if len(k) == 0:
+        return s
+        
     reference_spectrum = np.array(reference_spectrum)[np.array(k)]
     reference_smile = np.array(reference_smile)[np.array(k)]
     reference_vec = p.get_items(I[0, np.array(k)])
