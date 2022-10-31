@@ -29,6 +29,7 @@ import matchms.filtering as msfilters
 from hnswlib import Index
 from rdkit import Chem
 from rdkit.Chem import Draw, rdFMCS
+from rdkit.Chem import DataStructs, AllChem
 from molmass import Formula
 from matchms.Spectrum import Spectrum
 from matchms.importing import load_from_mgf
@@ -82,10 +83,11 @@ class DeepMASS2(QMainWindow, main.Ui_MainWindow):
         self.gridlayoutfigSpec.addWidget(self.figSpe_ntb)
         
         # parameters
-        self.n_ref = 30
+        self.n_ref = 300
+        self.n_neb = 20
         self.sim_metric = 'Jaccard'
-        self.priority = ['HMDB', 'KNApSAcK', 'BLEXP']
-        self.in_silicon_only = False
+        self.priority = []
+        self.in_silicon_only = True
         
         # data
         self.pn = None
@@ -247,6 +249,7 @@ class DeepMASS2(QMainWindow, main.Ui_MainWindow):
     
     def set_parameter(self):
         self.n_ref = int(self.ParameterUI.spinBox_nref.value())
+        self.n_neb = int(self.ParameterUI.spinBox_nneb.value())
         self.sim_metric = str(self.ParameterUI.comboBox.currentText())
         if self.ParameterUI.radioButton_1.isChecked():
             self.chemical_space = 'biodatabase'
@@ -257,10 +260,6 @@ class DeepMASS2(QMainWindow, main.Ui_MainWindow):
         if self.ParameterUI.radioButton_3.isChecked():
             self.chemical_space = 'custom'
             self.set_custom_database()
-        if self.ParameterUI.radioButton_true.isChecked():
-            self.in_silicon_only = True
-        if self.ParameterUI.radioButton_false.isChecked():
-            self.in_silicon_only = False
         self.priority = []
         if self.ParameterUI.checkBox_1.isChecked():
             self.priority.append('HMDB')
@@ -391,7 +390,8 @@ class DeepMASS2(QMainWindow, main.Ui_MainWindow):
         spectrums = self.spectrums['spectrum']
         p_positive = self.pp
         p_negative = self.pn
-        n = self.n_ref
+        n_ref = self.n_ref
+        n_neb = self.n_neb
         database = self.database
         priority = self.priority
         model_positive = self.deepmass_positive
@@ -400,14 +400,14 @@ class DeepMASS2(QMainWindow, main.Ui_MainWindow):
         reference_negative = self.reference_negative
         chemical_space = self.chemical_space
         in_silicon_only = self.in_silicon_only
-        self.Thread_Identification = Thread_Identification(spectrums, p_positive, p_negative, n, database, 
+        self.Thread_Identification = Thread_Identification(spectrums, p_positive, p_negative, n_ref, n_neb, database, 
                                                            priority, model_positive, model_negative, 
                                                            reference_positive, reference_negative, chemical_space, 
                                                            in_silicon_only)  
         self.Thread_Identification._result.connect(self._set_succeed_annotation)
         self.Thread_Identification._i.connect(self._set_process_bar)
         self.Thread_Identification.start()
-        self.Thread_Identification.finished.connect(self.fill_reference_table)
+        self.Thread_Identification.finished.connect(self.fill_formula_table())
         
 
     def fill_reference_table(self):
@@ -442,7 +442,7 @@ class DeepMASS2(QMainWindow, main.Ui_MainWindow):
         reference_table = pd.DataFrame(reference_table, columns = ['name', 'adduct', 'smiles', 'parent_mass'])
         self._set_table_widget(self.tab_reference, reference_table)
         self.tab_reference.setCurrentCell(0, 0)
-        self.fill_formula_table()
+        self.plot_spectrum()
         self._set_finished()
     
     
@@ -465,7 +465,6 @@ class DeepMASS2(QMainWindow, main.Ui_MainWindow):
         self.tab_formula.setCurrentCell(0, 0)
         self.fill_structural_table()
         self.fill_information_table()
-        self.plot_spectrum()
         self._set_finished()
         
     
@@ -482,6 +481,7 @@ class DeepMASS2(QMainWindow, main.Ui_MainWindow):
             return
         self._set_table_widget(self.tab_structure, structural_table)
         self.tab_structure.setCurrentCell(0, 0)
+        self.fill_reference_table()
         self._set_finished()
         
         
@@ -632,13 +632,14 @@ class Thread_Identification(QThread):
     _i = QtCore.pyqtSignal(int)
     _result = QtCore.pyqtSignal(Spectrum)
 
-    def __init__(self, spectrums, p_positive, p_negative, n, database, priority, 
+    def __init__(self, spectrums, p_positive, p_negative, n_ref, n_neb, database, priority, 
                  model_positive, model_negative, reference_positive, reference_negative,
                  chemical_space, in_silicon_only):
         super(Thread_Identification, self).__init__()
         self.p_positive = p_positive
         self.p_negative = p_negative
-        self.n = n
+        self.n_ref = n_ref
+        self.n_neb = n_neb
         self.spectrums = spectrums
         self.database = database
         self.priority = priority
@@ -657,15 +658,15 @@ class Thread_Identification(QThread):
         for i, s in enumerate(self.spectrums):
             if 'ionmode' in s.metadata.keys():
                 if s.metadata['ionmode'] == 'negative':
-                    sn = identify_unknown(s, self.p_negative, self.n, self.database, self.priority, 
+                    sn = identify_unknown(s, self.p_negative, self.n_ref, self.n_neb, self.database, self.priority, 
                                           self.model_negative, self.reference_negative, self.chemical_space,
                                           self.in_silicon_only)
                 else:
-                    sn = identify_unknown(s, self.p_positive, self.n, self.database, self.priority, 
+                    sn = identify_unknown(s, self.p_positive, self.n_ref, self.n_neb, self.database, self.priority, 
                                           self.model_positive, self.reference_positive, self.chemical_space,
                                           self.in_silicon_only)
             else:
-                sn = identify_unknown(s, self.p_positive, self.n, self.database, self.priority, 
+                sn = identify_unknown(s, self.p_positive, self.n_ref, self.n_neb, self.database, self.priority, 
                                           self.model_positive, self.reference_positive, self.chemical_space,
                                           self.in_silicon_only)
             self._i.emit(int(100 * i / len(self.spectrums)))

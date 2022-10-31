@@ -33,8 +33,11 @@
       <layout class="QGridLayout" name="gridLayout">
        <item row="0" column="1">
         <widget class="QSpinBox" name="spinBox_nref">
+         <property name="maximum">
+          <number>9999</number>
+         </property>
          <property name="value">
-          <number>30</number>
+          <number>300</number>
          </property>
         </widget>
        </item>
@@ -51,10 +54,46 @@
          </property>
         </widget>
        </item>
-       <item row="1" column="1">
+       <item row="2" column="1">
         <widget class="QComboBox" name="comboBox"/>
        </item>
+       <item row="1" column="0">
+        <widget class="QLabel" name="label_9">
+         <property name="font">
+          <font>
+           <family>Times New Roman</family>
+           <pointsize>12</pointsize>
+          </font>
+         </property>
+         <property name="text">
+          <string>Number of reference</string>
+         </property>
+        </widget>
+       </item>
        <item row="2" column="0">
+        <widget class="QLabel" name="label_6">
+         <property name="font">
+          <font>
+           <family>Times New Roman</family>
+           <pointsize>12</pointsize>
+          </font>
+         </property>
+         <property name="text">
+          <string>Similarity metrics</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <widget class="QSpinBox" name="spinBox_nneb">
+         <property name="maximum">
+          <number>200</number>
+         </property>
+         <property name="value">
+          <number>20</number>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="0">
         <spacer name="verticalSpacer_2">
          <property name="orientation">
           <enum>Qt::Vertical</enum>
@@ -69,19 +108,6 @@
           </size>
          </property>
         </spacer>
-       </item>
-       <item row="1" column="0">
-        <widget class="QLabel" name="label_6">
-         <property name="font">
-          <font>
-           <family>Times New Roman</family>
-           <pointsize>12</pointsize>
-          </font>
-         </property>
-         <property name="text">
-          <string>Similarity metrics</string>
-         </property>
-        </widget>
        </item>
       </layout>
      </item>
@@ -102,130 +128,79 @@
    </item>
    <item>
     <layout class="QGridLayout" name="gridLayout_2">
-     <item row="2" column="2">
-      <layout class="QVBoxLayout" name="verticalLayout_5">
+     <item row="1" column="0" colspan="2">
+      <layout class="QVBoxLayout" name="verticalLayout_7">
        <item>
-        <widget class="QCheckBox" name="checkBox_2">
-         <property name="text">
-          <string>KNApSAcK</string>
+        <widget class="QLabel" name="label_2">
+         <property name="font">
+          <font>
+           <family>Times New Roman</family>
+           <pointsize>12</pointsize>
+          </font>
          </property>
-         <property name="checked">
-          <bool>false</bool>
+         <property name="text">
+          <string>Priority</string>
          </property>
         </widget>
        </item>
        <item>
-        <widget class="QCheckBox" name="checkBox_8">
+        <spacer name="verticalSpacer">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeType">
+          <enum>QSizePolicy::Fixed</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>380</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
+     </item>
+     <item row="1" column="4">
+      <layout class="QVBoxLayout" name="verticalLayout_4">
+       <item>
+        <widget class="QCheckBox" name="checkBox_3">
          <property name="text">
-          <string>T3DB</string>
+          <string>ChEBI</string>
          </property>
         </widget>
        </item>
        <item>
-        <widget class="QCheckBox" name="checkBox_13">
+        <widget class="QCheckBox" name="checkBox_10">
          <property name="text">
-          <string>LipidMAPS</string>
+          <string>FooDB</string>
          </property>
         </widget>
        </item>
        <item>
-        <widget class="QCheckBox" name="checkBox_20">
+        <widget class="QCheckBox" name="checkBox_11">
          <property name="text">
-          <string>CSF</string>
+          <string>Urine</string>
          </property>
         </widget>
        </item>
        <item>
-        <widget class="QCheckBox" name="checkBox_21">
+        <widget class="QCheckBox" name="checkBox_18">
          <property name="text">
-          <string>BLEXP</string>
+          <string>Serum</string>
          </property>
-         <property name="checked">
-          <bool>false</bool>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="checkBox_22">
+         <property name="text">
+          <string>NPA</string>
          </property>
         </widget>
        </item>
       </layout>
      </item>
-     <item row="2" column="4">
-      <layout class="QVBoxLayout" name="verticalLayout_3">
-       <item>
-        <widget class="QCheckBox" name="checkBox_4">
-         <property name="text">
-          <string>DrugBank</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QCheckBox" name="checkBox_9">
-         <property name="text">
-          <string>NANPDB</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QCheckBox" name="checkBox_14">
-         <property name="text">
-          <string>Saliva</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QCheckBox" name="checkBox_19">
-         <property name="text">
-          <string>PubChem-bio</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QCheckBox" name="checkBox_23">
-         <property name="text">
-          <string>COCONUT</string>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </item>
-     <item row="2" column="5">
-      <layout class="QVBoxLayout" name="verticalLayout_2">
-       <item>
-        <widget class="QCheckBox" name="checkBox_5">
-         <property name="text">
-          <string>SMPDB</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QCheckBox" name="checkBox_6">
-         <property name="text">
-          <string>STOFF</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QCheckBox" name="checkBox_15">
-         <property name="text">
-          <string>Feces</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QCheckBox" name="checkBox_16">
-         <property name="text">
-          <string>PlantCyc</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QCheckBox" name="checkBox_25">
-         <property name="text">
-          <string>GNPS</string>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </item>
-     <item row="2" column="1">
+     <item row="1" column="2">
       <layout class="QVBoxLayout" name="verticalLayout_6">
        <item>
         <widget class="QCheckBox" name="checkBox_1">
@@ -270,169 +245,131 @@
        </item>
       </layout>
      </item>
-     <item row="2" column="3">
-      <layout class="QVBoxLayout" name="verticalLayout_4">
+     <item row="1" column="6">
+      <layout class="QVBoxLayout" name="verticalLayout_2">
        <item>
-        <widget class="QCheckBox" name="checkBox_3">
+        <widget class="QCheckBox" name="checkBox_5">
          <property name="text">
-          <string>ChEBI</string>
+          <string>SMPDB</string>
          </property>
         </widget>
        </item>
        <item>
-        <widget class="QCheckBox" name="checkBox_10">
+        <widget class="QCheckBox" name="checkBox_6">
          <property name="text">
-          <string>FooDB</string>
+          <string>STOFF</string>
          </property>
         </widget>
        </item>
        <item>
-        <widget class="QCheckBox" name="checkBox_11">
+        <widget class="QCheckBox" name="checkBox_15">
          <property name="text">
-          <string>Urine</string>
+          <string>Feces</string>
          </property>
         </widget>
        </item>
        <item>
-        <widget class="QCheckBox" name="checkBox_18">
+        <widget class="QCheckBox" name="checkBox_16">
          <property name="text">
-          <string>Serum</string>
+          <string>PlantCyc</string>
          </property>
         </widget>
        </item>
        <item>
-        <widget class="QCheckBox" name="checkBox_22">
+        <widget class="QCheckBox" name="checkBox_25">
          <property name="text">
-          <string>NPA</string>
+          <string>GNPS</string>
          </property>
         </widget>
        </item>
       </layout>
      </item>
-     <item row="2" column="0">
-      <layout class="QVBoxLayout" name="verticalLayout_7">
+     <item row="1" column="5">
+      <layout class="QVBoxLayout" name="verticalLayout_3">
        <item>
-        <widget class="QLabel" name="label_2">
-         <property name="font">
-          <font>
-           <family>Times New Roman</family>
-           <pointsize>12</pointsize>
-          </font>
-         </property>
+        <widget class="QCheckBox" name="checkBox_4">
          <property name="text">
-          <string>Priority</string>
+          <string>DrugBank</string>
          </property>
         </widget>
        </item>
        <item>
-        <spacer name="verticalSpacer">
-         <property name="orientation">
-          <enum>Qt::Vertical</enum>
+        <widget class="QCheckBox" name="checkBox_9">
+         <property name="text">
+          <string>NANPDB</string>
          </property>
-         <property name="sizeType">
-          <enum>QSizePolicy::Fixed</enum>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="checkBox_14">
+         <property name="text">
+          <string>Saliva</string>
          </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>40</width>
-           <height>380</height>
-          </size>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="checkBox_19">
+         <property name="text">
+          <string>PubChem-bio</string>
          </property>
-        </spacer>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="checkBox_23">
+         <property name="text">
+          <string>COCONUT</string>
+         </property>
+        </widget>
        </item>
       </layout>
      </item>
-     <item row="0" column="0" colspan="4">
-      <layout class="QHBoxLayout" name="horizontalLayout">
+     <item row="1" column="3">
+      <layout class="QVBoxLayout" name="verticalLayout_5">
        <item>
-        <widget class="QLabel" name="label_3">
-         <property name="font">
-          <font>
-           <family>Times New Roman</family>
-           <pointsize>12</pointsize>
-          </font>
-         </property>
+        <widget class="QCheckBox" name="checkBox_2">
          <property name="text">
-          <string>Overall</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <spacer name="horizontalSpacer_2">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-         <property name="sizeType">
-          <enum>QSizePolicy::Fixed</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>90</width>
-           <height>20</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-       <item>
-        <widget class="QRadioButton" name="radioButton_1">
-         <property name="text">
-          <string>Biodatabase</string>
+          <string>KNApSAcK</string>
          </property>
          <property name="checked">
-          <bool>true</bool>
+          <bool>false</bool>
          </property>
-         <attribute name="buttonGroup">
-          <string notr="true">buttonGroup</string>
-         </attribute>
         </widget>
        </item>
        <item>
-        <widget class="QRadioButton" name="radioButton_2">
+        <widget class="QCheckBox" name="checkBox_8">
          <property name="text">
-          <string>PubChem</string>
+          <string>T3DB</string>
          </property>
-         <attribute name="buttonGroup">
-          <string notr="true">buttonGroup</string>
-         </attribute>
         </widget>
        </item>
        <item>
-        <widget class="QRadioButton" name="radioButton_3">
+        <widget class="QCheckBox" name="checkBox_13">
          <property name="text">
-          <string>Custom</string>
+          <string>LipidMAPS</string>
          </property>
-         <attribute name="buttonGroup">
-          <string notr="true">buttonGroup</string>
-         </attribute>
         </widget>
        </item>
        <item>
-        <widget class="QRadioButton" name="radioButton_4">
+        <widget class="QCheckBox" name="checkBox_20">
          <property name="text">
-          <string>Biodatabase Plus</string>
+          <string>CSF</string>
          </property>
-         <attribute name="buttonGroup">
-          <string notr="true">buttonGroup</string>
-         </attribute>
         </widget>
        </item>
        <item>
-        <spacer name="horizontalSpacer">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
+        <widget class="QCheckBox" name="checkBox_21">
+         <property name="text">
+          <string>BLEXP</string>
          </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>40</width>
-           <height>20</height>
-          </size>
+         <property name="checked">
+          <bool>false</bool>
          </property>
-        </spacer>
+        </widget>
        </item>
       </layout>
      </item>
-     <item row="1" column="0">
-      <widget class="QLabel" name="label_7">
+     <item row="0" column="0" colspan="2">
+      <widget class="QLabel" name="label_3">
        <property name="font">
         <font>
          <family>Times New Roman</family>
@@ -440,33 +377,53 @@
         </font>
        </property>
        <property name="text">
-        <string>In-silicon only</string>
+        <string>Overall</string>
        </property>
       </widget>
      </item>
-     <item row="1" column="1">
-      <widget class="QRadioButton" name="radioButton_true">
+     <item row="0" column="5">
+      <widget class="QRadioButton" name="radioButton_3">
        <property name="text">
-        <string>True</string>
-       </property>
-       <property name="checked">
-        <bool>false</bool>
+        <string>Custom</string>
        </property>
        <attribute name="buttonGroup">
-        <string notr="true">buttonGroup_2</string>
+        <string notr="true">buttonGroup</string>
        </attribute>
       </widget>
      </item>
-     <item row="1" column="2">
-      <widget class="QRadioButton" name="radioButton_false">
+     <item row="0" column="4">
+      <widget class="QRadioButton" name="radioButton_2">
        <property name="text">
-        <string>False</string>
+        <string>PubChem</string>
+       </property>
+       <attribute name="buttonGroup">
+        <string notr="true">buttonGroup</string>
+       </attribute>
+      </widget>
+     </item>
+     <item row="0" column="2">
+      <widget class="QRadioButton" name="radioButton_4">
+       <property name="text">
+        <string>Biodatabase Plus</string>
        </property>
        <property name="checked">
         <bool>true</bool>
        </property>
        <attribute name="buttonGroup">
-        <string notr="true">buttonGroup_2</string>
+        <string notr="true">buttonGroup</string>
+       </attribute>
+      </widget>
+     </item>
+     <item row="0" column="3">
+      <widget class="QRadioButton" name="radioButton_1">
+       <property name="text">
+        <string>Biodatabase</string>
+       </property>
+       <property name="checked">
+        <bool>false</bool>
+       </property>
+       <attribute name="buttonGroup">
+        <string notr="true">buttonGroup</string>
        </attribute>
       </widget>
      </item>
@@ -508,7 +465,7 @@
  <resources/>
  <connections/>
  <buttongroups>
-  <buttongroup name="buttonGroup"/>
   <buttongroup name="buttonGroup_2"/>
+  <buttongroup name="buttonGroup"/>
  </buttongroups>
 </ui>

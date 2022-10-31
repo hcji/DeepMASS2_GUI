@@ -8,7 +8,7 @@ Created on Fri Sep 30 11:27:02 2022
 
 import numpy as np
 from rdkit import Chem
-from rdkit.Chem import DataStructs, AllChem, inchi
+from rdkit.Chem import DataStructs, AllChem
 from sklearn.metrics.pairwise import cosine_similarity
 import matchms.filtering as msfilters
 
@@ -26,7 +26,7 @@ def spectrum_processing(s):
     return s
 
 
-def identify_unknown(s, p, n, database, priority, model, reference, chemical_space, in_silicon_only=False):
+def identify_unknown(s, p, n_ref, n_neb, database, priority, model, reference, chemical_space, in_silicon_only=True):
     """
     Example:
         import hnswlib
@@ -36,21 +36,21 @@ def identify_unknown(s, p, n, database, priority, model, reference, chemical_spa
         from matchms.importing import load_from_mgf
         
         n = 30
-        priority = ['HMDB', 'KNApSAcK', 'BLEXP']
-        spectrums = [s for s in load_from_mgf("D:/All_CASMI/save/casmi_2016_challenge_test.mgf")]
-        model = load_model("model/MS2DeepScore_allGNPSnegative.hdf5")
+        priority = []
+        spectrums = [s for s in load_from_mgf("D:/All_CASMI/save/casmi_2022_challenge_priority.mgf")]
+        model = load_model("model/MS2DeepScore_allGNPSpositive.hdf5")
         model = MS2DeepScore(model)
         database = pd.read_csv('data/MsfinderStructureDB-VS15-plus-GNPS.csv')
         p = hnswlib.Index(space='l2', dim=200) 
-        p.load_index('data/references_index_negative.bin')
-        reference = np.load('data/references_spectrums_negative.npy', allow_pickle=True)
-        s = spectrums[4]
+        p.load_index('data/references_index_positive.bin')
+        reference = np.load('data/references_spectrums_positive.npy', allow_pickle=True)
+        s = spectrums[5]
         sn = identify_unknown(s, p, n, database, priority, model, reference, 'custom', True)
     """
     s = spectrum_processing(s)
     query_vector = model.calculate_vectors([s])
     xq = np.array(query_vector).astype('float32')
-    I, D = p.knn_query(xq, n)
+    I, D = p.knn_query(xq, n_ref)
     
     get_fp = lambda x: AllChem.GetMorganFingerprintAsBitVect(x, radius=2)
     get_sim = lambda x, y: DataStructs.FingerprintSimilarity(x, y)
@@ -116,7 +116,6 @@ def identify_unknown(s, p, n, database, priority, model, reference, chemical_spa
             pass
     if len(k) == 0:
         return s
-        
     reference_spectrum = np.array(reference_spectrum)[np.array(k)]
     reference_smile = np.array(reference_smile)[np.array(k)]
     reference_vec = p.get_items(I[0, np.array(k)])
@@ -134,10 +133,10 @@ def identify_unknown(s, p, n, database, priority, model, reference, chemical_spa
         return s
 
     candidate = candidate.loc[np.array(k),:].reset_index(drop = True)
-    candidate_fp_sim = np.array([[get_sim(f1, f2) for f1 in reference_fp] for f2 in candidate_fp])
+    candidate_fp_sim = np.array([[get_sim(f1, f2) for f1 in reference_fp] for f2 in candidate_fp]) 
     candidate_fp_score = [np.sqrt(reference_corr * s) for s in candidate_fp_sim]
-    candidate_fp_deepmass = np.sum(candidate_fp_score, axis = 1)
-    candidate['DeepMass Score'] = candidate_fp_deepmass / n
+    candidate_fp_deepmass = np.array([np.sum(-np.sort(-s)[:n_neb]) for s in candidate_fp_score])
+    candidate['DeepMass Score'] = candidate_fp_deepmass / n_neb
     candidate = candidate.sort_values('DeepMass Score', ignore_index = True, ascending = False)
     candidate['DeepMass Score'] = np.round(candidate['DeepMass Score'], 4)
     
