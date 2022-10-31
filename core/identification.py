@@ -35,17 +35,18 @@ def identify_unknown(s, p, n_ref, n_neb, database, priority, model, reference, c
         from ms2deepscore.models import load_model
         from matchms.importing import load_from_mgf
         
-        n = 30
+        n_ref = 300
+        n_neb = 20
         priority = []
         spectrums = [s for s in load_from_mgf("D:/All_CASMI/save/casmi_2022_challenge_priority.mgf")]
-        model = load_model("model/MS2DeepScore_allGNPSpositive.hdf5")
+        model = load_model("model/MS2DeepScore_allGNPSnegative.hdf5")
         model = MS2DeepScore(model)
         database = pd.read_csv('data/MsfinderStructureDB-VS15-plus-GNPS.csv')
         p = hnswlib.Index(space='l2', dim=200) 
-        p.load_index('data/references_index_positive.bin')
-        reference = np.load('data/references_spectrums_positive.npy', allow_pickle=True)
-        s = spectrums[5]
-        sn = identify_unknown(s, p, n, database, priority, model, reference, 'custom', True)
+        p.load_index('data/references_index_negative.bin')
+        reference = np.load('data/references_spectrums_negative.npy', allow_pickle=True)
+        s = spectrums[18]
+        sn = identify_unknown(s, p, n_ref, n_neb, database, priority, model, reference, 'biodatabase', True)
     """
     s = spectrum_processing(s)
     query_vector = model.calculate_vectors([s])
@@ -137,11 +138,16 @@ def identify_unknown(s, p, n_ref, n_neb, database, priority, model, reference, c
     candidate_fp_score = [np.sqrt(reference_corr * s) for s in candidate_fp_sim]
     candidate_fp_deepmass = np.array([np.sum(-np.sort(-s)[:n_neb]) for s in candidate_fp_score])
     candidate['DeepMass Score'] = candidate_fp_deepmass / n_neb
+    
+    k = np.argsort(-candidate['DeepMass Score'])
+    deepmass_score = np.array([-np.sort(-s) for s in candidate_fp_score])[k,:]
+    
     candidate = candidate.sort_values('DeepMass Score', ignore_index = True, ascending = False)
     candidate['DeepMass Score'] = np.round(candidate['DeepMass Score'], 4)
     
     s.set('reference', reference_spectrum)
     s.set('annotation', candidate)
+    s.set('deepmass_score', deepmass_score)
     return s
     
     

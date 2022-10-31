@@ -106,6 +106,7 @@ class DeepMASS2(QMainWindow, main.Ui_MainWindow):
         self.default_reference_positive = 'data/references_spectrums_positive.npy'
         self.default_reference_negative = 'data/references_spectrums_negative.npy'
         self.current_spectrum = None
+        self.current_reference = None
         
         # action
         self.butt_open.setDisabled(True)
@@ -123,10 +124,10 @@ class DeepMASS2(QMainWindow, main.Ui_MainWindow):
         self.butt_loss.clicked.connect(self.plot_loss)
         self.butt_plotComm.clicked.connect(self.plot_mol_with_highlight)
         self.butt_match.clicked.connect(self.calc_spectrum_matching)
-        self.list_spectrum.itemClicked.connect(self.fill_reference_table)
+        self.list_spectrum.itemClicked.connect(self.fill_formula_table)
         self.tab_formula.itemClicked.connect(self.fill_structural_table)
+        self.tab_structure.itemClicked.connect(self.fill_reference_table)
         self.tab_reference.itemClicked.connect(self.plot_spectrum)
-        self.tab_structure.itemClicked.connect(self.plot_spectrum)
         
         self.tab_formula.setSelectionBehavior(QtWidgets.QTableView.SelectRows)
         self.tab_structure.setSelectionBehavior(QtWidgets.QTableView.SelectRows)
@@ -407,21 +408,31 @@ class DeepMASS2(QMainWindow, main.Ui_MainWindow):
         self.Thread_Identification._result.connect(self._set_succeed_annotation)
         self.Thread_Identification._i.connect(self._set_process_bar)
         self.Thread_Identification.start()
-        self.Thread_Identification.finished.connect(self.fill_formula_table())
+        self.Thread_Identification.finished.connect(self.fill_formula_table)
         
 
     def fill_reference_table(self):
-        data = self.spectrums
-        selectItem = self.list_spectrum.currentItem().text()
-        w = np.where(data.loc[:, 'title'] == selectItem)[0][0]
-        self.current_spectrum = self.identified_spectrums[w]
         if 'reference' not in self.current_spectrum.metadata.keys():
             self.WarnMsg('No identification result for the selected spectrum')
             return
+
         current_reference = self.current_spectrum.metadata['reference']
+        deepmass_score = self.current_spectrum.metadata['deepmass_score']
+
+        i = self.tab_structure.currentRow()
+        header = [self.tab_structure.horizontalHeaderItem(i).text() for i in range(self.tab_structure.columnCount())]
+        j = list(header).index('CanonicalSMILES')
+        smi_anno = self.tab_structure.item(i, j).text()
+
+        annotation = self.current_spectrum.metadata['annotation']
+        i = np.where(annotation['CanonicalSMILES'].values == smi_anno)[0][0]
+        
+        reference_index = np.argsort(-deepmass_score[i,:])[:self.n_neb]
+        self.current_reference = current_reference[reference_index]
+        deepmass_score = deepmass_score[i,:][reference_index]
         
         reference_table = []
-        for s in current_reference:
+        for s in self.current_reference:
             if 'smiles' in s.metadata.keys():
                 smiles = s.metadata['smiles']
             else:
@@ -440,6 +451,7 @@ class DeepMASS2(QMainWindow, main.Ui_MainWindow):
                 parent_mass = ''
             reference_table.append([name, adduct, smiles, parent_mass])
         reference_table = pd.DataFrame(reference_table, columns = ['name', 'adduct', 'smiles', 'parent_mass'])
+        reference_table['deepmass_score'] = deepmass_score
         self._set_table_widget(self.tab_reference, reference_table)
         self.tab_reference.setCurrentCell(0, 0)
         self.plot_spectrum()
@@ -447,6 +459,11 @@ class DeepMASS2(QMainWindow, main.Ui_MainWindow):
     
     
     def fill_formula_table(self):
+        data = self.spectrums
+        selectItem = self.list_spectrum.currentItem().text()
+        w = np.where(data.loc[:, 'title'] == selectItem)[0][0]
+        self.current_spectrum = self.identified_spectrums[w]
+        
         if 'annotation' not in self.current_spectrum.metadata.keys():
             self.WarnMsg('No available structures')
             return               
@@ -496,8 +513,7 @@ class DeepMASS2(QMainWindow, main.Ui_MainWindow):
     def plot_spectrum(self):
         try:
             i = self.tab_reference.currentRow()
-            reference = self.current_spectrum.metadata['reference'][i]
-            self.figSpe.PlotSpectrum(self.current_spectrum, reference, loss = False)
+            self.figSpe.PlotSpectrum(self.current_spectrum, self.current_reference[i], loss = False)
         except:
             self.WarnMsg('Cannot plot Spectrum')
         self.plot_mol()
