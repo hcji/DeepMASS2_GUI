@@ -10,7 +10,8 @@ import re
 import hnswlib
 import string
 import random
-import shutil 
+import shutil
+import pickle
 import numpy as np
 import pandas as pd
 
@@ -63,6 +64,12 @@ class DeepMASS2(QMainWindow, main.Ui_MainWindow):
         except:
             pass
         
+        '''
+        try:
+            from pycdk.pycdk import IsotopeSimilarity
+        except:
+            self.ErrorMsg('Please deploy Java JDK')
+        '''
         # window
         self.ParameterUI = Parameter()
         self.ParameterUI.pushButton_OK.clicked.connect(self.set_parameter)
@@ -103,8 +110,8 @@ class DeepMASS2(QMainWindow, main.Ui_MainWindow):
         self.default_index_negative = 'data/references_index_negative.bin'
         self.default_deepmass_positive = 'model/MS2DeepScore_allGNPSpositive.hdf5'
         self.default_deepmass_negative = 'model/MS2DeepScore_allGNPSnegative.hdf5'
-        self.default_reference_positive = 'data/references_spectrums_positive.npy'
-        self.default_reference_negative = 'data/references_spectrums_negative.npy'
+        self.default_reference_positive = 'data/references_spectrums_positive.pickle'
+        self.default_reference_negative = 'data/references_spectrums_negative.pickle'
         self.current_spectrum = None
         self.current_reference = None
         
@@ -504,7 +511,8 @@ class DeepMASS2(QMainWindow, main.Ui_MainWindow):
         
     def fill_information_table(self):
         information = self.current_spectrum.metadata
-        keys = [k for k in information.keys() if type(information[k]) in [str, float, int]]
+        keys = [k for k in information.keys() if k in ['compound_name', 'precursor_mz', 'retention_time', 'inchikey', 
+                                                       'smiles', 'adduct', 'charge', 'parent_mass']]
         values = [information[k] for k in keys]
         info_table = pd.DataFrame({'keys':keys, 'values':values})
         self._set_table_widget(self.tab_information, info_table)
@@ -612,9 +620,11 @@ class Thread_LoadReference(QThread):
         self.positive = positive
         self.negative = negative
 
-    def run(self):       
-        reference_positive = np.load(self.positive, allow_pickle=True)
-        reference_negative = np.load(self.negative, allow_pickle=True)
+    def run(self):
+        with open(self.positive, 'rb') as file:
+            reference_positive = pickle.load(file)
+        with open(self.negative, 'rb') as file:
+            reference_negative = pickle.load(file)
         self._reference_positive.emit(list(reference_positive))
         self._reference_negative.emit(list(reference_negative))
 

@@ -36,6 +36,8 @@ for s in tqdm(spectrums):
         continue
     if 'smiles' not in list(s.metadata.keys()):
         continue
+    if s.metadata['smiles'] == '':
+        continue
     try:
         smi = Chem.MolToSmiles(Chem.MolFromSmiles(s.metadata['smiles']), isomericSmiles=False)
         s.metadata['smiles'] = smi
@@ -44,6 +46,8 @@ for s in tqdm(spectrums):
     if 'ionmode' not in list(s.metadata.keys()):
         continue  
     if s.metadata['ionmode'] == 'positive':
+        keys = [s for s in s.metadata.keys() if s in ['compound_name', 'smiles', 'inchikey', 'precursor_mz', 'adduct', 'parent_mass', 'ionmode', 'charge']]
+        s.metadata = {k: s.metadata[k] for k in keys}
         reference.append(s)
 
 
@@ -63,30 +67,5 @@ p.init_index(max_elements = num_elements, ef_construction = 800, M = 64)
 p.add_items(xb, ids)
 p.set_ef(300)
 p.save_index('data/references_index_positive.bin')
-np.save('data/references_spectrums_positive.npy', reference)
-
-
-from hnswlib import Index
-
-reference = np.load('data/references_spectrums_positive.npy', allow_pickle=True)
-p = Index(space = 'l2', dim = 200)
-p.load_index('data/references_index_positive.bin')
-
-k = []
-for i,s in enumerate(tqdm(reference)):
-    if s.metadata['smiles'] != '':
-        k.append(i)
-xb_n = p.get_items(k)
-
-
-dim = 200
-num_elements = len(xb_n)
-ids = np.arange(num_elements)
-
-p_n = hnswlib.Index(space = 'l2', dim = dim)
-p_n.init_index(max_elements = num_elements, ef_construction = 800, M = 64)
-p_n.add_items(xb_n, ids)
-p_n.set_ef(300)
-p_n.save_index('data/references_index_positive_new.bin')
-np.save('data/references_spectrums_positive_new.npy', reference[np.array(k)])
-
+# np.save('data/references_spectrums_positive.npy', reference)
+pickle.dump(reference, open('data/references_spectrums_positive.pickle', "wb"))

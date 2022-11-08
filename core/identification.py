@@ -6,12 +6,16 @@ Created on Fri Sep 30 11:27:02 2022
 """
 
 
+import re
+import base64
+import json
 import numpy as np
 from rdkit import Chem
 from rdkit.Chem import DataStructs, AllChem
 from sklearn.metrics.pairwise import cosine_similarity
 import matchms.filtering as msfilters
 
+from pycdk.pycdk import IsotopeFromString, IsotopeSimilarity
 from core.pubchem import retrieve_by_formula, retrieve_by_exact_mass
 from core.pubchem import retrieve_by_formula_database, retrieve_by_exact_mass_database
 
@@ -20,16 +24,42 @@ def spectrum_processing(s):
     """This is how one would typically design a desired pre- and post-
     processing pipeline."""
     s = msfilters.default_filters(s)
+    if ('adduct_type' in s.metadata.keys()) and ('adduct' not in s.metadata.keys()):
+        s.set('adduct', s.get('adduct_type'))
+    s = msfilters.correct_charge(s)
     s = msfilters.add_parent_mass(s)
     s = msfilters.normalize_intensities(s)
     s = msfilters.select_by_mz(s, mz_from=0, mz_to=1000)
     return s
 
 
+def calc_isotope_score(s, formula):
+    # print(formula)
+    if s.get('isotope_mz') and s.get('isotope_intensity'):
+        isotope_mz = base64.b64decode(s.get('isotope_mz').split("'")[1]).decode("ascii").replace('\n', '')
+        isotope_intensity = base64.b64decode(s.get('isotope_intensity').split("'")[1]).decode("ascii").replace('\n', '')
+        isotope_mz = [float(s) for s in isotope_mz.replace('[', '').replace(']', '').split(' ') if s != '']
+        isotope_intensity = [float(s) for s in isotope_intensity.replace('[', '').replace(']', '').split(' ') if s != '']
+        isotope_mz = np.array(isotope_mz)
+
+        adduct_mz = isotope_mz[np.argmax(isotope_intensity)] - s.metadata['parent_mass']
+        isotope_mz = isotope_mz - adduct_mz
+        
+        isotope_intensity = np.array(isotope_intensity)
+        isotope_intensity = isotope_intensity / max(isotope_intensity)
+        isotope_pattern = np.vstack((isotope_mz, isotope_intensity)).T
+    else:
+        return 0
+    
+    isotope_ref = IsotopeFromString(formula, minI=0.001)
+    return IsotopeSimilarity(isotope_pattern, isotope_ref, 10)
+
+
 def identify_unknown(s, p, n_ref, n_neb, database, priority, model, reference, chemical_space, in_silicon_only=True):
     """
     Example:
         import hnswlib
+        import pickle
         import pandas as pd
         from ms2deepscore import MS2DeepScore
         from ms2deepscore.models import load_model
@@ -44,12 +74,16 @@ def identify_unknown(s, p, n_ref, n_neb, database, priority, model, reference, c
         database = pd.read_csv('data/MsfinderStructureDB-VS15-plus-GNPS.csv')
         p = hnswlib.Index(space='l2', dim=200) 
         p.load_index('data/references_index_negative.bin')
-        reference = np.load('data/references_spectrums_negative.npy', allow_pickle=True)
+        with open('data/references_spectrums_positive.pickle', 'rb') as file:
+            reference = pickle.load(file)
         s = spectrums[18]
         sn = identify_unknown(s, p, n_ref, n_neb, database, priority, model, reference, 'biodatabase', True)
     """
     s = spectrum_processing(s)
-    query_vector = model.calculate_vectors([s])
+    try:
+        query_vector = model.calculate_vectors([s])
+    except:
+        return s
     xq = np.array(query_vector).astype('float32')
     I, D = p.knn_query(xq, n_ref)
     
@@ -77,7 +111,10 @@ def identify_unknown(s, p, n_ref, n_neb, database, priority, model, reference, c
                 candidate = retrieve_by_formula_database(formula, database, priority = [])
              
     elif 'parent_mass' in s.metadata.keys():
-        mass = s.metadata['parent_mass']
+        try:
+            mass = float(s.metadata['parent_mass'])
+        except:
+            return s
         if chemical_space == 'biodatabase':
             candidate = retrieve_by_exact_mass_database(mass, database, ppm = 10, priority = priority)
         elif chemical_space == 'biodatabase plus':
@@ -86,7 +123,7 @@ def identify_unknown(s, p, n_ref, n_neb, database, priority, model, reference, c
                 try:
                     candidate = retrieve_by_exact_mass(mass)
                 except:
-                    candidate = retrieve_by_exact_mass_database(mass, database, ppm = 10, priority = [])        
+                    candidate = retrieve_by_exact_mass_database(mass, database, ppm = 10, priority = [])
         elif chemical_space == 'custom':
             candidate = retrieve_by_exact_mass_database(mass, database, ppm = 10, priority = [])
         else:
@@ -138,6 +175,9 @@ def identify_unknown(s, p, n_ref, n_neb, database, priority, model, reference, c
     candidate_fp_score = [np.sqrt(reference_corr * s) for s in candidate_fp_sim]
     candidate_fp_deepmass = np.array([np.sum(-np.sort(-s)[:n_neb]) for s in candidate_fp_score])
     candidate['DeepMass Score'] = candidate_fp_deepmass / n_neb
+    
+    candidate_iso_score = [calc_isotope_score(s, f) for f in candidate['MolecularFormula'].values]
+    candidate['Isotope Score'] = candidate_iso_score
     
     k = np.argsort(-candidate['DeepMass Score'])
     deepmass_score = np.array([-np.sort(-s) for s in candidate_fp_score])[k,:]
