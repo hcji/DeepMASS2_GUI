@@ -55,7 +55,7 @@ def calc_isotope_score(s, formula):
     return IsotopeSimilarity(isotope_pattern, isotope_ref, 10)
 
 
-def identify_unknown(s, p, n_ref, n_neb, database, priority, model, reference, chemical_space, in_silicon_only=True):
+def identify_unknown(s, p, n_ref, n_neb, database, priority, model, reference, chemical_space, in_silicon_only=True, ms1_tolerence = 10):
     """
     Example:
         import hnswlib
@@ -116,21 +116,21 @@ def identify_unknown(s, p, n_ref, n_neb, database, priority, model, reference, c
         except:
             return s
         if chemical_space == 'biodatabase':
-            candidate = retrieve_by_exact_mass_database(mass, database, ppm = 10, priority = priority)
+            candidate = retrieve_by_exact_mass_database(mass, database, ppm = ms1_tolerence, priority = priority)
         elif chemical_space == 'biodatabase plus':
-            candidate = retrieve_by_exact_mass_database(mass, database, ppm = 10, priority = priority)
+            candidate = retrieve_by_exact_mass_database(mass, database, ppm = ms1_tolerence, priority = priority)
             if len(candidate) == 0:
                 try:
                     candidate = retrieve_by_exact_mass(mass)
                 except:
-                    candidate = retrieve_by_exact_mass_database(mass, database, ppm = 10, priority = [])
+                    candidate = retrieve_by_exact_mass_database(mass, database, ppm = ms1_tolerence, priority = [])
         elif chemical_space == 'custom':
-            candidate = retrieve_by_exact_mass_database(mass, database, ppm = 10, priority = [])
+            candidate = retrieve_by_exact_mass_database(mass, database, ppm = ms1_tolerence, priority = [])
         else:
             try:
                 candidate = retrieve_by_exact_mass(mass)
             except:
-                candidate = retrieve_by_exact_mass_database(mass, database, ppm = 10, priority = [])
+                candidate = retrieve_by_exact_mass_database(mass, database, ppm = ms1_tolerence, priority = [])
     else:
         return s
     

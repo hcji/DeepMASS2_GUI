@@ -297,7 +297,7 @@
           </font>
          </property>
          <property name="currentIndex">
-          <number>0</number>
+          <number>3</number>
          </property>
          <widget class="QWidget" name="page_spectrum">
           <property name="font">
@@ -420,13 +420,13 @@
          </widget>
          <widget class="QWidget" name="page_matching">
           <attribute name="title">
-           <string>Matching</string>
+           <string>Network</string>
           </attribute>
           <layout class="QGridLayout" name="gridLayout_5">
            <item row="1" column="1">
-            <widget class="QPushButton" name="butt_match">
+            <widget class="QPushButton" name="butt_network">
              <property name="text">
-              <string>Matching</string>
+              <string>Calculate</string>
              </property>
             </widget>
            </item>
@@ -443,11 +443,18 @@
              </property>
             </spacer>
            </item>
-           <item row="0" column="0" colspan="2">
-            <widget class="QTableView" name="tab_matching">
-             <attribute name="horizontalHeaderStretchLastSection">
-              <bool>true</bool>
-             </attribute>
+           <item row="1" column="2">
+            <widget class="QPushButton" name="butt_netsave">
+             <property name="text">
+              <string>Save</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="0" colspan="3">
+            <widget class="QGroupBox" name="groupBoxNet">
+             <property name="title">
+              <string/>
+             </property>
             </widget>
            </item>
           </layout>
