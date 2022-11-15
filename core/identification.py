@@ -6,14 +6,17 @@ Created on Fri Sep 30 11:27:02 2022
 """
 
 
-import re
 import base64
-import json
 import numpy as np
 from rdkit import Chem
 from rdkit.Chem import DataStructs, AllChem
 from sklearn.metrics.pairwise import cosine_similarity
+
 import matchms.filtering as msfilters
+from spec2vec import SpectrumDocument
+from spec2vec.vector_operations import calc_vector
+from ms2deepscore.MS2DeepScore import MS2DeepScore
+from gensim.models.word2vec import Word2Vec
 
 from pycdk.pycdk import IsotopeFromString, IsotopeSimilarity
 from core.pubchem import retrieve_by_formula, retrieve_by_exact_mass
@@ -81,7 +84,12 @@ def identify_unknown(s, p, n_ref, n_neb, database, priority, model, reference, c
     """
     s = spectrum_processing(s)
     try:
-        query_vector = model.calculate_vectors([s])
+        if type(model) == MS2DeepScore:
+            query_vector = model.calculate_vectors([s])[0,:]
+        elif type(model) == Word2Vec:
+            query_vector = calc_vector(model, SpectrumDocument(s, n_decimals=2))
+        else:
+            return s
     except:
         return s
     xq = np.array(query_vector).astype('float32')
@@ -157,7 +165,7 @@ def identify_unknown(s, p, n_ref, n_neb, database, priority, model, reference, c
     reference_spectrum = np.array(reference_spectrum)[np.array(k)]
     reference_smile = np.array(reference_smile)[np.array(k)]
     reference_vec = p.get_items(I[0, np.array(k)])
-    reference_corr = [get_corr(query_vector[0,:], v) for v in reference_vec]
+    reference_corr = [get_corr(query_vector, v) for v in reference_vec]
     
     candidate_mol = [Chem.MolFromSmiles(s) for s in candidate['CanonicalSMILES']]
     k, candidate_fp = [], []
@@ -185,10 +193,12 @@ def identify_unknown(s, p, n_ref, n_neb, database, priority, model, reference, c
     candidate = candidate.sort_values('DeepMass Score', ignore_index = True, ascending = False)
     candidate['DeepMass Score'] = np.round(candidate['DeepMass Score'], 4)
     
+    reference_shortkey = [s.get('inchikey')[:14] for s in reference_spectrum]
+    candidate_in_reference = [str(s[:14] in reference_shortkey) for s in candidate['InChIKey']]
+    candidate['In Reference'] = candidate_in_reference
+    
     s.set('reference', reference_spectrum)
     s.set('annotation', candidate)
     s.set('deepmass_score', deepmass_score)
     return s
     
-    
-

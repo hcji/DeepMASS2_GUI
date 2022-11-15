@@ -36,6 +36,7 @@ from matchms.Spectrum import Spectrum
 from matchms.importing import load_from_mgf
 from ms2deepscore import MS2DeepScore
 from ms2deepscore.models import load_model
+from gensim.models import Word2Vec
 
 from uic import main, parameter
 from core.identification import identify_unknown
@@ -106,15 +107,15 @@ class DeepMASS2(QMainWindow, main.Ui_MainWindow):
         self.reference_positive = None
         self.reference_negative = None
         self.chemical_space = 'biodatabase'
+        self.embedding_model = 'ms2deepscore'
         self.default_database = 'data/MsfinderStructureDB-VS15-plus-GNPS.csv'
         self.default_index_positive = 'data/references_index_positive.bin'
         self.default_index_negative = 'data/references_index_negative.bin'
-        self.default_deepmass_positive = 'model/MS2DeepScore_allGNPSpositive.hdf5'
-        self.default_deepmass_negative = 'model/MS2DeepScore_allGNPSnegative.hdf5'
         self.default_reference_positive = 'data/references_spectrums_positive.pickle'
         self.default_reference_negative = 'data/references_spectrums_negative.pickle'
         self.current_spectrum = None
         self.current_reference = None
+        self.ParameterUI.comboBoxEmb.addItems(['ms2deepscore', 'spec2vec'])
         
         # action
         self.butt_open.setDisabled(True)
@@ -274,6 +275,22 @@ class DeepMASS2(QMainWindow, main.Ui_MainWindow):
         if self.ParameterUI.radioButton_3.isChecked():
             self.chemical_space = 'custom'
             self.set_custom_database()
+        if self.ParameterUI.comboBoxEmb.currentText() != self.embedding_model:
+            self.embedding_model = self.ParameterUI.comboBoxEmb.currentText()
+            if self.embedding_model == 'ms2deepscore':
+                self.default_index_positive = 'data/references_index_positive.bin'
+                self.default_index_negative = 'data/references_index_negative.bin'
+                self.load_references_positive()
+                self.deepmass_positive = MS2DeepScore(load_model("model/MS2DeepScore_allGNPSpositive.hdf5"))
+                self.deepmass_negative = MS2DeepScore(load_model("model/MS2DeepScore_allGNPSnegative.hdf5"))
+            if self.embedding_model == 'spec2vec':
+                self.default_index_positive = 'data/references_index_positive_spec2vec.bin'
+                self.default_index_negative = 'data/references_index_negative_spec2vec.bin'
+                self.load_references_positive()
+                self.deepmass_positive = Word2Vec.load("model/Ms2Vec_allGNPSpositive.hdf5_iter_30.model")
+                self.deepmass_negative = Word2Vec.load("model/Ms2Vec_allGNPSnegative.hdf5_iter_30.model")
+        else:
+            pass      
         self.priority = []
         if self.ParameterUI.checkBox_1.isChecked():
             self.priority.append('HMDB')
@@ -326,7 +343,6 @@ class DeepMASS2(QMainWindow, main.Ui_MainWindow):
         if self.ParameterUI.checkBox_25.isChecked():
             self.priority.append('GNPS')            
         self.ParameterUI.close()
-        # print(self.priority)
     
     
     def get_formula_mass(self, formula):
@@ -353,19 +369,21 @@ class DeepMASS2(QMainWindow, main.Ui_MainWindow):
         
         
     def load_reference_spectrums(self):
-        self.progressBar.setValue(66)
+        self.progressBar.setValue(77)
         self.progressBar.setFormat('Loading reference spectrums')
-        self.Thread_LoadReference = Thread_LoadReference(self.default_reference_positive, self.default_reference_negative)           
-        self.Thread_LoadReference._reference_positive.connect(self._set_reference_positive)
-        self.Thread_LoadReference._reference_negative.connect(self._set_reference_negative)
-        self.Thread_LoadReference.start()
-        self.Thread_LoadReference.finished.connect(self._set_finished)        
+        if self.reference_positive is not None:
+            self._set_finished()
+        else:
+            self.Thread_LoadReference = Thread_LoadReference(self.default_reference_positive, self.default_reference_negative)           
+            self.Thread_LoadReference._reference_positive.connect(self._set_reference_positive)
+            self.Thread_LoadReference._reference_negative.connect(self._set_reference_negative)
+            self.Thread_LoadReference._i.connect(self._set_process_bar)
+            self.Thread_LoadReference.start()
+            self.Thread_LoadReference.finished.connect(self._set_finished)        
 
         
     def load_spectrums(self):
         self._set_busy()
-        self.progressBar.setValue(24)
-        self.progressBar.setFormat('Loading data')
         options = QtWidgets.QFileDialog.Options()
         options |= QtWidgets.QFileDialog.DontUseNativeDialog
         fileNames, _ = QtWidgets.QFileDialog.getOpenFileNames(self, "Load", "","MGF Files (*.mgf)", options=options)
@@ -588,23 +606,6 @@ class DeepMASS2(QMainWindow, main.Ui_MainWindow):
         self.plot_mol(highlight = True)
         self.InforMsg('Finished')
     
-        
-    '''
-    def calc_spectrum_matching(self):
-        i = self.tab_reference.currentRow()
-        spectrum = self.current_spectrum
-        reference = self.current_spectrum.metadata['reference'][i]
-        
-        i = self.tab_structure.currentRow()
-        header = [self.tab_structure.horizontalHeaderItem(i).text() for i in range(self.tab_structure.columnCount())]
-        j = list(header).index('CanonicalSMILES')
-        smiles_anno = self.tab_structure.item(i, j).text()
-        smiles_ref = reference.metadata['smiles']
-        
-        similarity, matching_tab = calc_aligned_similarity(smiles_anno, smiles_ref, spectrum, reference)
-        self._set_table_widget(self.tab_matching, matching_tab)
-    '''
-    
     
     def calc_spectrum_network(self):
         if len(self.spectrums) == 0:
@@ -656,7 +657,8 @@ class DeepMASS2(QMainWindow, main.Ui_MainWindow):
         self.InforMsg('Finished')
 
 
-class Thread_LoadReference(QThread): 
+class Thread_LoadReference(QThread):
+    _i = QtCore.pyqtSignal(int)
     _reference_positive = QtCore.pyqtSignal(list)
     _reference_negative = QtCore.pyqtSignal(list)
     
@@ -666,12 +668,15 @@ class Thread_LoadReference(QThread):
         self.negative = negative
 
     def run(self):
-        with open(self.positive, 'rb') as file:
-            reference_positive = pickle.load(file)
         with open(self.negative, 'rb') as file:
             reference_negative = pickle.load(file)
-        self._reference_positive.emit(list(reference_positive))
         self._reference_negative.emit(list(reference_negative))
+        self._i.emit(88)
+        
+        with open(self.positive, 'rb') as file:
+            reference_positive = pickle.load(file)
+        self._reference_positive.emit(list(reference_positive))
+        self._i.emit(99)
 
 
 class Thread_LoadDatabase(QThread): 
@@ -693,8 +698,12 @@ class Thread_LoadIndex(QThread):
         super().__init__()
         self.spec_path = spec_path
         
-    def run(self):       
-        spec_bin = Index(space = 'l2', dim = 200)
+    def run(self):
+        if 'spec2vec' in self.spec_path:
+            dim = 300
+        else:
+            dim = 200
+        spec_bin = Index(space = 'l2', dim = dim)
         spec_bin.load_index(self.spec_path)
         self._index.emit(spec_bin)
 
