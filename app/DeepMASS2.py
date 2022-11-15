@@ -32,7 +32,6 @@ import matchms.filtering as msfilters
 from hnswlib import Index
 from rdkit import Chem
 from rdkit.Chem import Draw, rdFMCS
-from rdkit.Chem import DataStructs, AllChem
 from molmass import Formula
 from matchms.Spectrum import Spectrum
 from matchms.importing import load_from_mgf
@@ -42,8 +41,6 @@ from gensim.models import Word2Vec
 
 from uic import main, parameter
 from core.identification import identify_unknown
-from core.similarity import calc_aligned_similarity
-
 
 class Parameter(QtWidgets.QWidget, parameter.Ui_Form):
     
@@ -110,15 +107,15 @@ class DeepMASS2(QMainWindow, main.Ui_MainWindow):
         self.reference_positive = None
         self.reference_negative = None
         self.chemical_space = 'biodatabase'
-        self.embedding_model = 'ms2deepscore'
+        self.embedding_model = 'spec2vec'
         self.default_database = 'data/MsfinderStructureDB-VS15-plus-GNPS.csv'
-        self.default_index_positive = 'data/references_index_positive.bin'
-        self.default_index_negative = 'data/references_index_negative.bin'
+        self.default_index_positive = 'data/references_index_positive_spec2vec.bin'
+        self.default_index_negative = 'data/references_index_negative_spec2vec.bin'
         self.default_reference_positive = 'data/references_spectrums_positive.pickle'
         self.default_reference_negative = 'data/references_spectrums_negative.pickle'
         self.current_spectrum = None
         self.current_reference = None
-        self.ParameterUI.comboBoxEmb.addItems(['ms2deepscore', 'spec2vec'])
+        self.ParameterUI.comboBoxEmb.addItems(['spec2vec', 'ms2deepscore'])
         
         # action
         self.butt_open.setDisabled(True)
@@ -159,8 +156,8 @@ class DeepMASS2(QMainWindow, main.Ui_MainWindow):
         self.Thread_LoadDatabase._compounds.connect(self._set_database)
         self.Thread_LoadDatabase.start()
         self.Thread_LoadDatabase.finished.connect(self.load_references_positive)
-        self.deepmass_positive = MS2DeepScore(load_model("model/MS2DeepScore_allGNPSpositive.hdf5"))
-        self.deepmass_negative = MS2DeepScore(load_model("model/MS2DeepScore_allGNPSnegative.hdf5"))
+        self.deepmass_positive = Word2Vec.load("model/Ms2Vec_allGNPSpositive.hdf5_iter_30.model")
+        self.deepmass_negative = Word2Vec.load("model/Ms2Vec_allGNPSnegative.hdf5_iter_30.model")
 
 
     def WarnMsg(self, Text):
