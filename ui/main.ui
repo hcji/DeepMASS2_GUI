@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1199</width>
+    <width>1349</width>
     <height>882</height>
    </rect>
   </property>
@@ -18,42 +18,6 @@
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout">
-    <item row="1" column="0">
-     <layout class="QHBoxLayout" name="horizontalLayout_2">
-      <item>
-       <spacer name="horizontalSpacer">
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-        <property name="sizeHint" stdset="0">
-         <size>
-          <width>40</width>
-          <height>20</height>
-         </size>
-        </property>
-       </spacer>
-      </item>
-      <item>
-       <widget class="QProgressBar" name="progressBar">
-        <property name="minimumSize">
-         <size>
-          <width>0</width>
-          <height>0</height>
-         </size>
-        </property>
-        <property name="maximumSize">
-         <size>
-          <width>16777215</width>
-          <height>16777215</height>
-         </size>
-        </property>
-        <property name="value">
-         <number>24</number>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </item>
     <item row="0" column="0">
      <widget class="QSplitter" name="splitter_4">
       <property name="orientation">
@@ -61,6 +25,34 @@
       </property>
       <widget class="QWidget" name="layoutWidget">
        <layout class="QVBoxLayout" name="verticalLayout_5">
+        <item>
+         <widget class="QLabel" name="label_logo">
+          <property name="minimumSize">
+           <size>
+            <width>200</width>
+            <height>110</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>200</width>
+            <height>110</height>
+           </size>
+          </property>
+          <property name="text">
+           <string/>
+          </property>
+          <property name="pixmap">
+           <pixmap>../icon/logo_deepmass.png</pixmap>
+          </property>
+          <property name="scaledContents">
+           <bool>true</bool>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignCenter</set>
+          </property>
+         </widget>
+        </item>
         <item>
          <widget class="QPushButton" name="butt_open">
           <property name="maximumSize">
@@ -159,6 +151,12 @@
         </item>
         <item>
          <widget class="QPushButton" name="butt_para">
+          <property name="maximumSize">
+           <size>
+            <width>200</width>
+            <height>16777215</height>
+           </size>
+          </property>
           <property name="text">
            <string>setting</string>
           </property>
@@ -213,7 +211,20 @@
            </widget>
           </item>
           <item>
-           <widget class="QListWidget" name="list_spectrum"/>
+           <widget class="QListWidget" name="list_spectrum">
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>250</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>16777215</width>
+              <height>16777215</height>
+             </size>
+            </property>
+           </widget>
           </item>
          </layout>
         </widget>
@@ -285,7 +296,20 @@
            </widget>
           </item>
           <item>
-           <widget class="QTableWidget" name="tab_reference"/>
+           <widget class="QTableWidget" name="tab_reference">
+            <property name="minimumSize">
+             <size>
+              <width>410</width>
+              <height>300</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>16777215</width>
+              <height>600</height>
+             </size>
+            </property>
+           </widget>
           </item>
          </layout>
         </widget>
@@ -297,7 +321,7 @@
           </font>
          </property>
          <property name="currentIndex">
-          <number>3</number>
+          <number>0</number>
          </property>
          <widget class="QWidget" name="page_spectrum">
           <property name="font">
@@ -310,20 +334,6 @@
            <string>Spectrum</string>
           </attribute>
           <layout class="QGridLayout" name="gridLayout_4">
-           <item row="1" column="2">
-            <widget class="QPushButton" name="butt_loss">
-             <property name="text">
-              <string>Loss</string>
-             </property>
-            </widget>
-           </item>
-           <item row="1" column="1">
-            <widget class="QPushButton" name="butt_spectrum">
-             <property name="text">
-              <string>Spectrum</string>
-             </property>
-            </widget>
-           </item>
            <item row="1" column="0">
             <spacer name="horizontalSpacer_2">
              <property name="orientation">
@@ -336,6 +346,20 @@
               </size>
              </property>
             </spacer>
+           </item>
+           <item row="1" column="1">
+            <widget class="QPushButton" name="butt_spectrum">
+             <property name="text">
+              <string>Spectrum</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="2">
+            <widget class="QPushButton" name="butt_loss">
+             <property name="text">
+              <string>Loss</string>
+             </property>
+            </widget>
            </item>
            <item row="0" column="0" colspan="3">
             <widget class="QGroupBox" name="box_spectrum">
@@ -451,7 +475,7 @@
             </widget>
            </item>
            <item row="0" column="0" colspan="3">
-            <widget class="QGroupBox" name="groupBoxNet">
+            <widget class="QGroupBox" name="box_umap">
              <property name="title">
               <string/>
              </property>
@@ -463,6 +487,42 @@
        </widget>
       </widget>
      </widget>
+    </item>
+    <item row="1" column="0">
+     <layout class="QHBoxLayout" name="horizontalLayout_2">
+      <item>
+       <spacer name="horizontalSpacer">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>40</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item>
+       <widget class="QProgressBar" name="progressBar">
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>16777215</width>
+          <height>16777215</height>
+         </size>
+        </property>
+        <property name="value">
+         <number>24</number>
+        </property>
+       </widget>
+      </item>
+     </layout>
     </item>
    </layout>
   </widget>

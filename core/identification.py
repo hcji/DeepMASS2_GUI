@@ -90,7 +90,9 @@ def identify_unknown(s, p, n_ref, n_neb, database, priority, model, reference, c
             query_vector = calc_vector(model, SpectrumDocument(s, n_decimals=2))
         else:
             return s
+        s.set('query_vector', list(query_vector))
     except:
+        s.set('query_vector', list())
         return s
     xq = np.array(query_vector).astype('float32')
     I, D = p.knn_query(xq, n_ref)

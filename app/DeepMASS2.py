@@ -14,6 +14,8 @@ import shutil
 import pickle
 import numpy as np
 import pandas as pd
+import umap
+import hdbscan
 
 from itertools import chain
 from PyQt5.Qt import QThread
@@ -64,18 +66,13 @@ class DeepMASS2(QMainWindow, main.Ui_MainWindow):
         except:
             pass
         
-        '''
-        try:
-            from pycdk.pycdk import IsotopeSimilarity
-        except:
-            self.ErrorMsg('Please deploy Java JDK')
-        '''
         # window
+        self.label_logo.setPixmap(QPixmap("icon/logo_deepmass.png"))
         self.ParameterUI = Parameter()
         self.ParameterUI.pushButton_OK.clicked.connect(self.set_parameter)
         self.ParameterUI.pushButton_Cancel.clicked.connect(self.ParameterUI.close)
         
-        # plot
+        # plot      
         self.LabelAnno = QLabel()
         self.gridlayoutAnno = QGridLayout(self.groupBoxAnno)
         self.gridlayoutAnno.addWidget(self.LabelAnno)
@@ -88,6 +85,12 @@ class DeepMASS2(QMainWindow, main.Ui_MainWindow):
         self.gridlayoutfigSpec = QGridLayout(self.box_spectrum)
         self.gridlayoutfigSpec.addWidget(self.figSpe)
         self.gridlayoutfigSpec.addWidget(self.figSpe_ntb)
+        
+        self.figUmap = MakeFigure(3.6, 2.4, dpi = 300)
+        self.figUmap_ntb = NavigationToolbar(self.figUmap, self)
+        self.gridlayoutfigUmap = QGridLayout(self.box_umap)
+        self.gridlayoutfigUmap.addWidget(self.figUmap)
+        self.gridlayoutfigUmap.addWidget(self.figUmap_ntb)
         
         # parameters
         self.n_ref = 300
@@ -412,6 +415,7 @@ class DeepMASS2(QMainWindow, main.Ui_MainWindow):
 
     def run_identification(self):
         self._set_busy()
+        self.network_vectors = []
         self.identified_spectrums = []
         if len(self.spectrums) == 0:
             self.ErrorMsg('Please load unknown spectrums first')
@@ -438,6 +442,7 @@ class DeepMASS2(QMainWindow, main.Ui_MainWindow):
                                                            reference_positive, reference_negative, chemical_space, 
                                                            in_silicon_only, ms1_tolerence)  
         self.Thread_Identification._result.connect(self._set_succeed_annotation)
+        self.Thread_Identification._r.connect(self._set_succeed_vectorize)
         self.Thread_Identification._i.connect(self._set_process_bar)
         self.Thread_Identification.start()
         self.Thread_Identification.finished.connect(self.fill_formula_table)
@@ -608,33 +613,21 @@ class DeepMASS2(QMainWindow, main.Ui_MainWindow):
     
     
     def calc_spectrum_network(self):
-        if len(self.spectrums) == 0:
+        if len(self.identified_spectrums) == 0:
             self.ErrorMsg('Please load unknown spectrums first')
             self._set_finished()
             return
-        self.progressBar.setValue(0)
-        self.progressBar.setFormat('Identifying unknowns')
-        spectrums = self.spectrums['spectrum']
         
-        model_positive = self.deepmass_positive
-        model_negative = self.deepmass_negative
-        self.network_vectors = []
-        self.Thread_Identification = Thread_Network(spectrums, model_positive, model_negative)  
-        self.Thread_Identification._r.connect(self._set_succeed_vectorize)
-        self.Thread_Identification._i.connect(self._set_process_bar)
-        self.Thread_Identification.start()
-        self.Thread_Identification.finished.connect(self.plot_network)        
-    
-    
-    def plot_network(self):
         vectors = np.array(self.network_vectors)
         labels = []
-        for i, s in enumerate(self.spectrums):
-            if not s.get('annotation'):
+        for i, s in enumerate(self.identified_spectrums):
+            if s.get('annotation') is None:
                 continue
             else:
                 labels.append(s.get('compound_name'))
-        
+        embedding = umap.UMAP().fit_transform(vectors)
+        cluster = hdbscan.HDBSCAN(min_samples=2, min_cluster_size=2).fit_predict(embedding)
+        self.figUmap.PlotUmap(embedding, cluster, labels)      
         
         
     def save_identification(self):
@@ -710,6 +703,7 @@ class Thread_LoadIndex(QThread):
 
 class Thread_Identification(QThread):
     _i = QtCore.pyqtSignal(int)
+    _r = QtCore.pyqtSignal(list)
     _result = QtCore.pyqtSignal(Spectrum)
 
     def __init__(self, spectrums, p_positive, p_negative, n_ref, n_neb, database, priority, 
@@ -751,36 +745,8 @@ class Thread_Identification(QThread):
                                           self.model_positive, self.reference_positive, self.chemical_space,
                                           self.in_silicon_only, self.ms1_tolerence)
             self._i.emit(int(100 * i / len(self.spectrums)))
+            self._r.emit(sn.get('query_vector'))
             self._result.emit(sn)
-
-
-class Thread_Network(QThread):
-    _i = QtCore.pyqtSignal(int)
-    _r = QtCore.pyqtSignal(list)
-
-    def __init__(self, spectrums, model_positive, model_negative):
-        super(Thread_Network, self).__init__()
-        self.spectrums = spectrums
-        self.model_positive = model_positive
-        self.model_negative = model_negative
-        
-    def __del__(self):
-        self.wait()
-        self.working = False       
-
-    def run(self):
-        for i, s in enumerate(self.spectrums):
-            if not s.get('annotation'):
-                continue
-            if 'ionmode' in s.metadata.keys():
-                if s.metadata['ionmode'] == 'negative':
-                    v = self.model_negative.calculate_vectors([s])[0]
-                else:
-                    v = self.model_positive.calculate_vectors([s])[0]
-            else:
-                v = self.model_positive.calculate_vectors([s])[0]
-            self._i.emit(int(100 * i / len(self.spectrums)))
-            self._r.emit(v)
 
 
 class MakeFigure(FigureCanvas):
@@ -820,6 +786,23 @@ class MakeFigure(FigureCanvas):
         self.axes.axhline(y=0,color='black', lw = 0.5)
         self.axes.set_xlabel('m/z', fontsize = 3)
         self.axes.set_ylabel('abundance', fontsize = 3)
+        self.draw()
+        
+        
+    def PlotUmap(self, embedding, clustering, labels):
+        self.axes.cla()
+        self.axes.scatter(embedding[:, 0],
+                          embedding[:, 1],
+                          c = clustering,
+                          s = 2,
+                          alpha = 0.4,
+                          cmap='Spectral')
+        texts = []
+        for i, s in enumerate(labels):
+            x, y= embedding[i, 0], embedding[i, 1]
+            texts.append(self.axes.text(x, y, s, fontsize=3))
+        self.axes.set_xlabel('umap x', fontsize = 3)
+        self.axes.set_ylabel('umap y', fontsize = 3)
         self.draw()
 
 
