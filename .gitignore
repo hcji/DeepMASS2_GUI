@@ -1,4 +1,5 @@
 # Data
+example/
 *.mgf
 *.msp
 *.npy

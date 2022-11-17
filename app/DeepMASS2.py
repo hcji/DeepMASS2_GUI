@@ -16,6 +16,7 @@ import numpy as np
 import pandas as pd
 import umap
 import hdbscan
+import mplcursors
 
 from itertools import chain
 from PyQt5.Qt import QThread
@@ -95,7 +96,7 @@ class DeepMASS2(QMainWindow, main.Ui_MainWindow):
         self.sim_metric = 'Jaccard'
         self.priority = []
         self.ms1_tolerence = 20
-        self.in_silicon_only = True
+        self.in_silicon_only = False
         
         # data
         self.pn = None
@@ -116,6 +117,7 @@ class DeepMASS2(QMainWindow, main.Ui_MainWindow):
         self.current_spectrum = None
         self.current_reference = None
         self.ParameterUI.comboBoxEmb.addItems(['spec2vec', 'ms2deepscore'])
+        self.ParameterUI.comboBoxInS.addItems(['False', 'True'])
         
         # action
         self.butt_open.setDisabled(True)
@@ -266,6 +268,7 @@ class DeepMASS2(QMainWindow, main.Ui_MainWindow):
         self.n_ref = int(self.ParameterUI.spinBox_nref.value())
         self.n_neb = int(self.ParameterUI.spinBox_nneb.value())
         self.ms1_tolerence = int(self.ParameterUI.spinBox_ms1tol.value())
+        self.in_silicon_only = bool(self.ParameterUI.comboBoxInS.currentText())
         if self.ParameterUI.radioButton_1.isChecked():
             self.chemical_space = 'biodatabase'
         if self.ParameterUI.radioButton_2.isChecked():
@@ -616,15 +619,18 @@ class DeepMASS2(QMainWindow, main.Ui_MainWindow):
             return
         
         vectors = np.array(self.network_vectors)
+        hlindex = 0
         labels = []
         for i, s in enumerate(self.identified_spectrums):
             if s.get('annotation') is None:
                 continue
             else:
                 labels.append(s.get('compound_name'))
+                if self.current_spectrum.metadata['compound_name'] == s.get('compound_name'):
+                    hlindex = i
         embedding = umap.UMAP().fit_transform(vectors)
         cluster = hdbscan.HDBSCAN(min_samples=2, min_cluster_size=2).fit_predict(embedding)
-        self.figUmap.PlotUmap(embedding, cluster, labels)      
+        self.figUmap.PlotUmap(embedding, cluster, labels, hlindex)      
         
         
     def save_identification(self):
@@ -781,12 +787,12 @@ class MakeFigure(FigureCanvas):
         self.axes.vlines(mz, ymin=0, ymax=abunds, color='r', lw = 0.5)
         self.axes.vlines(mz1, ymin = 0, ymax = -abunds1, color='b', lw = 0.5)
         self.axes.axhline(y=0,color='black', lw = 0.5)
-        self.axes.set_xlabel('m/z', fontsize = 3)
-        self.axes.set_ylabel('abundance', fontsize = 3)
+        self.axes.set_xlabel('m/z', fontsize = 3.5)
+        self.axes.set_ylabel('abundance', fontsize = 3.5)
         self.draw()
         
         
-    def PlotUmap(self, embedding, clustering, labels):
+    def PlotUmap(self, embedding, clustering, labels, hlindex=False):
         self.axes.cla()
         self.axes.scatter(embedding[:, 0],
                           embedding[:, 1],
@@ -794,12 +800,19 @@ class MakeFigure(FigureCanvas):
                           s = 2,
                           alpha = 0.4,
                           cmap='Spectral')
+        if hlindex:
+            self.axes.scatter(embedding[hlindex, 0], embedding[hlindex, 1], s = 5, color = 'red')
+        
         texts = []
         for i, s in enumerate(labels):
-            x, y= embedding[i, 0], embedding[i, 1]
-            texts.append(self.axes.text(x, y, s, fontsize=3))
-        self.axes.set_xlabel('umap x', fontsize = 3)
-        self.axes.set_ylabel('umap y', fontsize = 3)
+            # x, y= embedding[i, 0], embedding[i, 1]
+            texts.append(s)
+            # texts.append(self.axes.text(x, y, s, fontsize=2))
+        
+        self.axes.set_xlabel('umap x', fontsize = 3.5)
+        self.axes.set_ylabel('umap y', fontsize = 3.5)
+        
+        mplcursors.cursor(self.axes).connect("add", lambda sel: sel.annotation.set_text(texts[sel.index]))
         self.draw()
 
 
