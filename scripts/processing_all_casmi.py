@@ -234,11 +234,11 @@ for i in tqdm(challenge.index):
 
 
 # save as mgf
-save_as_mgf(list(challenge_ms), 'example/all_casmi.mgf')
+save_as_mgf(list(challenge_ms), 'example/CASMI/all_casmi.mgf')
 
 # save as msp individually
 for i, s in enumerate(challenge_ms):
-    path = 'example/msp/challenge_{}.msp'.format(i)
+    path = 'example/CASMI/msp/challenge_{}.msp'.format(i)
     save_as_msp([challenge_ms[i]], path)
     
     with open(path) as msp:

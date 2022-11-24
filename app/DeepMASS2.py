@@ -95,7 +95,7 @@ class DeepMASS2(QMainWindow, main.Ui_MainWindow):
         self.n_neb = 20
         self.sim_metric = 'Jaccard'
         self.priority = []
-        self.ms1_tolerence = 20
+        self.ms1_tolerence = 10
         self.in_silicon_only = False
         
         # data
@@ -520,7 +520,7 @@ class DeepMASS2(QMainWindow, main.Ui_MainWindow):
             diff = np.repeat(np.nan, len(mass))
             
         formula_table = pd.DataFrame({'formula': formula, 'mass': mass, 'error (mDa)': 1000*diff, 'isotope score': score})
-        formula_table = formula_table.sort_values(by = 'isotope score', ascending=False, ignore_index=True)
+        formula_table = formula_table.sort_values(by = 'error (mDa)', ascending=True, ignore_index=True)
         self._set_table_widget(self.tab_formula, formula_table)
         self.tab_formula.setCurrentCell(0, 0)
         self.fill_structural_table()
@@ -547,8 +547,8 @@ class DeepMASS2(QMainWindow, main.Ui_MainWindow):
         
     def fill_information_table(self):
         information = self.current_spectrum.metadata
-        keys = [k for k in information.keys() if k in ['compound_name', 'precursor_mz', 'retention_time', 'inchikey', 
-                                                       'smiles', 'adduct', 'charge', 'parent_mass']]
+        keys = [k for k in information.keys() if k in ['compound_name', 'precursor_mz', 'precursor_intensity', 'retention_time', 'inchikey', 
+                                                       'formula', 'smiles', 'adduct', 'charge', 'parent_mass', 'ionmode']]
         values = [information[k] for k in keys]
         info_table = pd.DataFrame({'keys':keys, 'values':values})
         self._set_table_widget(self.tab_information, info_table)

@@ -14,21 +14,21 @@ from rdkit import Chem
 from rdkit.Chem import AllChem, inchi
 from matchms.importing import load_from_mgf
 
-spectrums = [s for s in load_from_mgf('example/CASMI/all_casmi.mgf')]
+spectrums = [s for s in load_from_mgf('example/Plasma/ms_ms_plasma.mgf')]
 
-sirius_path = "example/CASMI/sirius"
+sirius_path = "example/Plasma/sirius"
 sirius_files = [name for name in os.listdir(sirius_path) if os.path.isdir(os.path.join(sirius_path, name)) ]
 sirius_index = [int(i.split('_')[-2]) for i in sirius_files]
 
-deepmass_path = "example/CASMI/result_all"
+deepmass_path = "example/Plasma/result_all"
 deepmass_files = [name for name in os.listdir(deepmass_path)]
 deepmass_index = [int(i.split('_')[-1].split('.')[-2]) for i in deepmass_files]
 
-deepmass_path2 = "example/CASMI/result_silicon"
+deepmass_path2 = "example/Plasma/result_silicon"
 deepmass_files2 = [name for name in os.listdir(deepmass_path2)]
 deepmass_index2 = [int(i.split('_')[-1].split('.')[-2]) for i in deepmass_files2]
 
-msfinder_path = "example/CASMI/msfinder/Structure result-2081.txt"
+msfinder_path = "example/Plasma/msfinder/Structure result-2086.txt"
 msfinder_result = pd.read_csv(msfinder_path, sep = '\t')
 msfinder_columns = [col for col in msfinder_result.columns if 'InChIKey' in col]
 
@@ -36,12 +36,16 @@ ranking_result = []
 for s in tqdm(spectrums):
     name = s.metadata['compound_name']
     index = int(name.split('_')[-1])
-    true_key = s.metadata['inchikey'][:14]
+    true_key = s.get('inchikey')
+    if true_key is None:
+        continue
+    else:
+        true_key = true_key[:14]
     
     # rank of SIRIUS
-    sirius_file = "/{}/structure_candidates.tsv".format(sirius_files[sirius_index.index(index)])
-    sirius_file = sirius_path + sirius_file
     try:
+        sirius_file = "/{}/structure_candidates.tsv".format(sirius_files[sirius_index.index(index)])
+        sirius_file = sirius_path + sirius_file
         sirius_result = pd.read_csv(sirius_file, sep='\t')
     except:
         sirius_result = None
@@ -84,7 +88,8 @@ for s in tqdm(spectrums):
         deepmass_rank2 = deepmass_rank2[0] + 1
         
     # rank of ms-finder
-    msfinder_index = np.where(msfinder_result['File name'].values == name)[0]
+    msfinder_title = np.array([v.replace('unknown', 'unknown_') for v in msfinder_result['Title'].values])
+    msfinder_index = np.where(msfinder_title == name)[0]
     if len(msfinder_index) > 0:
         msfinder_key = [str(s)[:14] for s in msfinder_result.loc[msfinder_index[0], msfinder_columns].values]
         msfinder_rank = np.where(np.array(msfinder_key) == true_key)[0]

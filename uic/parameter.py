@@ -64,7 +64,7 @@ class Ui_Form(object):
         self.gridLayout.addWidget(self.spinBox_nneb, 1, 1, 1, 1)
         self.spinBox_ms1tol = QtWidgets.QSpinBox(Form)
         self.spinBox_ms1tol.setMaximum(200)
-        self.spinBox_ms1tol.setProperty("value", 20)
+        self.spinBox_ms1tol.setProperty("value", 10)
         self.spinBox_ms1tol.setObjectName("spinBox_ms1tol")
         self.gridLayout.addWidget(self.spinBox_ms1tol, 2, 1, 1, 1)
         spacerItem = QtWidgets.QSpacerItem(20, 20, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Fixed)

@@ -13,10 +13,12 @@ from rdkit.Chem import DataStructs, AllChem
 from sklearn.metrics.pairwise import cosine_similarity
 
 import matchms.filtering as msfilters
+from molmass import Formula
 from spec2vec import SpectrumDocument
 from spec2vec.vector_operations import calc_vector
 from ms2deepscore.MS2DeepScore import MS2DeepScore
 from gensim.models.word2vec import Word2Vec
+
 
 from pycdk.pycdk import IsotopeFromString, IsotopeSimilarity
 from core.pubchem import retrieve_by_formula, retrieve_by_exact_mass
@@ -34,6 +36,11 @@ def spectrum_processing(s):
     s = msfilters.normalize_intensities(s)
     s = msfilters.select_by_mz(s, mz_from=0, mz_to=1000)
     return s
+
+
+def get_formula_mass(formula):
+    f = Formula(formula)
+    return f.isotope.mass
 
 
 def calc_isotope_score(s, formula):
@@ -193,14 +200,24 @@ def identify_unknown(s, p, n_ref, n_neb, database, priority, model, reference, c
     candidate_fp_deepmass = np.array([np.sum(-np.sort(-s)[:n_neb]) for s in candidate_fp_score])
     candidate['DeepMass Score'] = candidate_fp_deepmass / n_neb
     
+    formula = candidate['MolecularFormula']
+    mass = [get_formula_mass(f) for f in formula]
+    if 'parent_mass' in s.metadata.keys():
+        diff = np.array([abs(m - s.metadata['parent_mass']) for m in mass])
+        candidate_wt_score = 1 - 50000 * diff / s.metadata['parent_mass']
+    else:
+        candidate_wt_score = np.zeros(len(formula))
+    candidate['MolWt Score'] = np.round(candidate_wt_score, 4)
+    
     candidate_iso_score = [calc_isotope_score(s, f) for f in candidate['MolecularFormula'].values]
-    candidate['Isotope Score'] = candidate_iso_score
+    candidate['Isotope Score'] = np.round(candidate_iso_score, 4)
     
     k = np.argsort(-candidate['DeepMass Score'])
     deepmass_score = np.array([-np.sort(-s) for s in candidate_fp_score])[k,:]
     
-    candidate = candidate.sort_values('DeepMass Score', ignore_index = True, ascending = False)
     candidate['DeepMass Score'] = np.round(candidate['DeepMass Score'], 4)
+    candidate['Consensus Score'] = 0.6*candidate['DeepMass Score'] + 0.2*candidate['Isotope Score'] + 0.2*candidate['MolWt Score']
+    candidate = candidate.sort_values('Consensus Score', ignore_index = True, ascending = False)
     
     reference_shortkey = [s.get('inchikey')[:14] for s in reference_spectrum]
     candidate_in_reference = [str(s[:14] in reference_shortkey) for s in candidate['InChIKey']]
