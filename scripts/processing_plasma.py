@@ -18,31 +18,13 @@ from matchms.exporting import save_as_mgf, save_as_msp
 from core.identification import spectrum_processing
 from core.msdial import load_MS_DIAL_Alginment
 
-spectrums = []
-spectrums += load_MS_DIAL_Alginment('example/Plasma/ms_dial_positive.csv')
-spectrums += load_MS_DIAL_Alginment('example/Plasma/ms_dial_negative.csv')
-
-'''
-for f in tqdm(os.listdir("E:/Data/MTBLS263/positive/mgf")):
-    f_ = 'E:/Data/MTBLS263/positive/mgf/{}'.format(f)
-    mode = f.split('_')[2][:3]
-    spectrums_ = [s for s in load_from_mgf(f_) if s.get('precursor_intensity') > 50000]
-    spectrums_ = [s.set('ionmode', 'positive') for s in spectrums_]
-    spectrums += spectrums_
-
-    
-for f in tqdm(os.listdir("E:/Data/MTBLS263/negative/mgf")):
-    f_ = 'E:/Data/MTBLS263/negative/mgf/{}'.format(f)
-    mode = f.split('_')[2][:3]
-    spectrums_ = [s for s in load_from_mgf(f_) if s.get('precursor_intensity') > 50000]
-    spectrums_ = [s.set('ionmode', 'negative') for s in spectrums_]
-    spectrums += spectrums_
-
 def remove_duplicate(spectrums):
     new_spectrums = []
     rt, mz, iontype, intensities = [], [], [], []
     for s in tqdm(spectrums):
-        [rt_, mz_, iontype_, intensity_] = [s.metadata[k] for k in ['retention_time', 'precursor_mz', 'ionmode', 'precursor_intensity']]
+        [rt_, mz_, iontype_, intensity_, adduct_] = [s.metadata[k] for k in ['retention_time', 'precursor_mz', 'ionmode', 'precursor_intensity', 'adduct']]
+        if adduct_ not in ['[M+H]+', '[M-H]-']:
+            continue
         wh = np.logical_and( np.abs(np.array(rt) - rt_) < 30,
                              np.abs(np.array(mz) - mz_) < 0.01,
                              np.array([i == iontype_ for i in iontype]))
@@ -61,6 +43,32 @@ def remove_duplicate(spectrums):
             intensities.append(intensity_)
             new_spectrums.append(spectrum_processing(s))
     return new_spectrums
+
+
+spectrums = []
+spectrums += load_MS_DIAL_Alginment('example/Plasma/ms_dial_positive.csv')
+spectrums += load_MS_DIAL_Alginment('example/Plasma/ms_dial_negative.csv')
+spectrums = [s for s in spectrums if len(s.intensities[s.intensities > 0.05]) >= 3]
+spectrums = [s for s in spectrums if s.get('parent_mass') is not None]
+spectrums = remove_duplicate(spectrums)
+spectrums = [s.set('compound_name', 'Compound_{}'.format(i)) for i, s in enumerate(spectrums)]
+
+
+'''
+for f in tqdm(os.listdir("E:/Data/MTBLS263/positive/mgf")):
+    f_ = 'E:/Data/MTBLS263/positive/mgf/{}'.format(f)
+    mode = f.split('_')[2][:3]
+    spectrums_ = [s for s in load_from_mgf(f_) if s.get('precursor_intensity') > 50000]
+    spectrums_ = [s.set('ionmode', 'positive') for s in spectrums_]
+    spectrums += spectrums_
+
+    
+for f in tqdm(os.listdir("E:/Data/MTBLS263/negative/mgf")):
+    f_ = 'E:/Data/MTBLS263/negative/mgf/{}'.format(f)
+    mode = f.split('_')[2][:3]
+    spectrums_ = [s for s in load_from_mgf(f_) if s.get('precursor_intensity') > 50000]
+    spectrums_ = [s.set('ionmode', 'negative') for s in spectrums_]
+    spectrums += spectrums_
 
 
 def preprocess_spectrums(spectrums):
@@ -85,10 +93,10 @@ def preprocess_spectrums(spectrums):
 
 
 spectrums = remove_duplicate(spectrums)
-spectrums = [s for s in spectrums if len(s.intensities[s.intensities > 0.05]) >= 3]
 spectrums = preprocess_spectrums(spectrums)
 '''
 
+'''
 # retrieve information with name
 pnas_identified = pd.read_csv('example/Plasma/pnas_identified.csv')
 exact_mass, inchikey, molecular_formula = [], [], []
@@ -123,7 +131,7 @@ pnas_identified['exact_mass'] = exact_mass
 pnas_identified['inchikey'] = inchikey
 pnas_identified['molecular_formula'] = molecular_formula
 pnas_identified.to_csv('example/Plasma/pnas_identified.csv', index = False)
-
+'''
 
 # Manual correction
 pnas_identified = pd.read_csv('example/Plasma/pnas_identified.csv')
@@ -144,26 +152,12 @@ for s in spectrums:
         s.set('true_annotation', name)
         k += 1
 save_as_mgf(spectrums, 'example/Plasma/ms_ms_plasma.mgf')
-        
 
-# save as msp individually
-for i, s in enumerate(spectrums):
-    path = 'example/Plasma/msp/unknown_{}.msp'.format(i)
-    save_as_msp([spectrums[i]], path)
-    
-    with open(path) as msp:
-        lines = msp.readlines()
-        lines = [l.replace('_', '') for l in lines]
-        lines = [l.replace('ADDUCT', 'PRECURSORTYPE') for l in lines]
-    with open(path, 'w') as msp:
-        msp.writelines(lines)
 
-    # only for ms-finder
-    path_msfinder = path.replace('/msp/', '/msfinder/')
-        
-    # exclude large compound, as ms-finder is very slow for them
-    if s.metadata['parent_mass'] >= 850:
-        continue
-    with open(path_msfinder, 'w') as msp:
-        msp.writelines(lines)
- 
+from core.msdial import save_as_sirius
+export_path = 'example/Plasma/msp'
+save_as_sirius(spectrums, export_path)
+
+from core.msdial import save_as_msfinder
+export_path = 'example/Plasma/msfinder'
+save_as_msfinder(spectrums, export_path)
