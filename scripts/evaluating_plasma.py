@@ -28,7 +28,7 @@ deepmass_path2 = "example/Plasma/result_silicon"
 deepmass_files2 = [name for name in os.listdir(deepmass_path2)]
 deepmass_index2 = [int(i.split('_')[-1].split('.')[-2]) for i in deepmass_files2]
 
-msfinder_path = "example/Plasma/msfinder/Structure result-2120.txt"
+msfinder_path = "example/Plasma/msfinder/Structure result-2137.txt"
 msfinder_result = pd.read_csv(msfinder_path, sep = '\t')
 msfinder_columns = [col for col in msfinder_result.columns if 'InChIKey' in col]
 

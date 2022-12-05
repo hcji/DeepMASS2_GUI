@@ -25,7 +25,7 @@ def remove_duplicate(spectrums):
         [rt_, mz_, iontype_, intensity_, adduct_] = [s.metadata[k] for k in ['retention_time', 'precursor_mz', 'ionmode', 'precursor_intensity', 'adduct']]
         if adduct_ not in ['[M+H]+', '[M-H]-']:
             continue
-        wh = np.logical_and( np.abs(np.array(rt) - rt_) < 30,
+        wh = np.logical_and( np.abs(np.array(rt) - rt_) < 18,
                              np.abs(np.array(mz) - mz_) < 0.01,
                              np.array([i == iontype_ for i in iontype]))
         wh = np.where(wh)[0]

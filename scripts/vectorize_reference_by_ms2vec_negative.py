@@ -12,23 +12,27 @@ import hnswlib
 import gensim
 from tqdm import tqdm
 from rdkit import Chem
+from rdkit.Chem import AllChem
 
 from spec2vec import SpectrumDocument
 from spec2vec.vector_operations import calc_vector
 
 path_data = 'D:/All_MSDatabase'
+inchikey_test = np.load('data/inchikey_test.npy', allow_pickle=True)
 
 outfile = os.path.join(path_data, 'GNPS_all/ALL_GNPS_220601_negative_cleaned.pickle')
 with open(outfile, 'rb') as file:
     spectrums = pickle.load(file)
 
-outfile = os.path.join(path_data, 'In_House/ALL_In_House_negative_cleaned.pickle')
+outfile = os.path.join(path_data, 'In_House/ALL_Inhouse_negative_cleaned.pickle')
 with open(outfile, 'rb') as file:
     spectrums += pickle.load(file)
 
-outfile = os.path.join(path_data, 'NIST2017/ALL_NIST17_negative_cleaned.pickle')
+outfile = os.path.join(path_data, 'NIST2020/ALL_NIST20_negative_cleaned.pickle')
 with open(outfile, 'rb') as file:
     spectrums += pickle.load(file)
+
+spectrums = [s for s in tqdm(spectrums) if s.get('inchikey')[:14] not in inchikey_test]
 
 
 reference = []
@@ -40,8 +44,11 @@ for s in tqdm(spectrums):
     if s.metadata['smiles'] == '':
         continue
     try:
-        smi = Chem.MolToSmiles(Chem.MolFromSmiles(s.metadata['smiles']), isomericSmiles=False)
-        s.metadata['smiles'] = smi
+        mol = Chem.MolFromSmiles(s.metadata['smiles'])
+        wt = AllChem.CalcExactMolWt(mol)
+        smi = Chem.MolToSmiles(mol, isomericSmiles=False)
+        s = s.set('smiles', smi)
+        s = s.set('parent_mass', wt)
     except:
         continue
     if 'ionmode' not in list(s.metadata.keys()):
@@ -72,3 +79,4 @@ p.init_index(max_elements = num_elements, ef_construction = 800, M = 64)
 p.add_items(xb, ids)
 p.set_ef(300)
 p.save_index('data/references_index_negative_spec2vec.bin')
+pickle.dump(reference, open('data/references_spectrums_negative.pickle', "wb"))

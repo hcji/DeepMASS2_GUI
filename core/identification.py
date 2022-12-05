@@ -33,6 +33,7 @@ def spectrum_processing(s):
         s.set('adduct', s.get('adduct_type'))
     s = msfilters.correct_charge(s)
     s = msfilters.add_parent_mass(s)
+    s = msfilters.add_losses(s)
     s = msfilters.normalize_intensities(s)
     s = msfilters.select_by_mz(s, mz_from=0, mz_to=1000)
     return s
@@ -78,15 +79,15 @@ def identify_unknown(s, p, n_ref, n_neb, database, priority, model, reference, c
         n_ref = 300
         n_neb = 20
         priority = []
-        spectrums = [s for s in load_from_mgf("D:/All_CASMI/save/casmi_2022_challenge_priority.mgf")]
-        model = load_model("model/MS2DeepScore_allGNPSnegative.hdf5")
-        model = MS2DeepScore(model)
+        spectrums = [s for s in load_from_mgf('example/Plasma/ms_ms_plasma.mgf')]
+        
+        model = Word2Vec.load("model/Ms2Vec_allGNPSnegative.hdf5_iter_30.model")
         database = pd.read_csv('data/MsfinderStructureDB-VS15-plus-GNPS.csv')
-        p = hnswlib.Index(space='l2', dim=200) 
-        p.load_index('data/references_index_negative.bin')
-        with open('data/references_spectrums_positive.pickle', 'rb') as file:
+        p = hnswlib.Index(space='l2', dim=300) 
+        p.load_index('data/references_index_negative_spec2vec.bin')
+        with open('data/references_spectrums_negative.pickle', 'rb') as file:
             reference = pickle.load(file)
-        s = spectrums[18]
+        s = spectrums[427]
         sn = identify_unknown(s, p, n_ref, n_neb, database, priority, model, reference, 'biodatabase', True)
     """
     s = spectrum_processing(s)
@@ -160,17 +161,16 @@ def identify_unknown(s, p, n_ref, n_neb, database, priority, model, reference, c
     for i, m in enumerate(reference_mol):
         if reference_smile[i] == '':
             continue
-        
+        if reference_spectrum[i].metadata['ionmode'] != s.metadata['ionmode']:
+            continue
         # exclude itself for estimation
         if len(reference_spectrum[i].mz) == len(s.mz):
             if (max(np.abs(reference_spectrum[i].mz - s.mz)) <= 0.01) and (max(np.abs(reference_spectrum[i].intensities - s.intensities)) <= 0.01): 
                 continue
-        
         # in-silicon only means reference structures cannot include any candidates
         if in_silicon_only:
-            if abs(s.metadata['parent_mass'] - reference_spectrum[i].metadata['parent_mass']) < 0.01:
+            if abs(float(s.metadata['parent_mass']) - reference_spectrum[i].metadata['parent_mass']) < 0.01:
                 continue
-            
         try:
             reference_fp.append(get_fp(m))
             k.append(i)
@@ -178,6 +178,7 @@ def identify_unknown(s, p, n_ref, n_neb, database, priority, model, reference, c
             pass
     if len(k) == 0:
         return s
+    
     reference_spectrum = np.array(reference_spectrum)[np.array(k)]
     reference_smile = np.array(reference_smile)[np.array(k)]
     reference_vec = p.get_items(I[0, np.array(k)])

@@ -20,13 +20,10 @@ sirius_path = "example/CASMI/sirius"
 sirius_files = [name for name in os.listdir(sirius_path) if os.path.isdir(os.path.join(sirius_path, name)) ]
 sirius_index = [int(i.split('_')[-2]) for i in sirius_files]
 
-deepmass_path = "example/CASMI/result_all"
+deepmass_path = "example/CASMI/result"
 deepmass_files = [name for name in os.listdir(deepmass_path)]
 deepmass_index = [int(i.split('_')[-1].split('.')[-2]) for i in deepmass_files]
 
-deepmass_path2 = "example/CASMI/result_silicon"
-deepmass_files2 = [name for name in os.listdir(deepmass_path2)]
-deepmass_index2 = [int(i.split('_')[-1].split('.')[-2]) for i in deepmass_files2]
 
 msfinder_path = "example/CASMI/msfinder/Structure result-2081.txt"
 msfinder_result = pd.read_csv(msfinder_path, sep = '\t')
@@ -71,18 +68,6 @@ for s in tqdm(spectrums):
     else:
         deepmass_rank = deepmass_rank[0] + 1
         
-    # rank of deepmass in silicon
-    deepmass_file2 = "/{}".format(deepmass_files2[deepmass_index2.index(index)])
-    deepmass_file2 = deepmass_path2 + deepmass_file2
-    deepmass_result2 = pd.read_csv(deepmass_file2)
-    deepmass_key2 = np.array([k[:14] for k in deepmass_result2['InChIKey']])
-    deepmass_n2 = len(deepmass_key2)
-    deepmass_rank2 = np.where(deepmass_key2 == true_key)[0]
-    if len(deepmass_rank2) == 0:
-        deepmass_rank2 = float('inf')
-    else:
-        deepmass_rank2 = deepmass_rank2[0] + 1
-        
     # rank of ms-finder
     msfinder_index = np.where(msfinder_result['File name'].values == name)[0]
     if len(msfinder_index) > 0:
@@ -95,8 +80,8 @@ for s in tqdm(spectrums):
     else:
         msfinder_rank = np.nan
 
-    ranking_result.append([name, true_key, sirius_rank, msfinder_rank, deepmass_rank, deepmass_rank2])
+    ranking_result.append([name, true_key, sirius_rank, msfinder_rank, deepmass_rank])
 
 ranking_result = pd.DataFrame(ranking_result, columns = ['Challenge', 'True Inchikey2D', 'SIRIUS Ranking', 'MSFinder Ranking',
-                                                         'DeepMASS All Ranking', 'DeepMASS InSilicon Ranking'])
+                                                         'DeepMASS Ranking'])
 

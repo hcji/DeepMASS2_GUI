@@ -11,7 +11,7 @@ import numpy as np
 from tqdm import tqdm
 
 path_data = os.path.join('D:/All_MSDatabase/In_House')
-filename = os.path.join(path_data, 'Processed_spectrums_inhouse.npy')
+filename = os.path.join(path_data, 'preprocessed_spectrums.npy')
 spectrums = np.load(filename, allow_pickle = True)
 
 

@@ -13,7 +13,7 @@ from matchms import Spectrum
 from core.identification import spectrum_processing
 
 
-def load_MS_DIAL_Peaklist(filename, exclude_precursor = True):
+def load_MS_DIAL_Peaklist(filename, exclude_precursor = False):
     """
     Load aligned result exported by MS-DIAL and convert into a set of matchms::spectrum object.
     Arguments:
@@ -76,7 +76,7 @@ def load_MS_DIAL_Peaklist(filename, exclude_precursor = True):
 
 
 
-def load_MS_DIAL_Alginment(filename, exclude_precursor = True, sample_cols = []):
+def load_MS_DIAL_Alginment(filename, exclude_precursor = False, sample_cols = []):
     """
     Load aligned result exported by MS-DIAL and convert into a set of matchms::spectrum object.
     Arguments:
