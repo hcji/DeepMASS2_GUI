@@ -236,8 +236,9 @@ for i in tqdm(challenge.index):
 # save as mgf
 save_as_mgf(list(challenge_ms), 'example/CASMI/all_casmi.mgf')
 
+
 # save as msp individually
-challenge_ms = load_from_mgf('example/CASMI/all_casmi.mgf')
+challenge_ms = [s for s in load_from_mgf('example/CASMI/all_casmi.mgf')]
 for i, s in enumerate(challenge_ms):
     path = 'example/CASMI/msp/challenge_{}.msp'.format(i)
     save_as_msp([challenge_ms[i]], path)
@@ -251,10 +252,9 @@ for i, s in enumerate(challenge_ms):
 
     # only for ms-finder
     path_msfinder = path.replace('/msp/', '/msfinder/')
-        
-    # exclude large compound, as ms-finder is very slow for them
-    if s.metadata['parent_mass'] >= 850:
-        continue
+    
+    if float(s.metadata['parent_mass']) >= 850:
+        continue        
     with open(path_msfinder, 'w') as msp:
         msp.writelines(lines)
  

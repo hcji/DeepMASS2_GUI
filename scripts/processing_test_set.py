@@ -8,14 +8,21 @@ Created on Mon Dec  5 09:59:18 2022
 import os
 import numpy as np
 import pickle
+import random
 
 from tqdm import tqdm
 from rdkit import Chem
 from rdkit.Chem import AllChem
 
+from matchms.importing import load_from_mgf
 from matchms.exporting import save_as_mgf, save_as_msp
 
 inchikey_test = np.load('data/inchikey_test.npy', allow_pickle=True)
+
+# casmi
+spectrums = [s for s in load_from_mgf('example/CASMI/all_casmi.mgf')]
+inchikey_casmi = list(set([s.get('inchikey')[:14] for s in spectrums]))
+inchikey_test = [s for s in inchikey_test if s not in inchikey_casmi]
 
 path_data = 'D:/All_MSDatabase'
 outfile = os.path.join(path_data, 'GNPS_all/ALL_GNPS_220601_positive_cleaned.pickle')
@@ -43,15 +50,19 @@ with open(outfile, 'rb') as file:
     spectrums += pickle.load(file)
 
 spectrums = [s for s in tqdm(spectrums) if s.get('inchikey')[:14] in inchikey_test]
-
+random.shuffle(spectrums)
 
 testing_spectrums = []
+count_positive = np.zeros(len(inchikey_test))
+count_negative = np.zeros(len(inchikey_test))
 for s in tqdm(spectrums):
     if len(s.mz[s.mz <= 1000]) < 5:
         continue
     if 'smiles' not in list(s.metadata.keys()):
         continue
     if s.metadata['smiles'] == '':
+        continue
+    if s.get('adduct') not in ['[M+H]+', '[M-H]-']:
         continue
     try:
         mol = Chem.MolFromSmiles(s.metadata['smiles'])
@@ -65,15 +76,31 @@ for s in tqdm(spectrums):
     if 'ionmode' not in list(s.metadata.keys()):
         continue  
 
-    keys = [s for s in s.metadata.keys() if s in ['compound_name', 'smiles', 'inchikey', 'precursor_mz', 'adduct', 'parent_mass', 'ionmode', 'charge']]
+    keys = [s for s in s.metadata.keys() if s in ['compound_name', 'smiles', 'inchikey', 'precursor_mz', 'adduct', 'parent_mass', 'ionmode', 'formula']]
     s.metadata = {k: s.metadata[k] for k in keys}
+    
+    ionmode = s.get('ionmode')
+    inchikey = s.get('inchikey')[:14]
+    i = inchikey_test.index(inchikey)
+    if ionmode == 'positive':
+        if count_positive[i] >= 1:
+            continue
+        else:
+            count_positive[i] += 1
+    elif ionmode == 'negative':
+        if count_negative[i] >= 1:
+            continue
+        else:
+            count_negative[i] += 1
+    else:
+        continue
     testing_spectrums.append(s)
-
 
 # save as mgf
 save_as_mgf(list(testing_spectrums), 'example/Test/all_test_set.mgf')
 
 # save as msp individually
+challenge_ms = [s for s in load_from_mgf('example/Test/all_test_set.mgf')]
 for i, s in enumerate(testing_spectrums):
     path = 'example/Test/msp/challenge_{}.msp'.format(i)
     save_as_msp([testing_spectrums[i]], path)

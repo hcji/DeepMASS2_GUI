@@ -6,6 +6,7 @@ Created on Wed Sep 21 08:46:57 2022
 """
 
 import os
+import random
 import numpy as np
 import pickle
 import hnswlib
@@ -14,11 +15,17 @@ from tqdm import tqdm
 from rdkit import Chem
 from rdkit.Chem import AllChem
 
+from matchms.importing import load_from_mgf
 from spec2vec import SpectrumDocument
 from spec2vec.vector_operations import calc_vector
 
-path_data = 'D:/All_MSDatabase'
 inchikey_test = np.load('data/inchikey_test.npy', allow_pickle=True)
+spectrums_casmi = [s for s in load_from_mgf('example/CASMI/all_casmi.mgf')]
+inchikey_casmi = list(set([s.get('inchikey')[:14] for s in spectrums_casmi]))
+inchikey_test = [s for s in inchikey_test if s not in inchikey_casmi]
+
+# negative
+path_data = 'D:/All_MSDatabase'
 
 outfile = os.path.join(path_data, 'GNPS_all/ALL_GNPS_220601_negative_cleaned.pickle')
 with open(outfile, 'rb') as file:
@@ -32,10 +39,12 @@ outfile = os.path.join(path_data, 'NIST2020/ALL_NIST20_negative_cleaned.pickle')
 with open(outfile, 'rb') as file:
     spectrums += pickle.load(file)
 
-spectrums = [s for s in tqdm(spectrums) if s.get('inchikey')[:14] not in inchikey_test]
+spectrums = [s for s in tqdm(spectrums)]
+random.shuffle(spectrums)
 
 
-reference = []
+reference, test = [], []
+count_test = np.zeros(len(inchikey_test))
 for s in tqdm(spectrums):
     if len(s.mz[s.mz <= 1000]) < 5:
         continue
@@ -47,6 +56,8 @@ for s in tqdm(spectrums):
         mol = Chem.MolFromSmiles(s.metadata['smiles'])
         wt = AllChem.CalcExactMolWt(mol)
         smi = Chem.MolToSmiles(mol, isomericSmiles=False)
+        formula = AllChem.CalcMolFormula(mol)
+        s = s.set('formula', formula)
         s = s.set('smiles', smi)
         s = s.set('parent_mass', wt)
     except:
@@ -56,6 +67,13 @@ for s in tqdm(spectrums):
     if s.metadata['ionmode'] == 'negative':
         keys = [s for s in s.metadata.keys() if s in ['compound_name', 'smiles', 'inchikey', 'precursor_mz', 'adduct', 'parent_mass', 'ionmode', 'charge']]
         s.metadata = {k: s.metadata[k] for k in keys}
+        inchikey = s.get('inchikey')[:14]
+        if inchikey in inchikey_test:
+            i = inchikey_test.index(inchikey)
+            if count_test[i] == 0:
+                count_test[i] += 1
+                test.append(s)
+                continue
         reference.append(s)
 
 
@@ -80,3 +98,4 @@ p.add_items(xb, ids)
 p.set_ef(300)
 p.save_index('data/references_index_negative_spec2vec.bin')
 pickle.dump(reference, open('data/references_spectrums_negative.pickle', "wb"))
+pickle.dump(test, open('example/Test/test_spectrums_negative.pickle', "wb"))

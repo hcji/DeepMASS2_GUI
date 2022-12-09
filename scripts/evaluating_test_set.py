@@ -14,18 +14,18 @@ from rdkit import Chem
 from rdkit.Chem import AllChem, inchi
 from matchms.importing import load_from_mgf
 
-spectrums = [s for s in load_from_mgf('example/CASMI/all_casmi.mgf')]
+spectrums = [s for s in load_from_mgf('example/Test/all_test_set.mgf')]
 
-sirius_path = "example/CASMI/sirius"
+sirius_path = "example/Test/sirius"
 sirius_files = [name for name in os.listdir(sirius_path) if os.path.isdir(os.path.join(sirius_path, name)) ]
 sirius_index = [int(i.split('_')[-2]) for i in sirius_files]
 
-deepmass_path = "example/CASMI/result"
+deepmass_path = "example/Test/result"
 deepmass_files = [name for name in os.listdir(deepmass_path)]
 deepmass_index = [int(i.split('_')[-1].split('.')[-2]) for i in deepmass_files]
 
 
-msfinder_path = "example/CASMI/msfinder/Structure result-2088.txt"
+msfinder_path = "example/Test/msfinder/Structure result-2062.txt"
 msfinder_result = pd.read_csv(msfinder_path, sep = '\t')
 msfinder_columns = [col for col in msfinder_result.columns if 'InChIKey' in col]
 
@@ -36,9 +36,9 @@ for s in tqdm(spectrums):
     true_key = s.metadata['inchikey'][:14]
     
     # rank of SIRIUS
-    sirius_file = "/{}/structure_candidates.tsv".format(sirius_files[sirius_index.index(index)])
-    sirius_file = sirius_path + sirius_file
     try:
+        sirius_file = "/{}/structure_candidates.tsv".format(sirius_files[sirius_index.index(index)])
+        sirius_file = sirius_path + sirius_file
         sirius_result = pd.read_csv(sirius_file, sep='\t')
     except:
         sirius_result = None
