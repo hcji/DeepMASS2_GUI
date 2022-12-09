@@ -68,6 +68,8 @@ for s in tqdm(spectrums):
         keys = [s for s in s.metadata.keys() if s in ['compound_name', 'formula', 'smiles', 'inchikey', 'precursor_mz', 'adduct', 'parent_mass', 'ionmode', 'charge']]
         s.metadata = {k: s.metadata[k] for k in keys}
         inchikey = s.get('inchikey')[:14]
+        if inchikey in inchikey_casmi:
+            continue
         if inchikey in inchikey_test:
             i = inchikey_test.index(inchikey)
             if count_test[i] == 0:
