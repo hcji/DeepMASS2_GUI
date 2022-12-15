@@ -116,7 +116,7 @@ class DeepMASS2(QMainWindow, main.Ui_MainWindow):
         self.default_reference_negative = 'data/references_spectrums_negative.pickle'
         self.current_spectrum = None
         self.current_reference = None
-        self.ParameterUI.comboBoxEmb.addItems(['spec2vec', 'ms2deepscore'])
+        self.ParameterUI.comboBoxEmb.addItems(['spec2vec'])
         self.ParameterUI.comboBoxInS.addItems(['False', 'True'])
         
         # action
@@ -158,8 +158,8 @@ class DeepMASS2(QMainWindow, main.Ui_MainWindow):
         self.Thread_LoadDatabase._compounds.connect(self._set_database)
         self.Thread_LoadDatabase.start()
         self.Thread_LoadDatabase.finished.connect(self.load_references_positive)
-        self.deepmass_positive = Word2Vec.load("model/Ms2Vec_allGNPSpositive.hdf5_iter_30.model")
-        self.deepmass_negative = Word2Vec.load("model/Ms2Vec_allGNPSnegative.hdf5_iter_30.model")
+        self.deepmass_positive = Word2Vec.load("model/Ms2Vec_allGNPSpositive.hdf5")
+        self.deepmass_negative = Word2Vec.load("model/Ms2Vec_allGNPSnegative.hdf5")
 
 
     def WarnMsg(self, Text):
@@ -290,8 +290,8 @@ class DeepMASS2(QMainWindow, main.Ui_MainWindow):
                 self.default_index_positive = 'data/references_index_positive_spec2vec.bin'
                 self.default_index_negative = 'data/references_index_negative_spec2vec.bin'
                 self.load_references_positive()
-                self.deepmass_positive = Word2Vec.load("model/Ms2Vec_allGNPSpositive.hdf5_iter_30.model")
-                self.deepmass_negative = Word2Vec.load("model/Ms2Vec_allGNPSnegative.hdf5_iter_30.model")
+                self.deepmass_positive = Word2Vec.load("model/Ms2Vec_allGNPSpositive.hdf5")
+                self.deepmass_negative = Word2Vec.load("model/Ms2Vec_allGNPSnegative.hdf5")
         else:
             pass      
         self.priority = []

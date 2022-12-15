@@ -163,10 +163,6 @@ def identify_unknown(s, p, n_ref, n_neb, database, priority, model, reference, c
             continue
         if reference_spectrum[i].metadata['ionmode'] != s.metadata['ionmode']:
             continue
-        # exclude itself for estimation
-        if len(reference_spectrum[i].mz) == len(s.mz):
-            if (max(np.abs(reference_spectrum[i].mz - s.mz)) <= 0.01) and (max(np.abs(reference_spectrum[i].intensities - s.intensities)) <= 0.01): 
-                continue
         # in-silicon only means reference structures cannot include any candidates
         if in_silicon_only:
             if abs(float(s.metadata['parent_mass']) - reference_spectrum[i].metadata['parent_mass']) < 0.01:

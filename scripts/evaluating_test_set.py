@@ -24,8 +24,7 @@ deepmass_path = "example/Test/result"
 deepmass_files = [name for name in os.listdir(deepmass_path)]
 deepmass_index = [int(i.split('_')[-1].split('.')[-2]) for i in deepmass_files]
 
-
-msfinder_path = "example/Test/msfinder/Structure result-2062.txt"
+msfinder_path = "example/Test/msfinder/Structure result-2105.txt"
 msfinder_result = pd.read_csv(msfinder_path, sep = '\t')
 msfinder_columns = [col for col in msfinder_result.columns if 'InChIKey' in col]
 

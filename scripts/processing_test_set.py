@@ -17,90 +17,66 @@ from rdkit.Chem import AllChem
 from matchms.importing import load_from_mgf
 from matchms.exporting import save_as_mgf, save_as_msp
 
-inchikey_test = np.load('data/inchikey_test.npy', allow_pickle=True)
 
-# casmi
-spectrums = [s for s in load_from_mgf('example/CASMI/all_casmi.mgf')]
-inchikey_casmi = list(set([s.get('inchikey')[:14] for s in spectrums]))
-inchikey_test = [s for s in inchikey_test if s not in inchikey_casmi]
+ADDUCT_MASSES = {
+    # POSITIVE
+    '[M+H]+': 1.007276,
+    '[M-H2O+H]+': 1.007276 - 18.010565, '[M+H-H2O]+': 1.007276 - 18.010565,
+    '[M-2H2O+H]+': 1.007276 - 2 * 18.010565, '[M+H-2H2O]+': 1.007276 - 2 * 18.010565,
+    '[M+Na]+': 22.98922,
+    '[M]+': 0,
+    '[M+NH4]+': 18.03383,
+    '[M+H-NH3]+': 1.007276 - 17.026549,
+    # NEGATIVE
+    '[M-H]-': -1.007276,
+    '[M+Cl]-': 34.969402,
+    '[M+FA-H]-': 44.9982, '[M-H+FA]-': 44.9982,
+    '[M]-': 0,
+    '[M-2H]-': -1.007276
+}
 
-path_data = 'D:/All_MSDatabase'
-outfile = os.path.join(path_data, 'GNPS_all/ALL_GNPS_220601_positive_cleaned.pickle')
+
+def get_true_precursor_mz_from_mass(mass, precursor_type):
+    """
+    Calculate precursor mz based on (exact or monoisotopic) mass and precursor type
+    :param mass: scalar, mass of a compound, e.g. monoisotopic or exact mass.
+    :param precursor_type: string, precursor type, e.g. '[M+H]+'
+    :return: scalar, ion mass / precursor mz
+    """
+    try:
+        return mass + ADDUCT_MASSES[precursor_type]
+    except KeyError:
+        raise KeyError("Unsupported precursor-type '%s'." % precursor_type)
+
+
+outfile = os.path.join('example/Test/test_spectrums_positive.pickle')
 with open(outfile, 'rb') as file:
-    spectrums = pickle.load(file)
+    testing_spectrums_ = pickle.load(file)
 
-outfile = os.path.join(path_data, 'In_House/ALL_Inhouse_positive_cleaned.pickle')
+outfile = os.path.join('example/Test/test_spectrums_negative.pickle')
 with open(outfile, 'rb') as file:
-    spectrums += pickle.load(file)
-
-outfile = os.path.join(path_data, 'NIST2020/ALL_NIST20_positive_cleaned.pickle')
-with open(outfile, 'rb') as file:
-    spectrums += pickle.load(file)
-
-outfile = os.path.join(path_data, 'GNPS_all/ALL_GNPS_220601_negative_cleaned.pickle')
-with open(outfile, 'rb') as file:
-    spectrums += pickle.load(file)
-
-outfile = os.path.join(path_data, 'In_House/ALL_Inhouse_negative_cleaned.pickle')
-with open(outfile, 'rb') as file:
-    spectrums += pickle.load(file)
-
-outfile = os.path.join(path_data, 'NIST2020/ALL_NIST20_negative_cleaned.pickle')
-with open(outfile, 'rb') as file:
-    spectrums += pickle.load(file)
-
-spectrums = [s for s in tqdm(spectrums) if s.get('inchikey')[:14] in inchikey_test]
-random.shuffle(spectrums)
+    testing_spectrums_ += pickle.load(file)
 
 testing_spectrums = []
-count_positive = np.zeros(len(inchikey_test))
-count_negative = np.zeros(len(inchikey_test))
-for s in tqdm(spectrums):
-    if len(s.mz[s.mz <= 1000]) < 5:
-        continue
-    if 'smiles' not in list(s.metadata.keys()):
-        continue
-    if s.metadata['smiles'] == '':
-        continue
-    if s.get('adduct') not in ['[M+H]+', '[M-H]-']:
-        continue
+for i,s in enumerate(tqdm(testing_spectrums_)):
+    mol = Chem.MolFromSmiles(s.metadata['smiles'])
+    wt = AllChem.CalcExactMolWt(mol)
+    smi = Chem.MolToSmiles(mol, isomericSmiles=False)
     try:
-        mol = Chem.MolFromSmiles(s.metadata['smiles'])
-        wt = AllChem.CalcExactMolWt(mol)
-        smi = Chem.MolToSmiles(mol, isomericSmiles=False)
-        s = s.set('compound_name', 'challenge_{}'.format(len(testing_spectrums)))
-        s = s.set('smiles', smi)
-        s = s.set('parent_mass', wt)
+        precursor_mz = get_true_precursor_mz_from_mass(wt, s.get('adduct'))
     except:
         continue
-    if 'ionmode' not in list(s.metadata.keys()):
-        continue  
-
-    keys = [s for s in s.metadata.keys() if s in ['compound_name', 'smiles', 'inchikey', 'precursor_mz', 'adduct', 'parent_mass', 'ionmode', 'formula']]
-    s.metadata = {k: s.metadata[k] for k in keys}
-    
-    ionmode = s.get('ionmode')
-    inchikey = s.get('inchikey')[:14]
-    i = inchikey_test.index(inchikey)
-    if ionmode == 'positive':
-        if count_positive[i] >= 1:
-            continue
-        else:
-            count_positive[i] += 1
-    elif ionmode == 'negative':
-        if count_negative[i] >= 1:
-            continue
-        else:
-            count_negative[i] += 1
-    else:
-        continue
+    s = s.set('compound_name', 'challenge_{}'.format(len(testing_spectrums)))
+    s = s.set('smiles', smi)
+    s = s.set('parent_mass', wt)
+    s = s.set('precursor_mz', precursor_mz)
     testing_spectrums.append(s)
 
 # save as mgf
 save_as_mgf(list(testing_spectrums), 'example/Test/all_test_set.mgf')
 
 # save as msp individually
-challenge_ms = [s for s in load_from_mgf('example/Test/all_test_set.mgf')]
+testing_spectrums = [s for s in load_from_mgf('example/Test/all_test_set.mgf')]
 for i, s in enumerate(testing_spectrums):
     path = 'example/Test/msp/challenge_{}.msp'.format(i)
     save_as_msp([testing_spectrums[i]], path)
@@ -116,7 +92,7 @@ for i, s in enumerate(testing_spectrums):
     path_msfinder = path.replace('/msp/', '/msfinder/')
         
     # exclude large compound, as ms-finder is very slow for them
-    if s.metadata['parent_mass'] >= 850:
+    if float(s.metadata['parent_mass']) >= 850:
         continue
     with open(path_msfinder, 'w') as msp:
         msp.writelines(lines)

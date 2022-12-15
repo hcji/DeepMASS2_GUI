@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Created on Wed Oct 19 14:02:48 2022
+Created on Thu Dec  1 16:19:45 2022
 
 @author: DELL
 """
@@ -10,28 +10,36 @@ import pickle
 import numpy as np
 from tqdm import tqdm
 from rdkit import Chem
+from rdkit.Chem import rdmolfiles, inchi
 from matchms.importing import load_from_msp
 
-path_data = os.path.join('D:/All_MSDatabase/NIST2017')
+path_data = os.path.join('D:/All_MSDatabase/NIST2020')
 
-file_mol = os.path.join(path_data, 'nist_msms.SDF')
-file_spec = os.path.join(path_data, 'nist_msms.MSP')
+file_mol = os.path.join(path_data, 'hr_msms_nist.MOL')
+file_spec = os.path.join(path_data, 'hr_msms_nist.MSP')
 
-mols = [m for m in tqdm(Chem.SDMolSupplier(file_mol)) if m is not None]
-mol_names = [m.GetProp('NAME') for m in tqdm(mols)]
 spectrums = [s for s in tqdm(load_from_msp(file_spec))]
+np.save(os.path.join(path_data, 'preprocessed_spectrums.npy'), spectrums)
 
-counts = 0
-for i, s in enumerate(tqdm(spectrums)):
-    name = s.metadata['compound_name']
+def add_mol_info(s):
+    if s.get('smiles'):
+        return s
+    i = s.get('id')
+    f = file_mol + '/ID{}.mol'.format(i)
     try:
-        j = mol_names.index(name)
-        counts += 1
+        m = rdmolfiles.MolFromMolFile(f)
     except:
-        continue
-    m = mols[j]
+        return None
+    if m is None:
+        return None
     smi = Chem.MolToSmiles(m)
-    spectrums[i].set('smiles', smi)
+    inchikey = inchi.MolToInchiKey(m)
+    s = s.set('smiles', smi)
+    s = s.set('inchikey', inchikey)
+    return s
+
+
+spectrums = [add_mol_info(s) for s in tqdm(spectrums) if s is not None]
 np.save(os.path.join(path_data, 'preprocessed_spectrums.npy'), spectrums)
 
 
@@ -137,7 +145,9 @@ for i, spec in enumerate(spectrums):
         print(f"No ionmode found for spectrum {i} ({spec.get('ionmode')})")
 
 pickle.dump(spectrums_negative, 
-            open(os.path.join(path_data, 'ALL_NIST17_negative_cleaned.pickle'), "wb"))
+            open(os.path.join(path_data, 'ALL_NIST20_negative_cleaned.pickle'), "wb"))
 
 pickle.dump(spectrums_positive, 
-            open(os.path.join(path_data, 'ALL_NIST17_positive_cleaned.pickle'), "wb"))
+            open(os.path.join(path_data, 'ALL_NIST20_positive_cleaned.pickle'), "wb"))
+
+
