@@ -24,7 +24,7 @@ deepmass_path = "example/Test/result"
 deepmass_files = [name for name in os.listdir(deepmass_path)]
 deepmass_index = [int(i.split('_')[-1].split('.')[-2]) for i in deepmass_files]
 
-msfinder_path = "example/Test/msfinder/Structure result-2105.txt"
+msfinder_path = "example/Test/msfinder/Structure result-2083.txt"
 msfinder_result = pd.read_csv(msfinder_path, sep = '\t')
 msfinder_columns = [col for col in msfinder_result.columns if 'InChIKey' in col]
 
@@ -84,3 +84,26 @@ for s in tqdm(spectrums):
 ranking_result = pd.DataFrame(ranking_result, columns = ['Challenge', 'True Inchikey2D', 'SIRIUS Ranking', 'MSFinder Ranking',
                                                          'DeepMASS Ranking'])
 
+
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+ratios = []
+for i in range(1, 11):
+    deepmass_ratio = len(np.where(ranking_result['DeepMASS Ranking'] <= i )[0]) / len(np.where(~np.isnan(ranking_result['DeepMASS Ranking']))[0])
+    msfinder_ratio = len(np.where(ranking_result['MSFinder Ranking'] <= i )[0]) / len(np.where(~np.isnan(ranking_result['MSFinder Ranking']))[0])
+    sirius_ratio = len(np.where(ranking_result['SIRIUS Ranking'] <= i )[0]) / len(np.where(~np.isnan(ranking_result['SIRIUS Ranking']))[0])
+    ratios.append([deepmass_ratio, sirius_ratio, msfinder_ratio])
+ratios = pd.DataFrame(ratios, columns = ['DeepMASS', 'SIRIUS', 'MSFinder'])
+
+x = np.arange(1,11)
+plt.figure(dpi = 300)
+plt.plot(x, ratios['DeepMASS'], label = 'DeepMASS', marker='D', color = '#EE00007F')
+plt.plot(x, ratios['SIRIUS'], label = 'SIRIUS', marker='D', color = '#008B457F')
+plt.plot(x, ratios['MSFinder'], label = 'MSFinder', marker='D', color = '#3B49927F')
+plt.xlim(0.5, 10.5)
+plt.ylim(0.1, 1)
+plt.xticks(np.arange(1, 11, 1))
+plt.xlabel('topK', fontsize = 12)
+plt.ylabel('ratio', fontsize = 12)
+plt.legend()

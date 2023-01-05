@@ -109,7 +109,7 @@ class DeepMASS2(QMainWindow, main.Ui_MainWindow):
         self.reference_negative = None
         self.chemical_space = 'biodatabase'
         self.embedding_model = 'spec2vec'
-        self.default_database = 'data/MsfinderStructureDB-VS15-plus-GNPS.csv'
+        self.default_database = 'data/DeepMassStructureDB-v1.0.csv'
         self.default_index_positive = 'data/references_index_positive_spec2vec.bin'
         self.default_index_negative = 'data/references_index_negative_spec2vec.bin'
         self.default_reference_positive = 'data/references_spectrums_positive.pickle'

@@ -20,15 +20,11 @@ sirius_path = "example/Plasma/sirius"
 sirius_files = [name for name in os.listdir(sirius_path) if os.path.isdir(os.path.join(sirius_path, name)) ]
 sirius_index = [int(i.split('_')[-1]) for i in sirius_files]
 
-deepmass_path = "example/Plasma/result_all"
+deepmass_path = "example/Plasma/result"
 deepmass_files = [name for name in os.listdir(deepmass_path)]
 deepmass_index = [int(i.split('_')[-1].split('.')[-2]) for i in deepmass_files]
 
-deepmass_path2 = "example/Plasma/result_silicon"
-deepmass_files2 = [name for name in os.listdir(deepmass_path2)]
-deepmass_index2 = [int(i.split('_')[-1].split('.')[-2]) for i in deepmass_files2]
-
-msfinder_path = "example/Plasma/msfinder/Structure result-2137.txt"
+msfinder_path = "example/Plasma/msfinder/Structure result-2090.txt"
 msfinder_result = pd.read_csv(msfinder_path, sep = '\t')
 msfinder_columns = [col for col in msfinder_result.columns if 'InChIKey' in col]
 
@@ -74,18 +70,6 @@ for s in tqdm(spectrums):
     else:
         deepmass_rank = deepmass_rank[0] + 1
         
-    # rank of deepmass in silicon
-    deepmass_file2 = "/{}".format(deepmass_files2[deepmass_index2.index(index)])
-    deepmass_file2 = deepmass_path2 + deepmass_file2
-    deepmass_result2 = pd.read_csv(deepmass_file2)
-    deepmass_key2 = np.array([k[:14] for k in deepmass_result2['InChIKey']])
-    deepmass_n2 = len(deepmass_key2)
-    deepmass_rank2 = np.where(deepmass_key2 == true_key)[0]
-    if len(deepmass_rank2) == 0:
-        deepmass_rank2 = float('inf')
-    else:
-        deepmass_rank2 = deepmass_rank2[0] + 1
-        
     # rank of ms-finder
     msfinder_title = np.array([v.replace('unknown', 'unknown_') for v in msfinder_result['Title'].values])
     msfinder_index = np.where(msfinder_title == name)[0]
@@ -99,10 +83,33 @@ for s in tqdm(spectrums):
     else:
         msfinder_rank = np.nan
 
-    ranking_result.append([name, true_key, sirius_rank, msfinder_rank, deepmass_rank, deepmass_rank2])
+    ranking_result.append([name, true_key, sirius_rank, msfinder_rank, deepmass_rank])
 
 ranking_result = pd.DataFrame(ranking_result, columns = ['Challenge', 'True Inchikey2D', 'SIRIUS Ranking', 'MSFinder Ranking',
-                                                         'DeepMASS All Ranking', 'DeepMASS InSilicon Ranking'])
+                                                         'DeepMASS Ranking'])
+
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+ratios = []
+for i in range(1, 11):
+    deepmass_ratio = len(np.where(ranking_result['DeepMASS Ranking'] <= i )[0]) / len(np.where(~np.isnan(ranking_result['DeepMASS Ranking']))[0])
+    msfinder_ratio = len(np.where(ranking_result['MSFinder Ranking'] <= i )[0]) / len(np.where(~np.isnan(ranking_result['MSFinder Ranking']))[0])
+    sirius_ratio = len(np.where(ranking_result['SIRIUS Ranking'] <= i )[0]) / len(np.where(~np.isnan(ranking_result['SIRIUS Ranking']))[0])
+    ratios.append([deepmass_ratio, sirius_ratio, msfinder_ratio])
+ratios = pd.DataFrame(ratios, columns = ['DeepMASS', 'SIRIUS', 'MSFinder'])
+
+x = np.arange(1,11)
+plt.figure(dpi = 300)
+plt.plot(x, ratios['DeepMASS'], label = 'DeepMASS', marker='D', color = '#EE00007F')
+plt.plot(x, ratios['SIRIUS'], label = 'SIRIUS', marker='D', color = '#008B457F')
+plt.plot(x, ratios['MSFinder'], label = 'MSFinder', marker='D', color = '#3B49927F')
+plt.xlim(0.5, 10.5)
+plt.ylim(0.4, 0.9)
+plt.xticks(np.arange(1, 11, 1))
+plt.xlabel('topK', fontsize = 12)
+plt.ylabel('ratio', fontsize = 12)
+plt.legend(loc='lower right')
 
 
 '''
@@ -158,16 +165,6 @@ for s in tqdm(spectrums):
     else:
         deepmass_top = None
         
-    # rank of deepmass in silicon
-    deepmass_file2 = "/{}".format(deepmass_files2[deepmass_index2.index(index)])
-    deepmass_file2 = deepmass_path2 + deepmass_file2
-    deepmass_result2 = pd.read_csv(deepmass_file2)
-    deepmass_key2 = np.array([k[:14] for k in deepmass_result2['InChIKey']])
-    if len(deepmass_key2) > 0:
-        deepmass_top2 = deepmass_key2[0]
-    else:
-        deepmass_top2 = None
-        
     # rank of ms-finder
     msfinder_title = np.array([v.replace('unknown', 'unknown_') for v in msfinder_result['Title'].values])
     msfinder_index = np.where(msfinder_title == name)[0]
@@ -186,17 +183,13 @@ for s in tqdm(spectrums):
         deepmass_in = True
     else:
         deepmass_in = False
-        
-    if deepmass_top2 in hmdb_keys:
-        deepmass_in2 = True
-    else:
-        deepmass_in2 = False
+
         
     if msfinder_top in hmdb_keys:
         msfinder_in = True
     else:
         msfinder_in = False
-    hmdb_checking.append([sirius_in, msfinder_in, deepmass_in, deepmass_in2])
+    hmdb_checking.append([sirius_in, msfinder_in, deepmass_in, ])
     
-hmdb_checking = pd.DataFrame(hmdb_checking, columns = ['SIRIUS', 'MSFinder', 'DeepMASS_All', 'DeepMASS_Silicon'])
+hmdb_checking = pd.DataFrame(hmdb_checking, columns = ['SIRIUS', 'MSFinder', 'DeepMASS'])
 

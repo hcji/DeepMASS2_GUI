@@ -44,14 +44,17 @@ def remove_duplicate(spectrums):
             new_spectrums.append(spectrum_processing(s))
     return new_spectrums
 
+pos_cols = ['20130909_SAM929_POS1','20130909_SAM929_POS2','20130909_SAM929_POS3',
+            '20130909_SAM929A_POS3','20130909_SAM929C_POS3','20130909_SAM929E_POS3']
+neg_cols = ['20130909_SAM929_NEG1', '20130909_SAM929_NEG2', '20130909_SAM929_NEG3',
+            '20130909_SAM929A_NEG3', '20130909_SAM929C_NEG3', '20130909_SAM929E_NEG3']
 
 spectrums = []
-spectrums += load_MS_DIAL_Alginment('example/Plasma/ms_dial_positive.csv')
-spectrums += load_MS_DIAL_Alginment('example/Plasma/ms_dial_negative.csv')
+spectrums += load_MS_DIAL_Alginment('example/Plasma/ms_dial_positive.csv', sample_cols = pos_cols)
+spectrums += load_MS_DIAL_Alginment('example/Plasma/ms_dial_negative.csv', sample_cols = neg_cols)
 spectrums = [s for s in spectrums if len(s.intensities[s.intensities > 0.05]) >= 3]
 spectrums = [s for s in spectrums if s.get('parent_mass') is not None]
 spectrums = remove_duplicate(spectrums)
-spectrums = [s.set('compound_name', 'Compound_{}'.format(i)) for i, s in enumerate(spectrums)]
 
 
 '''
@@ -137,7 +140,6 @@ pnas_identified.to_csv('example/Plasma/pnas_identified.csv', index = False)
 pnas_identified = pd.read_csv('example/Plasma/pnas_identified.csv')
 pnas_identified['Ms Diff'] = pnas_identified['Detected m/z (A)'] - pnas_identified['exact_mass']
 
-k = 0
 for s in spectrums:
     mz_diff = np.abs(pnas_identified['Detected m/z (A)'].values - s.metadata['precursor_mz'])
     rt_diff = np.abs(pnas_identified['RT (min)'].values - s.metadata['retention_time'])
@@ -150,7 +152,9 @@ for s in spectrums:
         
         s.set('inchikey', inchikey)
         s.set('true_annotation', name)
-        k += 1
+
+spectrums = [s for s in spectrums if s.get('inchikey')]
+spectrums = [s.set('compound_name', 'Compound_{}'.format(i)) for i, s in enumerate(spectrums)]
 save_as_mgf(spectrums, 'example/Plasma/ms_ms_plasma.mgf')
 
 
