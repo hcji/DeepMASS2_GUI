@@ -87,17 +87,10 @@ def retrieve_by_formula(formula, timeout=999):
 
 
 
-def retrieve_by_exact_mass_database(mass, database, ppm = 10, priority=[]):
+def retrieve_by_exact_mass_database(mass, database, ppm = 10):
     min_mass = mass - mass * ppm / 10 ** 6
     max_mass = mass + mass * ppm / 10 ** 6
     result = database[np.logical_and(database['Exact mass']>=min_mass, database['Exact mass']<=max_mass)]
-    result = result.reset_index(drop=True)
-    if len(priority) > 0:
-        k = set()
-        for pr in priority:
-            k = k | set(np.where(result[pr].values.astype(str) != 'nan')[0])
-        if len(k) > 0:
-            result = result.loc[list(k),:]
     result = result[['Title', 'Formula', 'SMILES', 'InChIkey']]
     if len(result) == 0:
         return []
@@ -107,15 +100,8 @@ def retrieve_by_exact_mass_database(mass, database, ppm = 10, priority=[]):
     return result
 
 
-def retrieve_by_formula_database(formula, database, priority=[]):   
+def retrieve_by_formula_database(formula, database):   
     result = database[database['Formula'] == formula]
-    result = result.reset_index(drop=True)
-    if len(priority) > 0:
-        k = set()
-        for pr in priority:
-            k = k | set(np.where(result[pr].values.astype(str) != 'nan')[0])
-        if len(k) > 0:
-            result = result.loc[list(k),:]
     result = result[['Title', 'Formula', 'SMILES', 'InChIkey']]
     if len(result) == 0:
         return []

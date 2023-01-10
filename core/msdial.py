@@ -136,10 +136,36 @@ def load_MS_DIAL_Alginment(filename, exclude_precursor = False, sample_cols = []
                                  "adduct": adduct,
                                  "precursor_intensity": precursor_intensity,
                                  "isotope_mz": base64.b64encode(str(isotope_mz).encode("ascii")),
-                                 "isotope_intensity": base64.b64encode(str(isotope_intensity).encode("ascii")),
-                                 "sample_abundance": str(sample_abundance)})
+                                 "isotope_intensity": base64.b64encode(str(isotope_intensity).encode("ascii"))})
         output.append(spectrum_processing(obj))
     return output
+
+
+def remove_duplicate(spectrums):
+    new_spectrums = []
+    rt, mz, iontype, intensities = [], [], [], []
+    for s in tqdm(spectrums):
+        [rt_, mz_, iontype_, intensity_, adduct_] = [s.metadata[k] for k in ['retention_time', 'precursor_mz', 'ionmode', 'precursor_intensity', 'adduct']]
+        if adduct_ not in ['[M+H]+', '[M-H]-']:
+            continue
+        wh = np.logical_and( np.abs(np.array(rt) - rt_) < 18,
+                             np.abs(np.array(mz) - mz_) < 0.01,
+                             np.array([i == iontype_ for i in iontype]))
+        wh = np.where(wh)[0]
+        if len(wh) > 0:
+            w = wh[0]
+            if intensity_ >= intensities[w]:
+                new_spectrums[w] = s
+                intensities[w] = intensity_
+            else:
+                continue
+        else:
+            rt.append(rt_)
+            mz.append(mz_)
+            iontype.append(iontype_)
+            intensities.append(intensity_)
+            new_spectrums.append(spectrum_processing(s))
+    return new_spectrums
 
 
 def save_as_sirius(spectrums, export_path):

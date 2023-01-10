@@ -15,7 +15,7 @@ from matchms import Spectrum
 from matchms.importing import load_from_mgf
 from matchms.exporting import save_as_mgf, save_as_msp
 from core.identification import spectrum_processing
-from core.msdial import load_MS_DIAL_Alginment
+from core.msdial import load_MS_DIAL_Alginment, remove_duplicate
 
 '''
 ident_pos = pd.read_excel("E:/Data/tomato_data/MH2102-009-DR-TMT-pos-LS-FINAL-MSMS.xlsx").loc[:,['Compound Name', 'm/z (Expected)', 'RT']]
@@ -82,39 +82,19 @@ tomato_identified['molecular_formula'] = molecular_formula
 tomato_identified.to_csv('example/Tomato/tomato_identified.csv', index = False)
 '''
 
-def remove_duplicate(spectrums):
-    new_spectrums = []
-    rt, mz, iontype, intensities = [], [], [], []
-    for s in tqdm(spectrums):
-        [rt_, mz_, iontype_, intensity_, adduct_] = [s.metadata[k] for k in ['retention_time', 'precursor_mz', 'ionmode', 'precursor_intensity', 'adduct']]
-        if adduct_ not in ['[M+H]+', '[M-H]-']:
-            continue
-        wh = np.logical_and( np.abs(np.array(rt) - rt_) < 18,
-                             np.abs(np.array(mz) - mz_) < 0.01,
-                             np.array([i == iontype_ for i in iontype]))
-        wh = np.where(wh)[0]
-        if len(wh) > 0:
-            w = wh[0]
-            if intensity_ >= intensities[w]:
-                new_spectrums[w] = s
-                intensities[w] = intensity_
-            else:
-                continue
-        else:
-            rt.append(rt_)
-            mz.append(mz_)
-            iontype.append(iontype_)
-            intensities.append(intensity_)
-            new_spectrums.append(spectrum_processing(s))
-    return new_spectrums
+pos_path = 'example/Tomato/tomato_positive_msdial.csv'
+neg_path = 'example/Tomato/tomato_negative_msdial.csv'
+pos_data = pd.read_csv(pos_path)
+neg_data = pd.read_csv(neg_path)
+pos_cols = list(pos_data.columns[32:])
+neg_cols = list(neg_data.columns[32:])
 
 spectrums = []
-spectrums += load_MS_DIAL_Alginment('example/Tomato/tomato_positive.csv')
-spectrums += load_MS_DIAL_Alginment('example/Tomato/tomato_negative.csv')
+spectrums += load_MS_DIAL_Alginment('example/Tomato/tomato_positive_msdial.csv', sample_cols = pos_cols)
+spectrums += load_MS_DIAL_Alginment('example/Tomato/tomato_negative_msdial.csv', sample_cols = neg_cols)
 spectrums = [s for s in spectrums if len(s.intensities[s.intensities > 0.05]) >= 3]
 spectrums = [s for s in spectrums if s.get('parent_mass') is not None]
 spectrums = remove_duplicate(spectrums)
-spectrums = [s.set('compound_name', 'Compound_{}'.format(i)) for i, s in enumerate(spectrums)]
 
 identified_spectrums = []
 tomato_identified = pd.read_csv('example/Tomato/tomato_identified.csv')
@@ -133,6 +113,8 @@ for s in tqdm(spectrums):
         s = s.set('inchikey', inchikey)
         s = s.set('true_annotation', name)
         identified_spectrums.append(s)
+identified_spectrums = [s.set('compound_name', 'Compound_{}'.format(i)) for i, s in enumerate(identified_spectrums)]
+
 
 save_as_mgf(identified_spectrums, 'example/Tomato/ms_ms_tomato_identified.mgf')
 

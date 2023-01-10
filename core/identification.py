@@ -8,6 +8,7 @@ Created on Fri Sep 30 11:27:02 2022
 
 import base64
 import numpy as np
+import pandas as pd
 from rdkit import Chem
 from rdkit.Chem import DataStructs, AllChem
 from sklearn.metrics.pairwise import cosine_similarity
@@ -19,11 +20,11 @@ from spec2vec.vector_operations import calc_vector
 from ms2deepscore.MS2DeepScore import MS2DeepScore
 from gensim.models.word2vec import Word2Vec
 
-
 from pycdk.pycdk import IsotopeFromString, IsotopeSimilarity
 from core.pubchem import retrieve_by_formula, retrieve_by_exact_mass
 from core.pubchem import retrieve_by_formula_database, retrieve_by_exact_mass_database
 
+structure_db = pd.read_csv('data/DeepMassStructureDB-v1.0.csv')
 
 def spectrum_processing(s):
     """This is how one would typically design a desired pre- and post-
@@ -112,21 +113,21 @@ def identify_unknown(s, p, n_ref, n_neb, database, priority, model, reference, c
     if 'formula' in s.metadata.keys():
         formula = s.metadata['formula']
         if chemical_space == 'biodatabase':
-            candidate = retrieve_by_formula_database(formula, database, priority = priority)
+            candidate = retrieve_by_formula_database(formula, database)
         elif chemical_space == 'biodatabase plus':
-            candidate = retrieve_by_formula_database(formula, database, priority = priority)
+            candidate = retrieve_by_formula_database(formula, database)
             if len(candidate) == 0:
                 try:
                     candidate = retrieve_by_formula(formula)
                 except:
-                    candidate = retrieve_by_formula_database(formula, database, priority = [])
+                    pass
         elif chemical_space == 'custom':
-            candidate = retrieve_by_formula_database(formula, database, priority = [])
+            candidate = retrieve_by_formula_database(formula, database)
         else:
             try:
                 candidate = retrieve_by_formula(formula)
             except:
-                candidate = retrieve_by_formula_database(formula, database, priority = [])
+                candidate = retrieve_by_formula_database(formula, database)
              
     elif 'parent_mass' in s.metadata.keys():
         try:
@@ -134,26 +135,34 @@ def identify_unknown(s, p, n_ref, n_neb, database, priority, model, reference, c
         except:
             return s
         if chemical_space == 'biodatabase':
-            candidate = retrieve_by_exact_mass_database(mass, database, ppm = ms1_tolerence, priority = priority)
+            candidate = retrieve_by_exact_mass_database(mass, database, ppm = ms1_tolerence)
         elif chemical_space == 'biodatabase plus':
-            candidate = retrieve_by_exact_mass_database(mass, database, ppm = ms1_tolerence, priority = priority)
+            candidate = retrieve_by_exact_mass_database(mass, database, ppm = ms1_tolerence)
             if len(candidate) == 0:
                 try:
                     candidate = retrieve_by_exact_mass(mass)
                 except:
-                    candidate = retrieve_by_exact_mass_database(mass, database, ppm = ms1_tolerence, priority = [])
+                    pass
         elif chemical_space == 'custom':
-            candidate = retrieve_by_exact_mass_database(mass, database, ppm = ms1_tolerence, priority = [])
+            candidate = retrieve_by_exact_mass_database(mass, database, ppm = ms1_tolerence)
         else:
             try:
                 candidate = retrieve_by_exact_mass(mass)
             except:
-                candidate = retrieve_by_exact_mass_database(mass, database, ppm = ms1_tolerence, priority = [])
+                candidate = retrieve_by_exact_mass_database(mass, database, ppm = ms1_tolerence)
     else:
         return s
     
     if len(candidate) == 0:
         return s
+    
+    priority_key = []
+    if len(priority) > 0:
+        k = set()
+        for pr in priority:
+            k = k | set(np.where(structure_db[pr].values.astype(str) != 'nan')[0])
+        priority_key = list(structure_db.loc[list(k), 'InChIkey'])
+    
     reference_spectrum = np.array(reference)[I[0,:]]
     reference_smile = [s.metadata['smiles'] for s in reference_spectrum]
     reference_mol = [Chem.MolFromSmiles(s) for s in reference_smile]
@@ -209,11 +218,13 @@ def identify_unknown(s, p, n_ref, n_neb, database, priority, model, reference, c
     candidate_iso_score = [calc_isotope_score(s, f) for f in candidate['MolecularFormula'].values]
     candidate['Isotope Score'] = np.round(candidate_iso_score, 4)
     
+    candidate['Database Score'] = np.array([i in priority_key for i in candidate['InChIKey']]).astype(int)
+    
     k = np.argsort(-candidate['DeepMass Score'])
     deepmass_score = np.array([-np.sort(-s) for s in candidate_fp_score])[k,:]
     
     candidate['DeepMass Score'] = np.round(candidate['DeepMass Score'], 4)
-    candidate['Consensus Score'] = 0.6*candidate['DeepMass Score'] + 0.2*candidate['Isotope Score'] + 0.2*candidate['MolWt Score']
+    candidate['Consensus Score'] = 0.54*candidate['DeepMass Score'] + 0.18*candidate['Isotope Score'] + 0.18*candidate['MolWt Score'] + 0.1 * candidate['Database Score']
     candidate = candidate.sort_values('Consensus Score', ignore_index = True, ascending = False)
     
     reference_shortkey = [s.get('inchikey')[:14] for s in reference_spectrum]

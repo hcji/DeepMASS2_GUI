@@ -16,33 +16,7 @@ from matchms import Spectrum
 from matchms.importing import load_from_mgf
 from matchms.exporting import save_as_mgf, save_as_msp
 from core.identification import spectrum_processing
-from core.msdial import load_MS_DIAL_Alginment
-
-def remove_duplicate(spectrums):
-    new_spectrums = []
-    rt, mz, iontype, intensities = [], [], [], []
-    for s in tqdm(spectrums):
-        [rt_, mz_, iontype_, intensity_, adduct_] = [s.metadata[k] for k in ['retention_time', 'precursor_mz', 'ionmode', 'precursor_intensity', 'adduct']]
-        if adduct_ not in ['[M+H]+', '[M-H]-']:
-            continue
-        wh = np.logical_and( np.abs(np.array(rt) - rt_) < 18,
-                             np.abs(np.array(mz) - mz_) < 0.01,
-                             np.array([i == iontype_ for i in iontype]))
-        wh = np.where(wh)[0]
-        if len(wh) > 0:
-            w = wh[0]
-            if intensity_ >= intensities[w]:
-                new_spectrums[w] = s
-                intensities[w] = intensity_
-            else:
-                continue
-        else:
-            rt.append(rt_)
-            mz.append(mz_)
-            iontype.append(iontype_)
-            intensities.append(intensity_)
-            new_spectrums.append(spectrum_processing(s))
-    return new_spectrums
+from core.msdial import load_MS_DIAL_Alginment, remove_duplicate
 
 pos_cols = ['20130909_SAM929_POS1','20130909_SAM929_POS2','20130909_SAM929_POS3',
             '20130909_SAM929A_POS3','20130909_SAM929C_POS3','20130909_SAM929E_POS3']
