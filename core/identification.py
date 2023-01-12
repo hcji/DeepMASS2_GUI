@@ -62,8 +62,10 @@ def calc_isotope_score(s, formula):
         isotope_pattern = np.vstack((isotope_mz, isotope_intensity)).T
     else:
         return 0
-    
-    isotope_ref = IsotopeFromString(formula, minI=0.001)
+    try:
+        isotope_ref = IsotopeFromString(formula, minI=0.001)
+    except:
+        return 0
     return IsotopeSimilarity(isotope_pattern, isotope_ref, 10)
 
 
@@ -224,7 +226,8 @@ def identify_unknown(s, p, n_ref, n_neb, database, priority, model, reference, c
     deepmass_score = np.array([-np.sort(-s) for s in candidate_fp_score])[k,:]
     
     candidate['DeepMass Score'] = np.round(candidate['DeepMass Score'], 4)
-    candidate['Consensus Score'] = 0.54*candidate['DeepMass Score'] + 0.18*candidate['Isotope Score'] + 0.18*candidate['MolWt Score'] + 0.1 * candidate['Database Score']
+    candidate['Consensus Score'] = candidate['DeepMass Score'] + 0.1*candidate['Isotope Score'] + 0.1*candidate['MolWt Score'] + 0.05 * candidate['Database Score']
+    candidate['Consensus Score'] /= np.max(candidate['Consensus Score'])
     candidate = candidate.sort_values('Consensus Score', ignore_index = True, ascending = False)
     
     reference_shortkey = [s.get('inchikey')[:14] for s in reference_spectrum]

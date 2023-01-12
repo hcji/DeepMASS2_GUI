@@ -24,7 +24,7 @@ outfile = os.path.join(path_data, 'GNPS_all/ALL_GNPS_220601_positive_cleaned.pic
 with open(outfile, 'rb') as file:
     spectrums = pickle.load(file)
 
-outfile = os.path.join(path_data, 'In_House/ALL_In_House_positive_cleaned.pickle')
+outfile = os.path.join(path_data, 'In_House/ALL_Inhouse_positive_cleaned.pickle')
 with open(outfile, 'rb') as file:
     spectrums += pickle.load(file)
 
@@ -42,7 +42,7 @@ outfile = os.path.join(path_data, 'GNPS_all/ALL_GNPS_220601_negative_cleaned.pic
 with open(outfile, 'rb') as file:
     spectrums = pickle.load(file)
 
-outfile = os.path.join(path_data, 'In_House/ALL_In_House_negative_cleaned.pickle')
+outfile = os.path.join(path_data, 'In_House/ALL_Inhouse_negative_cleaned.pickle')
 with open(outfile, 'rb') as file:
     spectrums += pickle.load(file)
 

@@ -499,7 +499,11 @@ class DeepMASS2(QMainWindow, main.Ui_MainWindow):
         data = self.spectrums
         selectItem = self.list_spectrum.currentItem().text()
         w = np.where(data.loc[:, 'title'] == selectItem)[0][0]
-        self.current_spectrum = self.identified_spectrums[w]
+        try:
+            self.current_spectrum = self.identified_spectrums[w]
+        except:
+            self.WarnMsg('No available structures')
+            return
         
         if 'annotation' not in self.current_spectrum.metadata.keys():
             self.WarnMsg('No available structures')
