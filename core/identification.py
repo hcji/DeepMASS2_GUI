@@ -41,6 +41,7 @@ def spectrum_processing(s):
 
 
 def get_formula_mass(formula):
+    formula = formula.replace('+','').replace('-','')
     f = Formula(formula)
     return f.isotope.mass
 
