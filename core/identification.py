@@ -5,7 +5,7 @@ Created on Fri Sep 30 11:27:02 2022
 @author: DELL
 """
 
-
+import os
 import base64
 import numpy as np
 import pandas as pd
@@ -20,7 +20,7 @@ from spec2vec.vector_operations import calc_vector
 from ms2deepscore.MS2DeepScore import MS2DeepScore
 from gensim.models.word2vec import Word2Vec
 
-from pycdk.pycdk import IsotopeFromString, IsotopeSimilarity
+from core.pycdk import IsotopeFromString, IsotopeSimilarity
 from core.pubchem import retrieve_by_formula, retrieve_by_exact_mass
 from core.pubchem import retrieve_by_formula_database, retrieve_by_exact_mass_database
 

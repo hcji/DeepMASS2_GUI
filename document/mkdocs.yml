@@ -1,0 +1,12 @@
+site_name: DeepMASS
+theme:
+  name: materia
+
+nav:
+    - Home: index.md
+    - Installation: install.md
+    - Getting started: getting_started.md
+    - Parameters: parameters.md
+    - Library: library.md
+    - API guide: API_guide.md
+    - About: about.md

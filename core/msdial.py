@@ -242,4 +242,51 @@ def save_as_msfinder(spectrums, export_path):
     pass
 
 
+def spectrum_to_vector(s, min_mz = 0, max_mz = 1000, scale = 0.1):    
+    """
+    Convert spectrum object to vector.
+    Arguments:
+        s: matchms::spectrum
+        min_mz: float, start of mz value.
+        max_mz: float, end of mz value.
+        scale: float, scale of mz bin.
+    Returns:
+        Numpy array of spectrum.
+    """
+    bit = round((1 + max_mz - min_mz) / scale)
+    vec = np.zeros(bit)
+    if s is None:
+        return vec
+    else:
+        k = np.logical_and(min_mz <= s.mz, s.mz <= max_mz)
+        idx = np.round((s.mz[k] - min_mz) / scale).astype(int)
+        val = s.intensities[k]
+        vec[idx] = val
+        vec = vec / (np.max(vec) + 10 ** -6)
+        return vec
 
+
+def consensus_spectrum(spectrums, mz_window = 0.2):
+    tot_array = []
+    for i, s in enumerate(spectrums):
+        mz, intensity = s.peaks.mz, s.peaks.intensities
+        array = np.vstack((mz, intensity, np.repeat(i, len(mz)))).T
+        tot_array.append(array)
+    
+    i = 0
+    mz, intensity = [], []
+    tot_array = np.vstack(tot_array)
+    while True:
+        if i >= len(tot_array):
+            break
+        m = tot_array[i,0]
+        j = np.searchsorted(tot_array[:,0], m + mz_window)
+        a = tot_array[i:j, 0]
+        b = tot_array[i:j, 1]
+        a = np.round(np.sum(a * b) / np.sum(b), 5)
+        b = np.round(np.max(b), 5)
+        mz.append(a)
+        intensity.append(b)
+        i = j
+    output = np.vstack((mz, intensity)).T
+    return output
