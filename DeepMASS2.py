@@ -542,6 +542,7 @@ class DeepMASS2(QMainWindow, main.Ui_MainWindow):
         structural_table = structural_table.reset_index(drop = True)
         if len(structural_table) == 0:
             self.WarnMsg('No available structures')
+            self._set_finished()
             return
         self._set_table_widget(self.tab_structure, structural_table)
         self.tab_structure.setCurrentCell(0, 0)
