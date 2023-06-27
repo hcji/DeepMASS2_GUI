@@ -1,6 +1,6 @@
 # Data
 example/
-temp/
+temp/*.png
 *.mgf
 *.msp
 *.npy
