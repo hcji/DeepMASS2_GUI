@@ -177,8 +177,9 @@ def identify_unknown(s, p, n_ref, n_neb, database, priority, model, reference, c
             continue
         # in-silicon only means reference structures cannot include any candidates
         if in_silicon_only:
-            if abs(float(s.metadata['parent_mass']) - reference_spectrum[i].metadata['parent_mass']) < 0.01:
-                continue
+            if reference_spectrum[i].get('inchikey') is not None:
+                if s.metadata['inchikey'][:14] == reference_spectrum[i].metadata['inchikey'][:14]:
+                    continue
         try:
             reference_fp.append(get_fp(m))
             k.append(i)
