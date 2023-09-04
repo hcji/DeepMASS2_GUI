@@ -584,7 +584,7 @@ class Thread_Matching(QThread):
     _result = QtCore.pyqtSignal(Spectrum)
 
     def __init__(self, spectrums, precursors_positive, precursors_negative, reference_positive, reference_negative):
-        super(Thread_Identification, self).__init__()
+        super(Thread_Matching, self).__init__()
         self.spectrums = spectrums
         self.precursors_positive = precursors_positive
         self.precursors_negative = precursors_negative
@@ -599,11 +599,11 @@ class Thread_Matching(QThread):
         for i, s in enumerate(self.spectrums):
             if 'ionmode' in s.metadata.keys():
                 if s.metadata['ionmode'] == 'negative':
-                    sn = match_spectrum(s, self.p_negative, self.precursors_negative, self.reference_negative)
+                    sn = match_spectrum(s, self.precursors_negative, self.reference_negative)
                 else:
-                    sn = match_spectrum(s, self.p_positive, self.precursors_positive, self.reference_positive)
+                    sn = match_spectrum(s, self.precursors_positive, self.reference_positive)
             else:
-                sn = match_spectrum(s, self.p_positive, self.precursors_negative, self.reference_positive)
+                sn = match_spectrum(s, self.precursors_positive, self.reference_positive)
             self._i.emit(int(100 * i / len(self.spectrums)))
             self._result.emit(sn)
 

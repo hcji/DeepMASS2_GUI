@@ -185,15 +185,25 @@ def match_spectrum(s, precursors, references):
     lb, ub = precursor - 0.05, precursor + 0.05
     li = np.searchsorted(precursors, lb)
     ui = np.searchsorted(precursors, ub)
+    if ui <= li:
+        return s
     match_scores = calculate_scores(references = references[li:ui], queries = [s], similarity_function = CosineGreedy())
-    match_scores = np.array([s[0][0] for s in match_scores.scores])
+    # print(match_scores.scores)
+    match_scores = np.array([s[0].tolist()[0] for s in match_scores.scores])
     w = np.argsort(-match_scores)
-    reference = references[li:ui][w]
+    reference = np.array(references)[li:ui][w]
+    formula = []
+    for r in reference:
+        try:
+            f = AllChem.CalcMolFormula(Chem.MolFromSmiles(s.get('smiles')))
+        except:
+            f = ''
+        formula.append(f)
     annotation = {'Title': [s.get('compound_name') for s in reference], 
-                  'MolecularFormula': [AllChem.CalcMolFormula(Chem.MolFromSmiles(s.get('smiles'))) for s in reference], 
+                  'MolecularFormula': formula, 
                   'CanonicalSMILES': [s.get('smiles') for s in reference], 
                   'InChIKey': [s.get('inchikey') for s in reference],
-                  'Match Score': match_scores[w]}
+                  'Matching Score': match_scores[w]}
     annotation = pd.DataFrame(annotation)
     if s.get('formula') is not None:
         annotation = annotation[annotation['MolecularFormula'] == s.get('formula')]
@@ -221,7 +231,6 @@ if __name__ == '__main__':
     references = np.array(references)
     precursors = [s.get('precursor_mz') for s in references]
     precursors = np.array(precursors)
-    formulas = [s.get('formula') for s in references]
     
     spectrums = [s for s in load_from_mgf("D:/DeepMASS2_Data_Processing/Example/CASMI/all_casmi.mgf")]
     s = spectrums[200]
