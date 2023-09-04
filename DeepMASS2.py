@@ -36,19 +36,10 @@ from rdkit.Chem import Draw, rdFMCS
 from molmass import Formula
 from matchms.Spectrum import Spectrum
 from matchms.importing import load_from_mgf
-from ms2deepscore import MS2DeepScore
-from ms2deepscore.models import load_model
 from gensim.models import Word2Vec
 
-from uic import main, parameter
-from core.identification import identify_unknown
-
-class Parameter(QtWidgets.QWidget, parameter.Ui_Form):
-    
-    def __init__(self, parent=None): 
-        super(Parameter, self).__init__(parent)
-        self.setupUi(self)
-        self.setWindowTitle("Parameters")
+from uic import main
+from core.identification import identify_unknown, match_spectrum
 
 
 class DeepMASS2(QMainWindow, main.Ui_MainWindow):
@@ -66,9 +57,6 @@ class DeepMASS2(QMainWindow, main.Ui_MainWindow):
         
         # window
         self.label_logo.setPixmap(QPixmap("icon/logo_deepmass.png"))
-        self.ParameterUI = Parameter()
-        self.ParameterUI.pushButton_OK.clicked.connect(self.set_parameter)
-        self.ParameterUI.pushButton_Cancel.clicked.connect(self.ParameterUI.close)
         
         # plot      
         self.LabelAnno = QLabel()
@@ -83,20 +71,7 @@ class DeepMASS2(QMainWindow, main.Ui_MainWindow):
         self.gridlayoutfigSpec = QGridLayout(self.box_spectrum)
         self.gridlayoutfigSpec.addWidget(self.figSpe)
         self.gridlayoutfigSpec.addWidget(self.figSpe_ntb)
-        
-        self.figUmap = MakeFigure(3.6, 2.4, dpi = 300)
-        self.figUmap_ntb = NavigationToolbar(self.figUmap, self)
-        self.gridlayoutfigUmap = QGridLayout(self.box_umap)
-        self.gridlayoutfigUmap.addWidget(self.figUmap)
-        self.gridlayoutfigUmap.addWidget(self.figUmap_ntb)
-        
-        # parameters
-        self.n_ref = 300
-        self.n_neb = 20
-        self.sim_metric = 'Jaccard'
-        self.priority = []
-        self.ms1_tolerence = 10
-        self.in_silicon_only = False
+    
         
         # data
         self.pn = None
@@ -104,37 +79,28 @@ class DeepMASS2(QMainWindow, main.Ui_MainWindow):
         self.database = pd.DataFrame()
         self.spectrums = pd.DataFrame(columns=['title', 'spectrum'])
         self.identified_spectrums = []
-        self.network_vectors = []
         self.reference_positive = None
         self.reference_negative = None
-        self.chemical_space = 'biodatabase'
-        self.embedding_model = 'spec2vec'
-        self.default_database = 'data/DeepMassStructureDB-v1.0.csv'
         self.default_index_positive = 'data/references_index_positive_spec2vec.bin'
         self.default_index_negative = 'data/references_index_negative_spec2vec.bin'
         self.default_reference_positive = 'data/references_spectrums_positive.pickle'
         self.default_reference_negative = 'data/references_spectrums_negative.pickle'
+        self.default_database = pd.read_csv('data/DeepMassStructureDB-v1.0.csv')
         self.current_spectrum = None
         self.current_reference = None
-        self.ParameterUI.comboBoxEmb.addItems(['spec2vec'])
-        self.ParameterUI.comboBoxInS.addItems(['False', 'True'])
         
         # action
         self.butt_open.setDisabled(True)
-        self.butt_open.setIcon(QtGui.QIcon('icon/opened-folder.png'))
         self.butt_run.setDisabled(True)
-        self.butt_run.setIcon(QtGui.QIcon('icon/start.png'))
+        self.butt_match.setDisabled(True)
         self.butt_save.setDisabled(True)
-        self.butt_save.setIcon(QtGui.QIcon('icon/save.png'))
-        self.butt_para.setIcon(QtGui.QIcon('icon/parameters.png'))
         self.butt_open.clicked.connect(self.load_spectrums)
         self.butt_save.clicked.connect(self.save_identification)
         self.butt_run.clicked.connect(self.run_identification)
-        self.butt_para.clicked.connect(self.ParameterUI.show)
+        self.butt_match.clicked.connect(self.run_matching_ms)
         self.butt_spectrum.clicked.connect(self.plot_spectrum)
         self.butt_loss.clicked.connect(self.plot_loss)
         self.butt_plotComm.clicked.connect(self.plot_mol_with_highlight)
-        self.butt_network.clicked.connect(self.calc_spectrum_network)
         self.list_spectrum.itemClicked.connect(self.fill_formula_table)
         self.tab_formula.itemClicked.connect(self.fill_structural_table)
         self.tab_structure.itemClicked.connect(self.fill_reference_table)
@@ -147,17 +113,13 @@ class DeepMASS2(QMainWindow, main.Ui_MainWindow):
         # initial
         self.Thread_LoadIndexPositive = None
         self.Thread_LoadIndexNegative = None
-        self.Thread_LoadDatabase = None
         self.Thread_LoadReference = None
         self.Thread_Identification = None
-        self.Thread_Network = None
+        self.Thread_Matching = None
         
         self.progressBar.setValue(0)
         self.progressBar.setFormat('Loading database')
-        self.Thread_LoadDatabase = Thread_LoadDatabase(self.default_database)
-        self.Thread_LoadDatabase._compounds.connect(self._set_database)
-        self.Thread_LoadDatabase.start()
-        self.Thread_LoadDatabase.finished.connect(self.load_references_positive)
+        self.load_references_positive()
         self.deepmass_positive = Word2Vec.load("model/Ms2Vec_allGNPSpositive.hdf5")
         self.deepmass_negative = Word2Vec.load("model/Ms2Vec_allGNPSnegative.hdf5")
 
@@ -212,10 +174,6 @@ class DeepMASS2(QMainWindow, main.Ui_MainWindow):
     def _set_succeed_annotation(self, msg):
         self.identified_spectrums.append(msg)
         
-    
-    def _set_succeed_vectorize(self, msg):
-        self.network_vectors.append(msg)
-        
         
     def _set_process_bar(self, msg):
         self.progressBar.setValue(int(msg))
@@ -240,6 +198,7 @@ class DeepMASS2(QMainWindow, main.Ui_MainWindow):
     def _set_busy(self):
         self.butt_open.setDisabled(True)
         self.butt_run.setDisabled(True)
+        self.butt_match.setDisabled(True)
         self.butt_save.setDisabled(True)
         
 
@@ -248,104 +207,8 @@ class DeepMASS2(QMainWindow, main.Ui_MainWindow):
         self.progressBar.setFormat('Ready') 
         self.butt_open.setDisabled(False)
         self.butt_run.setDisabled(False)
+        self.butt_match.setDisabled(False)
         self.butt_save.setDisabled(False)
-    
-    
-    def set_custom_database(self):
-        options = QtWidgets.QFileDialog.Options()
-        options |= QtWidgets.QFileDialog.DontUseNativeDialog
-        fileName, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Select custom database", "","CSV Files (*.csv)", options=options)
-        if fileName:
-            self.progressBar.setValue(50)
-            self.progressBar.setFormat('Loading database')
-            self.Thread_LoadDatabase = Thread_LoadDatabase(fileName)
-            self.Thread_LoadDatabase._compounds.connect(self._set_database)
-            self.Thread_LoadDatabase.start()
-            self.Thread_LoadDatabase.finished.connect(self._set_finished)
-            
-    
-    def set_parameter(self):
-        self.n_ref = int(self.ParameterUI.spinBox_nref.value())
-        self.n_neb = int(self.ParameterUI.spinBox_nneb.value())
-        self.ms1_tolerence = int(self.ParameterUI.spinBox_ms1tol.value())
-        self.in_silicon_only = bool(self.ParameterUI.comboBoxInS.currentText())
-        if self.ParameterUI.radioButton_1.isChecked():
-            self.chemical_space = 'biodatabase'
-        if self.ParameterUI.radioButton_2.isChecked():
-            self.chemical_space = 'pubchem'
-        if self.ParameterUI.radioButton_4.isChecked():
-            self.chemical_space = 'biodatabase plus'
-        if self.ParameterUI.radioButton_3.isChecked():
-            self.chemical_space = 'custom'
-            self.set_custom_database()
-        if self.ParameterUI.comboBoxEmb.currentText() != self.embedding_model:
-            self.embedding_model = self.ParameterUI.comboBoxEmb.currentText()
-            if self.embedding_model == 'ms2deepscore':
-                self.default_index_positive = 'data/references_index_positive.bin'
-                self.default_index_negative = 'data/references_index_negative.bin'
-                self.load_references_positive()
-                self.deepmass_positive = MS2DeepScore(load_model("model/MS2DeepScore_allGNPSpositive.hdf5"))
-                self.deepmass_negative = MS2DeepScore(load_model("model/MS2DeepScore_allGNPSnegative.hdf5"))
-            if self.embedding_model == 'spec2vec':
-                self.default_index_positive = 'data/references_index_positive_spec2vec.bin'
-                self.default_index_negative = 'data/references_index_negative_spec2vec.bin'
-                self.load_references_positive()
-                self.deepmass_positive = Word2Vec.load("model/Ms2Vec_allGNPSpositive.hdf5")
-                self.deepmass_negative = Word2Vec.load("model/Ms2Vec_allGNPSnegative.hdf5")
-        else:
-            pass      
-        self.priority = []
-        if self.ParameterUI.checkBox_1.isChecked():
-            self.priority.append('HMDB')
-        if self.ParameterUI.checkBox_2.isChecked():
-            self.priority.append('KNApSAcK')
-        if self.ParameterUI.checkBox_3.isChecked():
-            self.priority.append('ChEBI') 
-        if self.ParameterUI.checkBox_4.isChecked():
-            self.priority.append('DrugBank')
-        if self.ParameterUI.checkBox_5.isChecked():
-            self.priority.append('SMPDB')
-        if self.ParameterUI.checkBox_6.isChecked():
-            self.priority.append('STOFF')
-        if self.ParameterUI.checkBox_7.isChecked():
-            self.priority.append('YMDB')
-        if self.ParameterUI.checkBox_8.isChecked():
-            self.priority.append('T3DB')
-        if self.ParameterUI.checkBox_9.isChecked():
-            self.priority.append('NANPDB')
-        if self.ParameterUI.checkBox_10.isChecked():
-            self.priority.append('FooDB')
-        if self.ParameterUI.checkBox_11.isChecked():
-            self.priority.append('Urine')
-        if self.ParameterUI.checkBox_12.isChecked():
-            self.priority.append('BMDB')
-        if self.ParameterUI.checkBox_13.isChecked():
-            self.priority.append('LipidMAPS')
-        if self.ParameterUI.checkBox_14.isChecked():
-            self.priority.append('Saliva')
-        if self.ParameterUI.checkBox_15.isChecked():
-            self.priority.append('Feces')
-        if self.ParameterUI.checkBox_16.isChecked():
-            self.priority.append('PlantCyc')
-        if self.ParameterUI.checkBox_17.isChecked():
-            self.priority.append('ECMDB')
-        if self.ParameterUI.checkBox_18.isChecked():
-            self.priority.append('Serum')
-        if self.ParameterUI.checkBox_19.isChecked():
-            self.priority.append('PubChem-bio')
-        if self.ParameterUI.checkBox_20.isChecked():
-            self.priority.append('CSF')
-        if self.ParameterUI.checkBox_21.isChecked():
-            self.priority.append('BLEXP')
-        if self.ParameterUI.checkBox_22.isChecked():
-            self.priority.append('NPA')                                                                                                                                                                                                       
-        if self.ParameterUI.checkBox_23.isChecked():
-            self.priority.append('COCONUT')
-        if self.ParameterUI.checkBox_24.isChecked():
-            self.priority.append('UNPD')
-        if self.ParameterUI.checkBox_25.isChecked():
-            self.priority.append('GNPS')            
-        self.ParameterUI.close()
     
     
     def get_formula_mass(self, formula):
@@ -415,7 +278,6 @@ class DeepMASS2(QMainWindow, main.Ui_MainWindow):
 
     def run_identification(self):
         self._set_busy()
-        self.network_vectors = []
         self.identified_spectrums = []
         if len(self.spectrums) == 0:
             self.ErrorMsg('Please load unknown spectrums first')
@@ -426,36 +288,49 @@ class DeepMASS2(QMainWindow, main.Ui_MainWindow):
         spectrums = self.spectrums['spectrum']
         p_positive = self.pp
         p_negative = self.pn
-        n_ref = self.n_ref
-        n_neb = self.n_neb
-        database = self.database
-        priority = self.priority
         model_positive = self.deepmass_positive
         model_negative = self.deepmass_negative
         reference_positive = self.reference_positive
         reference_negative = self.reference_negative
-        chemical_space = self.chemical_space
-        in_silicon_only = self.in_silicon_only
-        ms1_tolerence = self.ms1_tolerence
-        self.Thread_Identification = Thread_Identification(spectrums, p_positive, p_negative, n_ref, n_neb, database, 
-                                                           priority, model_positive, model_negative, 
-                                                           reference_positive, reference_negative, chemical_space, 
-                                                           in_silicon_only, ms1_tolerence)  
+
+        self.Thread_Identification = Thread_Identification(spectrums, p_positive, p_negative,
+                                                           model_positive, model_negative, 
+                                                           reference_positive, reference_negative, 
+                                                           self.default_database)  
         self.Thread_Identification._result.connect(self._set_succeed_annotation)
-        self.Thread_Identification._r.connect(self._set_succeed_vectorize)
         self.Thread_Identification._i.connect(self._set_process_bar)
         self.Thread_Identification.start()
         self.Thread_Identification.finished.connect(self.fill_formula_table)
         
 
+    def run_matching_ms(self):
+        self._set_busy()
+        self.identified_spectrums = []
+        if len(self.spectrums) == 0:
+            self.ErrorMsg('Please load unknown spectrums first')
+            self._set_finished()
+            return
+        self.progressBar.setValue(0)
+        self.progressBar.setFormat('Identifying unknowns')
+        spectrums = self.spectrums['spectrum']
+        reference_positive = self.reference_positive
+        reference_negative = self.reference_negative
+        precursors_positive = np.array([s.get('precursor_mz') for s in reference_positive])
+        precursors_negative = np.array([s.get('precursor_mz') for s in reference_negative])
+        self.Thread_Matching = Thread_Matching(spectrums, 
+                                               precursors_positive, precursors_negative, 
+                                               reference_positive, reference_negative)
+        self.Thread_Matching._result.connect(self._set_succeed_annotation)
+        self.Thread_Matching._i.connect(self._set_process_bar)
+        self.Thread_Matching.start()
+        self.Thread_Matching.finished.connect(self.fill_formula_table)
+
+
     def fill_reference_table(self):
         if 'reference' not in self.current_spectrum.metadata.keys():
             self.WarnMsg('No identification result for the selected spectrum')
             return
-
-        current_reference = self.current_spectrum.metadata['reference']
-        deepmass_score = self.current_spectrum.metadata['deepmass_score']
-
+        self.current_reference = self.current_spectrum.metadata['reference']
         i = self.tab_structure.currentRow()
         header = [self.tab_structure.horizontalHeaderItem(i).text() for i in range(self.tab_structure.columnCount())]
         j = list(header).index('CanonicalSMILES')
@@ -463,11 +338,7 @@ class DeepMASS2(QMainWindow, main.Ui_MainWindow):
 
         annotation = self.current_spectrum.metadata['annotation']
         i = np.where(annotation['CanonicalSMILES'].values == smi_anno)[0][0]
-        
-        reference_index = np.argsort(-deepmass_score[i,:])[:self.n_neb]
-        self.current_reference = current_reference[reference_index]
-        deepmass_score = deepmass_score[i,:][reference_index]
-        
+
         reference_table = []
         for s in self.current_reference:
             if 'smiles' in s.metadata.keys():
@@ -486,9 +357,12 @@ class DeepMASS2(QMainWindow, main.Ui_MainWindow):
                 parent_mass = s.metadata['parent_mass']
             else:
                 parent_mass = ''
-            reference_table.append([name, adduct, smiles, parent_mass])
-        reference_table = pd.DataFrame(reference_table, columns = ['name', 'adduct', 'smiles', 'parent_mass'])
-        reference_table['deepmass_score'] = deepmass_score
+            if 'database' in s.metadata.keys():
+                ref_database = s.metadata['database']
+            else:
+                ref_database = ''
+            reference_table.append([name, adduct, smiles, parent_mass, ref_database])
+        reference_table = pd.DataFrame(reference_table, columns = ['name', 'adduct', 'smiles', 'parent_mass', 'database'])
         self._set_table_widget(self.tab_reference, reference_table)
         self.tab_reference.setCurrentCell(0, 0)
         self.plot_spectrum()
@@ -514,16 +388,13 @@ class DeepMASS2(QMainWindow, main.Ui_MainWindow):
             return            
         formula = np.unique(annotation['MolecularFormula'])
         mass = [self.get_formula_mass(f) for f in formula]
-        score = []
-        for f in formula:
-            score.append(np.mean(annotation.loc[annotation['MolecularFormula'] == f, 'Isotope Score']))
             
         if 'parent_mass' in self.current_spectrum.metadata.keys():
-            diff = np.array([abs(m - self.current_spectrum.metadata['parent_mass']) for m in mass])
+            diff = np.array([abs(m - float(self.current_spectrum.metadata['parent_mass'])) for m in mass])
         else:
             diff = np.repeat(np.nan, len(mass))
             
-        formula_table = pd.DataFrame({'formula': formula, 'mass': mass, 'error (mDa)': 1000*diff, 'isotope score': score})
+        formula_table = pd.DataFrame({'formula': formula, 'mass': mass, 'error (mDa)': 1000*diff})
         formula_table = formula_table.sort_values(by = 'error (mDa)', ascending=True, ignore_index=True)
         self._set_table_widget(self.tab_formula, formula_table)
         self.tab_formula.setCurrentCell(0, 0)
@@ -614,28 +485,7 @@ class DeepMASS2(QMainWindow, main.Ui_MainWindow):
         
     def plot_mol_with_highlight(self):
         self.plot_mol(highlight = True)
-        self.InforMsg('Finished')
-    
-    
-    def calc_spectrum_network(self):
-        if len(self.identified_spectrums) == 0:
-            self.ErrorMsg('Please load unknown spectrums first')
-            self._set_finished()
-            return
-        
-        vectors = np.array(self.network_vectors)
-        hlindex = 0
-        labels = []
-        for i, s in enumerate(self.identified_spectrums):
-            if s.get('annotation') is None:
-                continue
-            else:
-                labels.append(s.get('compound_name'))
-                if self.current_spectrum.metadata['compound_name'] == s.get('compound_name'):
-                    hlindex = i
-        embedding = umap.UMAP().fit_transform(vectors)
-        cluster = hdbscan.HDBSCAN(min_samples=2, min_cluster_size=2).fit_predict(embedding)
-        self.figUmap.PlotUmap(embedding, cluster, labels, hlindex)      
+        self.InforMsg('Finished')    
         
         
     def save_identification(self):
@@ -680,18 +530,6 @@ class Thread_LoadReference(QThread):
         self._i.emit(99)
 
 
-class Thread_LoadDatabase(QThread): 
-    _compounds = QtCore.pyqtSignal(pd.DataFrame)
-    
-    def __init__(self, db_path):
-        super().__init__()
-        self.db_path = db_path
-
-    def run(self):       
-        compounds = pd.read_csv(self.db_path)
-        self._compounds.emit(compounds)
-
-
 class Thread_LoadIndex(QThread): 
     _index = QtCore.pyqtSignal(hnswlib.Index)
     
@@ -711,27 +549,18 @@ class Thread_LoadIndex(QThread):
 
 class Thread_Identification(QThread):
     _i = QtCore.pyqtSignal(int)
-    _r = QtCore.pyqtSignal(list)
     _result = QtCore.pyqtSignal(Spectrum)
 
-    def __init__(self, spectrums, p_positive, p_negative, n_ref, n_neb, database, priority, 
-                 model_positive, model_negative, reference_positive, reference_negative,
-                 chemical_space, in_silicon_only, ms1_tolerence):
+    def __init__(self, spectrums, p_positive, p_negative, model_positive, model_negative, reference_positive, reference_negative, database):
         super(Thread_Identification, self).__init__()
         self.p_positive = p_positive
         self.p_negative = p_negative
-        self.n_ref = n_ref
-        self.n_neb = n_neb
         self.spectrums = spectrums
-        self.database = database
-        self.priority = priority
         self.model_positive = model_positive
         self.model_negative = model_negative
         self.reference_positive = reference_positive
         self.reference_negative = reference_negative
-        self.chemical_space = chemical_space
-        self.in_silicon_only = in_silicon_only
-        self.ms1_tolerence = ms1_tolerence
+        self.database = database
 
     def __del__(self):
         self.wait()
@@ -741,19 +570,43 @@ class Thread_Identification(QThread):
         for i, s in enumerate(self.spectrums):
             if 'ionmode' in s.metadata.keys():
                 if s.metadata['ionmode'] == 'negative':
-                    sn = identify_unknown(s, self.p_negative, self.n_ref, self.n_neb, self.database, self.priority, 
-                                          self.model_negative, self.reference_negative, self.chemical_space,
-                                          self.in_silicon_only, self.ms1_tolerence)
+                    sn = identify_unknown(s, self.p_negative, self.model_negative, self.reference_negative, self.database)
                 else:
-                    sn = identify_unknown(s, self.p_positive, self.n_ref, self.n_neb, self.database, self.priority, 
-                                          self.model_positive, self.reference_positive, self.chemical_space,
-                                          self.in_silicon_only, self.ms1_tolerence)
+                    sn = identify_unknown(s, self.p_positive, self.model_positive, self.reference_positive, self.database)
             else:
-                sn = identify_unknown(s, self.p_positive, self.n_ref, self.n_neb, self.database, self.priority, 
-                                          self.model_positive, self.reference_positive, self.chemical_space,
-                                          self.in_silicon_only, self.ms1_tolerence)
+                sn = identify_unknown(s, self.p_positive, self.model_positive, self.reference_positive, self.database)
             self._i.emit(int(100 * i / len(self.spectrums)))
-            self._r.emit(sn.get('query_vector'))
+            self._result.emit(sn)
+
+
+class Thread_Matching(QThread):
+    _i = QtCore.pyqtSignal(int)
+    _result = QtCore.pyqtSignal(Spectrum)
+
+    def __init__(self, spectrums, p_positive, p_negative, precursors_positive, precursors_negative, reference_positive, reference_negative):
+        super(Thread_Identification, self).__init__()
+        self.p_positive = p_positive
+        self.p_negative = p_negative
+        self.spectrums = spectrums
+        self.precursors_positive = precursors_positive
+        self.precursors_negative = precursors_negative
+        self.reference_positive = reference_positive
+        self.reference_negative = reference_negative
+
+    def __del__(self):
+        self.wait()
+        self.working = False       
+
+    def run(self):
+        for i, s in enumerate(self.spectrums):
+            if 'ionmode' in s.metadata.keys():
+                if s.metadata['ionmode'] == 'negative':
+                    sn = match_spectrum(s, self.p_negative, self.precursors_negative, self.reference_negative)
+                else:
+                    sn = match_spectrum(s, self.p_positive, self.precursors_positive, self.reference_positive)
+            else:
+                sn = match_spectrum(s, self.p_positive, self.precursors_negative, self.reference_positive)
+            self._i.emit(int(100 * i / len(self.spectrums)))
             self._result.emit(sn)
 
 
@@ -796,31 +649,6 @@ class MakeFigure(FigureCanvas):
         self.axes.set_ylabel('abundance', fontsize = 3.5)
         self.draw()
         
-        
-    def PlotUmap(self, embedding, clustering, labels, hlindex=False):
-        self.axes.cla()
-        self.axes.scatter(embedding[:, 0],
-                          embedding[:, 1],
-                          c = clustering,
-                          s = 2,
-                          alpha = 0.4,
-                          cmap='Spectral')
-        if hlindex:
-            self.axes.scatter(embedding[hlindex, 0], embedding[hlindex, 1], s = 5, color = 'red')
-        
-        texts = []
-        for i, s in enumerate(labels):
-            # x, y= embedding[i, 0], embedding[i, 1]
-            texts.append(s)
-            # texts.append(self.axes.text(x, y, s, fontsize=2))
-        
-        self.axes.set_xlabel('umap x', fontsize = 3.5)
-        self.axes.set_ylabel('umap y', fontsize = 3.5)
-        
-        mplcursors.cursor(self.axes).connect("add", lambda sel: sel.annotation.set_text(texts[sel.index]))
-        self.draw()
-
-
 
 if __name__ == '__main__':
     import sys

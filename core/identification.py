@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 """
-Created on Fri Sep 30 11:27:02 2022
+Created on Tue Aug 29 10:34:38 2023
 
 @author: DELL
 """
 
-import os
+
 import base64
 import numpy as np
 import pandas as pd
@@ -15,16 +15,15 @@ from sklearn.metrics.pairwise import cosine_similarity
 
 import matchms.filtering as msfilters
 from molmass import Formula
+from matchms import calculate_scores
+from matchms.similarity import CosineGreedy
 from spec2vec import SpectrumDocument
 from spec2vec.vector_operations import calc_vector
-from ms2deepscore.MS2DeepScore import MS2DeepScore
-from gensim.models.word2vec import Word2Vec
 
 from core.pycdk import IsotopeFromString, IsotopeSimilarity
 from core.pubchem import retrieve_by_formula, retrieve_by_exact_mass
 from core.pubchem import retrieve_by_formula_database, retrieve_by_exact_mass_database
 
-structure_db = pd.read_csv('data/DeepMassStructureDB-v1.0.csv')
 
 def spectrum_processing(s):
     """This is how one would typically design a desired pre- and post-
@@ -46,8 +45,34 @@ def get_formula_mass(formula):
     return f.isotope.mass
 
 
-def calc_isotope_score(s, formula):
-    # print(formula)
+def search_candidates(s, database, ms1_tolerence = 20):
+    if 'formula' in s.metadata.keys():
+        formula = s.metadata['formula']
+        candidate = retrieve_by_formula_database(formula, database)
+        return candidate
+        if len(candidate) == 0:
+            try:
+                candidate = retrieve_by_formula(formula)
+                return candidate
+            except:
+                return None
+    
+    elif 'parent_mass' in s.metadata.keys():
+        mass = float(s.metadata['parent_mass'])
+        candidate = retrieve_by_exact_mass_database(mass, database, ppm = ms1_tolerence)
+        return candidate
+        if len(candidate) == 0:
+            try:
+                candidate = retrieve_by_exact_mass(mass)
+                return candidate
+            except:
+                return None
+    else:
+        return None
+
+
+def calc_isotope_score(s, candidate_mol):
+    isotope_score = []
     if s.get('isotope_mz') and s.get('isotope_intensity'):
         isotope_mz = base64.b64decode(s.get('isotope_mz').split("'")[1]).decode("ascii").replace('\n', '')
         isotope_intensity = base64.b64decode(s.get('isotope_intensity').split("'")[1]).decode("ascii").replace('\n', '')
@@ -62,182 +87,143 @@ def calc_isotope_score(s, formula):
         isotope_intensity = isotope_intensity / max(isotope_intensity)
         isotope_pattern = np.vstack((isotope_mz, isotope_intensity)).T
     else:
-        return 0
-    try:
-        isotope_ref = IsotopeFromString(formula, minI=0.001)
-    except:
-        return 0
-    return IsotopeSimilarity(isotope_pattern, isotope_ref, 10)
+        return None      
+    for i in range(len(candidate_mol)):
+        try:
+            formula = AllChem.CalcMolFormula(candidate_mol[i])
+            isotope_ref = IsotopeFromString(formula, minI=0.001)
+        except:
+            isotope_score.append(0)
+        isotope_score.append(IsotopeSimilarity(isotope_pattern, isotope_ref, 10))
+    return isotope_score
 
 
-def identify_unknown(s, p, n_ref, n_neb, database, priority, model, reference, chemical_space, in_silicon_only=True, ms1_tolerence = 10):
-    """
-    Example:
-        import hnswlib
-        import pickle
-        import pandas as pd
-        from ms2deepscore import MS2DeepScore
-        from ms2deepscore.models import load_model
-        from matchms.importing import load_from_mgf
-        
-        n_ref = 300
-        n_neb = 20
-        priority = []
-        spectrums = [s for s in load_from_mgf('example/Plasma/ms_ms_plasma.mgf')]
-        
-        model = Word2Vec.load("model/Ms2Vec_allGNPSnegative.hdf5_iter_30.model")
-        database = pd.read_csv('data/MsfinderStructureDB-VS15-plus-GNPS.csv')
-        p = hnswlib.Index(space='l2', dim=300) 
-        p.load_index('data/references_index_negative_spec2vec.bin')
-        with open('data/references_spectrums_negative.pickle', 'rb') as file:
-            reference = pickle.load(file)
-        s = spectrums[427]
-        sn = identify_unknown(s, p, n_ref, n_neb, database, priority, model, reference, 'biodatabase', True)
-    """
-    s = spectrum_processing(s)
-    try:
-        if type(model) == MS2DeepScore:
-            query_vector = model.calculate_vectors([s])[0,:]
-        elif type(model) == Word2Vec:
-            query_vector = calc_vector(model, SpectrumDocument(s, n_decimals=2))
-        else:
-            return s
-        s.set('query_vector', list(query_vector))
-    except:
-        s.set('query_vector', list())
-        return s
-    xq = np.array(query_vector).astype('float32')
-    I, D = p.knn_query(xq, n_ref)
-    
+def calc_deepmass_score(s, candidate_mol, reference_mol, query_vector, reference_vector): 
     get_fp = lambda x: AllChem.GetMorganFingerprintAsBitVect(x, radius=2)
     get_sim = lambda x, y: DataStructs.FingerprintSimilarity(x, y)
     get_corr = lambda x, y: cosine_similarity([x], [y])[0][0]
-    
-    if 'formula' in s.metadata.keys():
-        formula = s.metadata['formula']
-        if chemical_space == 'biodatabase':
-            candidate = retrieve_by_formula_database(formula, database)
-        elif chemical_space == 'biodatabase plus':
-            candidate = retrieve_by_formula_database(formula, database)
-            if len(candidate) == 0:
-                try:
-                    candidate = retrieve_by_formula(formula)
-                except:
-                    pass
-        elif chemical_space == 'custom':
-            candidate = retrieve_by_formula_database(formula, database)
-        else:
-            try:
-                candidate = retrieve_by_formula(formula)
-            except:
-                candidate = retrieve_by_formula_database(formula, database)
-             
-    elif 'parent_mass' in s.metadata.keys():
-        try:
-            mass = float(s.metadata['parent_mass'])
-        except:
-            return s
-        if chemical_space == 'biodatabase':
-            candidate = retrieve_by_exact_mass_database(mass, database, ppm = ms1_tolerence)
-        elif chemical_space == 'biodatabase plus':
-            candidate = retrieve_by_exact_mass_database(mass, database, ppm = ms1_tolerence)
-            if len(candidate) == 0:
-                try:
-                    candidate = retrieve_by_exact_mass(mass)
-                except:
-                    pass
-        elif chemical_space == 'custom':
-            candidate = retrieve_by_exact_mass_database(mass, database, ppm = ms1_tolerence)
-        else:
-            try:
-                candidate = retrieve_by_exact_mass(mass)
-            except:
-                candidate = retrieve_by_exact_mass_database(mass, database, ppm = ms1_tolerence)
-    else:
-        return s
-    
-    if len(candidate) == 0:
-        return s
-    
-    priority_key = []
-    if len(priority) > 0:
-        k = set()
-        for pr in priority:
-            k = k | set(np.where(structure_db[pr].values.astype(str) != 'nan')[0])
-        priority_key = list(structure_db.loc[list(k), 'InChIkey'])
-    
-    reference_spectrum = np.array(reference)[I[0,:]]
-    reference_smile = [s.metadata['smiles'] for s in reference_spectrum]
-    reference_mol = [Chem.MolFromSmiles(s) for s in reference_smile]
+
     k, reference_fp = [], []
     for i, m in enumerate(reference_mol):
-        if reference_smile[i] == '':
-            continue
-        if reference_spectrum[i].metadata['ionmode'] != s.metadata['ionmode']:
-            continue
-        # in-silicon only means reference structures cannot include any candidates
-        if in_silicon_only:
-            if reference_spectrum[i].get('inchikey') is not None:
-                if s.metadata['inchikey'][:14] == reference_spectrum[i].metadata['inchikey'][:14]:
-                    continue
         try:
             reference_fp.append(get_fp(m))
             k.append(i)
         except:
             pass
-    if len(k) == 0:
-        return s
+    if len(k) != len(reference_mol):
+        k = np.array(k)
+        reference_mol = np.array(reference_mol)[k]
+        reference_vector = np.array(reference_vector)[k,:]
     
-    reference_spectrum = np.array(reference_spectrum)[np.array(k)]
-    reference_smile = np.array(reference_smile)[np.array(k)]
-    reference_vec = p.get_items(I[0, np.array(k)])
-    reference_corr = [get_corr(query_vector, v) for v in reference_vec]
-    
-    candidate_mol = [Chem.MolFromSmiles(s) for s in candidate['CanonicalSMILES']]
-    k, candidate_fp = [], []
-    for i, m in enumerate(candidate_mol):
+    deepmass_score = []
+    for i in range(len(candidate_mol)):
         try:
-            candidate_fp.append(get_fp(m))
-            k.append(i)
+            candidate_fp_i = get_fp(candidate_mol[i])
         except:
-            pass
-    if len(k) == 0:
-        return s
+            deepmass_score.append(0)
+        candidate_vecsim_i = [get_corr(query_vector, reference_vector_) for reference_vector_ in reference_vector]
+        candidate_vecsim_i = np.array(candidate_vecsim_i)
+        candidate_fpsim_i = [get_sim(candidate_fp_i, reference_fp_) for reference_fp_ in reference_fp]
+        candidate_fpsim_i = np.array(candidate_fpsim_i)
+        top20 = np.argsort(-np.array(candidate_fpsim_i))[:20]
+        candidate_score_i = np.sqrt(np.sum(candidate_vecsim_i[top20] * candidate_fpsim_i[top20]))
+        deepmass_score.append(candidate_score_i / 20)
+    deepmass_score = np.array(deepmass_score)
+    deepmass_score /= np.max(deepmass_score)
+    return deepmass_score
 
-    candidate = candidate.loc[np.array(k),:].reset_index(drop = True)
-    candidate_fp_sim = np.array([[get_sim(f1, f2) for f1 in reference_fp] for f2 in candidate_fp]) 
-    candidate_fp_score = [np.sqrt(reference_corr * s) for s in candidate_fp_sim]
-    candidate_fp_deepmass = np.array([np.sum(-np.sort(-s)[:n_neb]) for s in candidate_fp_score])
-    candidate['DeepMass Score'] = candidate_fp_deepmass / n_neb
+
+def calc_wt_score(s, candidate_mol):
+    candidate_mass = [AllChem.CalcExactMolWt(m) for m in candidate_mol]
+    diff_mass = np.array([abs(m - float(s.get['parent_mass'])) for m in candidate_mass])
+    wt_score = 1 - 50000 * diff_mass / float(s.get['parent_mass'])
+    return wt_score
+
+
+def identify_unknown(s, p, model, references, database):
+    candidate = search_candidates(s, database)
+    if candidate is None:
+        return s
+    if len(candidate) == 0:
+        return s
+    candidate_mol = [Chem.MolFromSmiles(s) for s in candidate['CanonicalSMILES']]
+    query_vector = calc_vector(model, SpectrumDocument(s, n_decimals=2))
     
-    formula = candidate['MolecularFormula']
-    mass = [get_formula_mass(f) for f in formula]
-    if 'parent_mass' in s.metadata.keys():
-        diff = np.array([abs(m - s.metadata['parent_mass']) for m in mass])
-        candidate_wt_score = 1 - 50000 * diff / s.metadata['parent_mass']
+    xq = np.array(query_vector).astype('float32')
+    I, D = p.knn_query(xq, 300)
+
+    reference_spectrum = np.array(references)[I[0,:]]
+    reference_smile = [s.metadata['smiles'] for s in reference_spectrum]
+    reference_mol = [Chem.MolFromSmiles(s) for s in reference_smile]
+    reference_vector = np.array(p.get_items(I[0, :]))
+
+    candidate_deepmass_score = calc_deepmass_score(s, candidate_mol, reference_mol, query_vector, reference_vector)
+    candidate['DeepMass Score'] = np.round(candidate_deepmass_score, 4)
+    
+    if s.get('formula') is None:
+        candidate_wt_score = calc_wt_score(s, candidate_mol)
+        candidate['MolWt Score'] = np.round(candidate_wt_score, 4)
+        if s.get('isotope_mz') and s.get('isotope_intensity'):
+            candidate_isotopic_score = calc_isotope_score(s, candidate_mol)
+            candidate['Isotope Score'] = np.round(candidate_isotopic_score, 4)
+            candidate['Consensus Score'] = 0.8*candidate['DeepMass Score'] + 0.1*candidate['Isotope Score'] + 0.1*candidate['MolWt Score']
+        else:
+            candidate['Consensus Score'] = 0.8*candidate['DeepMass Score'] + 0.2*candidate['MolWt Score']
+        candidate = candidate.sort_values('Consensus Score', ignore_index = True, ascending = False)
     else:
-        candidate_wt_score = np.zeros(len(formula))
-    candidate['MolWt Score'] = np.round(candidate_wt_score, 4)
+        candidate = candidate.sort_values('DeepMass Score', ignore_index = True, ascending = False)
     
-    candidate_iso_score = [calc_isotope_score(s, f) for f in candidate['MolecularFormula'].values]
-    candidate['Isotope Score'] = np.round(candidate_iso_score, 4)
-    
-    candidate['Database Score'] = np.array([i in priority_key for i in candidate['InChIKey']]).astype(int)
-    
-    k = np.argsort(-candidate['DeepMass Score'])
-    deepmass_score = np.array([-np.sort(-s) for s in candidate_fp_score])[k,:]
-    
-    candidate['DeepMass Score'] = np.round(candidate['DeepMass Score'], 4)
-    candidate['Consensus Score'] = candidate['DeepMass Score'] + 0.1*candidate['Isotope Score'] + 0.1*candidate['MolWt Score'] + 0.1 * candidate['Database Score']
-    candidate['Consensus Score'] /= np.max(candidate['Consensus Score'])
-    candidate = candidate.sort_values('Consensus Score', ignore_index = True, ascending = False)
-    
-    reference_shortkey = [s.get('inchikey')[:14] for s in reference_spectrum]
-    candidate_in_reference = [str(s[:14] in reference_shortkey) for s in candidate['InChIKey']]
-    candidate['In Reference'] = candidate_in_reference
-    
-    s.set('reference', reference_spectrum)
     s.set('annotation', candidate)
-    s.set('deepmass_score', deepmass_score)
+    s.set('reference', reference_spectrum)
+    return s
+
+
+def match_spectrum(s, precursors, references):
+    precursor = s.get('precursor_mz')
+    if precursor is None:
+        return s
+    lb, ub = precursor - 0.05, precursor + 0.05
+    li = np.searchsorted(precursors, lb)
+    ui = np.searchsorted(precursors, ub)
+    match_scores = calculate_scores(references = references[li:ui], queries = [s], similarity_function = CosineGreedy())
+    match_scores = np.array([s[0][0] for s in match_scores.scores])
+    w = np.argsort(-match_scores)
+    reference = references[li:ui][w]
+    annotation = {'Title': [s.get('compound_name') for s in reference], 
+                  'MolecularFormula': [AllChem.CalcMolFormula(Chem.MolFromSmiles(s.get('smiles'))) for s in reference], 
+                  'CanonicalSMILES': [s.get('smiles') for s in reference], 
+                  'InChIKey': [s.get('inchikey') for s in reference],
+                  'Match Score': match_scores[w]}
+    annotation = pd.DataFrame(annotation)
+    if s.get('formula') is not None:
+        annotation = annotation[annotation['MolecularFormula'] == s.get('formula')]
+        annotation = annotation.reset_index(drop = True)
+    s.set('annotation', annotation)
+    s.set('reference', reference)
     return s
     
+
+
+if __name__ == '__main__':
+
+    '''
+    import hnswlib
+    import pickle
+    import pandas as pd
+    from matchms.importing import load_from_mgf
+    from gensim.models import Word2Vec
+    
+    model = Word2Vec.load("model/Ms2Vec_allGNPSpositive.hdf5")
+    p = hnswlib.Index(space='l2', dim=300) 
+    p.load_index('data/references_index_positive_spec2vec.bin')
+    with open('data/references_spectrums_positive.pickle', 'rb') as file:
+        references = pickle.load(file)
+    references = np.array(references)
+    precursors = [s.get('precursor_mz') for s in references]
+    precursors = np.array(precursors)
+    formulas = [s.get('formula') for s in references]
+    
+    spectrums = [s for s in load_from_mgf("D:/DeepMASS2_Data_Processing/Example/CASMI/all_casmi.mgf")]
+    s = spectrums[200]
+    s = identify_unknown(s, p, model, reference, database)
+    '''
