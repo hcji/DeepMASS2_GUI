@@ -583,10 +583,8 @@ class Thread_Matching(QThread):
     _i = QtCore.pyqtSignal(int)
     _result = QtCore.pyqtSignal(Spectrum)
 
-    def __init__(self, spectrums, p_positive, p_negative, precursors_positive, precursors_negative, reference_positive, reference_negative):
+    def __init__(self, spectrums, precursors_positive, precursors_negative, reference_positive, reference_negative):
         super(Thread_Identification, self).__init__()
-        self.p_positive = p_positive
-        self.p_negative = p_negative
         self.spectrums = spectrums
         self.precursors_positive = precursors_positive
         self.precursors_negative = precursors_negative
