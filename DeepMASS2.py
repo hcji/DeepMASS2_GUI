@@ -14,9 +14,6 @@ import shutil
 import pickle
 import numpy as np
 import pandas as pd
-import umap
-import hdbscan
-import mplcursors
 
 from itertools import chain
 from PyQt5.Qt import QThread

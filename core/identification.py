@@ -191,20 +191,29 @@ def match_spectrum(s, precursors, references):
     # print(match_scores.scores)
     match_scores = np.array([s[0].tolist()[0] for s in match_scores.scores])
     w = np.argsort(-match_scores)
+    match_scores = match_scores[w]
     reference = np.array(references)[li:ui][w]
-    formula = []
-    for r in reference:
+    
+    annotation, inchikeys = [], []
+    for i, r in enumerate(reference):
+        mol = Chem.MolFromSmiles(r.get('smiles'))
+        score = match_scores[i]
+        if mol is None:
+            continue
+        inchikey = r.get('inchikey')
+        if inchikey == '':
+            continue
+        title = r.get('compound_name')
+        smiles = Chem.MolToSmiles(mol)
         try:
-            f = AllChem.CalcMolFormula(Chem.MolFromSmiles(s.get('smiles')))
+            formula = AllChem.CalcMolFormula(mol)
         except:
-            f = ''
-        formula.append(f)
-    annotation = {'Title': [s.get('compound_name') for s in reference], 
-                  'MolecularFormula': formula, 
-                  'CanonicalSMILES': [s.get('smiles') for s in reference], 
-                  'InChIKey': [s.get('inchikey') for s in reference],
-                  'Matching Score': match_scores[w]}
-    annotation = pd.DataFrame(annotation)
+            formula = ''
+        if inchikey not in inchikeys:
+            inchikeys.append(inchikey)
+            annotation.append([title, formula, smiles, inchikey, score])
+    annotation = pd.DataFrame(annotation, columns = ['Title', 'MolecularFormula', 'CanonicalSMILES', 'InChIKey', 'Matching Score'])
+    
     if s.get('formula') is not None:
         annotation = annotation[annotation['MolecularFormula'] == s.get('formula')]
         annotation = annotation.reset_index(drop = True)
