@@ -13,21 +13,21 @@ Please follow the following installation steps:
 1. Install [Anaconda](https://www.anaconda.com/)  or [Miniconda](https://docs.conda.io/en/latest/miniconda.html)   
 2. Create a new conda environment and activate:
 
-    conda create -n deepmass python=3.8.13
-    conda activate deepmass
+        conda create -n deepmass python=3.8.13
+        conda activate deepmass
 
 3. Clone the repository and enter:
 
-    git clone https://github.com/hcji/DeepMASS2_GUI.git
-    cd DeepMASS2_GUI
+        git clone https://github.com/hcji/DeepMASS2_GUI.git
+        cd DeepMASS2_GUI
     
 4. Install dependency:
 
-    pip install -r requirements.txt
+        pip install -r requirements.txt
     
 5. Run DeepMASS
 
-    python DeepMASS2.py
+        python DeepMASS2.py
 
 
 ## Release
