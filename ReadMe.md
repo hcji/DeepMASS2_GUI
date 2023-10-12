@@ -24,8 +24,11 @@ Please follow the following installation steps:
 4. Install dependency:
 
         pip install -r requirements.txt
+        
+5. Download the [dependent data](https://github.com/hcji/DeepMASS2_GUI/releases/tag/v0.99.0), 
+and put them in the *data* folder.
     
-5. Run DeepMASS
+6. Run DeepMASS
 
         python DeepMASS2.py
 
