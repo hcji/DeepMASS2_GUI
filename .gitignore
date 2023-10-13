@@ -1,8 +1,5 @@
 # Data
-example/
 temp/
-*.mgf
-*.msp
 *.npy
 *.npz
 *.bin
