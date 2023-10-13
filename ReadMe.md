@@ -1,7 +1,7 @@
 # DeepMASS2
 
 DeepMASS2 is a cross-platform GUI software tool, which enables deep-learning based metabolite annotation
- via semantic similarity analysis of mass spectral language (DeepMASS). This approach enables the prediction 
+ via semantic similarity analysis of mass spectral language. This approach enables the prediction 
  of structurally related metabolites for the unknown compounds. By considering the chemical space, these 
  structurally related metabolites provide valuable information about the potential location of the unknown 
  metabolites and assist in ranking candidates obtained from molecular structure databases. 
