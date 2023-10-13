@@ -21,13 +21,28 @@ Please follow the following installation steps:
         git clone https://github.com/hcji/DeepMASS2_GUI.git
         cd DeepMASS2_GUI
     
-4. Install dependency:
+4. Install dependency (note, for *MacOS* some dependency may install with conda manually):
 
         pip install -r requirements.txt
         
-5. Download the [dependent data](https://github.com/hcji/DeepMASS2_GUI/releases/tag/v0.99.0), 
-and put them in the *data* folder.
+5. Download the [dependent data](https://github.com/hcji/DeepMASS2_GUI/releases/tag/v0.99.0).    
+    1) put the following files into *data* folder:
     
+                DeepMassStructureDB-v1.0.csv
+                references_index_negative_spec2vec.bin
+                references_index_positive_spec2vec.bin
+                references_spectrums_negative.pickle
+                references_spectrums_positive.pickle
+    
+    2) put the following files into *model* folder:
+    
+                Ms2Vec_allGNPSnegative.hdf5
+                Ms2Vec_allGNPSnegative.hdf5.syn1neg.npy
+                Ms2Vec_allGNPSnegative.hdf5.wv.vectors.npy
+                Ms2Vec_allGNPSpositive.hdf5
+                Ms2Vec_allGNPSpositive.hdf5.syn1neg.npy
+                Ms2Vec_allGNPSpositive.hdf5.wv.vectors.npy
+
 6. Run DeepMASS
 
         python DeepMASS2.py
