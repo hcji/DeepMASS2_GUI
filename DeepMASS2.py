@@ -16,8 +16,8 @@ import numpy as np
 import pandas as pd
 
 from itertools import chain
-from PyQt5.Qt import QThread
-from PyQt5.QtCore import Qt, QVariant
+# from PyQt5.Qt import QThread
+from PyQt5.QtCore import Qt, QVariant, QThread
 from PyQt5 import QtCore, QtWidgets, QtGui
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtWidgets import QApplication, QMainWindow, QGridLayout, QLabel
@@ -45,6 +45,7 @@ class DeepMASS2(QMainWindow, main.Ui_MainWindow):
         super(DeepMASS2, self).__init__(parent)
         self.setupUi(self)
         self.setWindowTitle("DeepMASS2")
+        self.setWindowIcon(QtGui.QIcon("icon/favicon.ico"))
         
         try:
             shutil.rmtree('temp')  
@@ -82,7 +83,11 @@ class DeepMASS2(QMainWindow, main.Ui_MainWindow):
         self.default_index_negative = 'data/references_index_negative_spec2vec.bin'
         self.default_reference_positive = 'data/references_spectrums_positive.pickle'
         self.default_reference_negative = 'data/references_spectrums_negative.pickle'
-        self.default_database = pd.read_csv('data/DeepMassStructureDB-v1.0.csv')
+        try:
+            self.default_database = pd.read_csv('data/DeepMassStructureDB-v1.0.csv')
+        except:
+            self.ErrorMsg("Missing data files")
+            return
         self.current_spectrum = None
         self.current_reference = None
         
@@ -117,8 +122,12 @@ class DeepMASS2(QMainWindow, main.Ui_MainWindow):
         self.progressBar.setValue(0)
         self.progressBar.setFormat('Loading database')
         self.load_references_positive()
-        self.deepmass_positive = Word2Vec.load("model/Ms2Vec_allGNPSpositive.hdf5")
-        self.deepmass_negative = Word2Vec.load("model/Ms2Vec_allGNPSnegative.hdf5")
+        try:
+            self.deepmass_positive = Word2Vec.load("model/Ms2Vec_allGNPSpositive.hdf5")
+            self.deepmass_negative = Word2Vec.load("model/Ms2Vec_allGNPSnegative.hdf5")
+        except:
+            self.ErrorMsg("Missing model files")
+            return
 
 
     def WarnMsg(self, Text):
@@ -215,20 +224,28 @@ class DeepMASS2(QMainWindow, main.Ui_MainWindow):
         
     def load_references_positive(self):
         self.progressBar.setValue(22)
-        self.progressBar.setFormat('Loading positive references')   
-        self.Thread_LoadIndexPositive = Thread_LoadIndex(self.default_index_positive)
-        self.Thread_LoadIndexPositive._index.connect(self._set_index_positive)
-        self.Thread_LoadIndexPositive.start()
-        self.Thread_LoadIndexPositive.finished.connect(self.load_references_negative)
+        self.progressBar.setFormat('Loading positive references')
+        try:
+            self.Thread_LoadIndexPositive = Thread_LoadIndex(self.default_index_positive)
+            self.Thread_LoadIndexPositive._index.connect(self._set_index_positive)
+            self.Thread_LoadIndexPositive.start()
+            self.Thread_LoadIndexPositive.finished.connect(self.load_references_negative)
+        except:
+            self.ErrorMsg("Missing data files")
+            return
 
 
     def load_references_negative(self):
         self.progressBar.setValue(44)
-        self.progressBar.setFormat('Loading negative references')   
-        self.Thread_LoadIndexNegative = Thread_LoadIndex(self.default_index_negative)           
-        self.Thread_LoadIndexNegative._index.connect(self._set_index_negative)
-        self.Thread_LoadIndexNegative.start()
-        self.Thread_LoadIndexNegative.finished.connect(self.load_reference_spectrums)
+        self.progressBar.setFormat('Loading negative references')
+        try:
+            self.Thread_LoadIndexNegative = Thread_LoadIndex(self.default_index_negative)           
+            self.Thread_LoadIndexNegative._index.connect(self._set_index_negative)
+            self.Thread_LoadIndexNegative.start()
+            self.Thread_LoadIndexNegative.finished.connect(self.load_reference_spectrums)
+        except:
+            self.ErrorMsg("Missing data files")
+            return
         
         
     def load_reference_spectrums(self):
