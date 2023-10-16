@@ -50,17 +50,16 @@ Please follow the following installation steps:
 
 ## Release
 
-In preparation
+    - [Version 0.99.0](https://github.com/hcji/DeepMASS2_GUI/releases/tag/v0.99.0)
 
 ## Documentation
 
-In preparation
+For the details on how to use DeepMASS, please check [Ducomentation](https://github.com/hcji/DeepMASS2_GUI/blob/main/document/documentation.md).
 
 ## Citation
 
 In preparation
         
-
 ## Contact
 
 Ji Hongchao   
