@@ -17,7 +17,7 @@ further development as data scales continue to expand.
 
 ## Installation
 
-**System Recommended:**
+**System Recommended:**    
 Operating Systems: 
 
     - Windows 11
