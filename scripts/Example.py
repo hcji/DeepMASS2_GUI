@@ -12,6 +12,7 @@ import pickle
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+import matchms.filtering as msfilters
 from sklearn.preprocessing import scale
 from sklearn.decomposition import PCA
 from matchms.importing import load_from_mgf
@@ -22,6 +23,21 @@ from spec2vec import SpectrumDocument
 from spec2vec.vector_operations import calc_vector
 
 from core.identification import identify_unknown, match_spectrum
+
+
+def plot_spectrum_comparison(s1, s2, mzrange, loss=False):
+    if not loss:
+        plt.vlines(s1.mz, ymin=0, ymax=s1.intensities / np.max(s1.intensities), color='r', lw = 1, label = 'query')
+        plt.vlines(s2.mz, ymin=0, ymax=-s2.intensities / np.max(s2.intensities), color='b', lw = 1, label = 'neigbor')
+    else:
+        s1 = msfilters.add_losses(s1)
+        s2 = msfilters.add_losses(s2)
+        plt.vlines(s1.losses.mz, ymin=0, ymax=s1.losses.intensities / np.max(s1.losses.intensities), color='r', lw = 1, label = 'query')
+        plt.vlines(s2.losses.mz, ymin=0, ymax=-s2.losses.intensities / np.max(s2.losses.intensities), color='b', lw = 1, label = 'neigbor')        
+    plt.axhline(y=0,color='black', lw = 1)
+    plt.ylabel('abundance')
+    plt.xlim(mzrange)
+
 
 database = pd.read_csv('data/DeepMassStructureDB-v1.0.csv')
 spectrums = [s for s in load_from_mgf("D:/DeepMASS2_Data_Processing/Example/CASMI/all_casmi.mgf")]
@@ -75,15 +91,28 @@ Draw.MolToFile(Chem.MolFromSmiles(s.get('smiles')), 'temp/temp1.png')
 a, b = len(deepmass_candidate_vector), len(deepmass_reference_vector)
 plt.figure(dpi = 300, figsize = (3.5, 3.5))
 plt.scatter(X_r[1:a,0], X_r[1:a,1], color = 'green', alpha = 0.5, label = 'Candidates')
-plt.scatter(X_r[a:a+10,0], X_r[a:a+10,1], color = 'blue', alpha = 0.5, label = 'Top 10 Reference')
+plt.scatter(X_r[a:a+10,0], X_r[a:a+10,1], color = 'blue', alpha = 0.5, label = 'Top 10 Neigbors')
 plt.scatter(X_r[0,0], X_r[0,1], color = 'red', alpha = 0.8, label = 'True Annotation')
-plt.scatter(X_r[a+9:a+10,0], X_r[a+9:a+10,1], color = 'orange', alpha = 0.5, label = 'Top 10 Reference')
+plt.scatter(X_r[55,0], X_r[55,1], color = 'orange', alpha = 0.5)
 plt.xlabel('Dim 1')
 plt.ylabel('Dim 2')
-plt.xlim(40, 50)
-plt.ylim(20, 25)
-plt.legend()
+plt.xlim(24, 41)
+plt.ylim(-16, -9)
+plt.legend(loc = 'upper right')
+plt.show()
 
+
+plt.figure(dpi = 300, figsize = (3, 4.8))
+plt.subplot(311)
+plot_spectrum_comparison(s, deepmass_reference[9], (50,250))
+plt.subplot(312)
+plot_spectrum_comparison(s, deepmass_reference[0], (50,250))
+plt.subplot(313)
+plot_spectrum_comparison(s, deepmass_reference[3], (50,250))
+plt.subplots_adjust(hspace=0.5)
+plt.xlabel('m/z')
+# plt.legend(loc='upper center', bbox_to_anchor=(1.2, 4))
+plt.show()
 
 
 # Example 2
@@ -143,8 +172,23 @@ a, b = len(deepmass_candidate_vector), len(deepmass_reference_vector)
 plt.figure(dpi = 300, figsize = (3.5, 3.5))
 plt.scatter(X_r[1:a,0], X_r[1:a,1], color = 'green', alpha = 0.5, label = 'Candidates')
 plt.scatter(X_r[0,0], X_r[0,1], color = 'red', alpha = 0.8, label = 'True Annotation')
-plt.scatter(X_r[a:a+10,0], X_r[a:a+10,1], color = 'blue', alpha = 0.5, label = 'Top 10 Reference')
-plt.scatter(X_r[a+9:a+10,0], X_r[a+9:a+10,1], color = 'orange', alpha = 0.5, label = 'Top 10 Reference')
+plt.scatter(X_r[a:a+10,0], X_r[a:a+10,1], color = 'blue', alpha = 0.5, label = 'Top 10 Neigbors')
+plt.scatter(X_r[a+9:a+10,0], X_r[a+9:a+10,1], color = 'orange', alpha = 0.5)
 plt.xlabel('Dim 1')
 plt.ylabel('Dim 2')
 plt.legend()
+
+
+plt.figure(dpi = 300, figsize = (3, 4.8))
+plt.subplot(311)
+plot_spectrum_comparison(s, deepmass_reference[0], (0,150), loss=True)
+plt.subplot(312)
+plot_spectrum_comparison(s, deepmass_reference[1], (100,350))
+plt.subplot(313)
+plot_spectrum_comparison(s, deepmass_reference[9], (100,350))
+plt.subplots_adjust(hspace=0.5)
+plt.xlabel('m/z')
+# plt.legend(loc='upper center', bbox_to_anchor=(1.2, 4))
+plt.show()
+
+
