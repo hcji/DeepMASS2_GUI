@@ -111,9 +111,20 @@ Wait for the progress bar to finish.
 
 1. Construct *mgf* file from MS-DIAL results.
 
+    1) Process your ms files of DDA/DIA mode metabolomic study following the MS-DIAL [tutorial](https://mtbinfo-team.github.io/mtbinfo.github.io/MS-DIAL/tutorial).
+    2) Export the alignment result with *txt* format. Refer the [tutorial-section 5-6-(B)](https://mtbinfo-team.github.io/mtbinfo.github.io/MS-DIAL/tutorial#section-5-6).
+    3) Refer the scripts [here](https://github.com/hcji/DeepMASS2_Data_Processing/blob/master/Scripts/test_data_collection/processing_tomato.py).
+
 2. Training models with NIST 20 spectra.
 
-Comming soon ...
+    1) Use [LIB2NIST] tool to export NIST 20 database to *mgf* format.
+    2) Refer the scripts [here](https://github.com/hcji/DeepMASS2_Data_Processing/blob/master/Scripts/training_data_collection/clean_nist.py),
+       and transform the data into DeepMASS required format.
+    3) Refer the scripts [here](https://github.com/hcji/DeepMASS2_Data_Processing/blob/master/Scripts/training_models/train_ms2vec.py),
+       and train your *ms2vec* model.
+    4) Refer the scripts [here](https://github.com/hcji/DeepMASS2_Data_Processing/blob/master/Scripts/training_models/vectorize_reference_by_ms2vec.py),
+       and build index for the spectra of NIST 20.
+    5) Copy all the generated files into corresponding folder of DeepMASS.
 
 ## Reference
 
