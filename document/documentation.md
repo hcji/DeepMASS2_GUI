@@ -117,7 +117,7 @@ Wait for the progress bar to finish.
 
 2. Training models with NIST 20 spectra.
 
-    1) Use [LIB2NIST] tool to export NIST 20 database to *mgf* format.
+    1) Use [LIB2NIST](https://chemdata.nist.gov/mass-spc/ms-search/Library_conversion_tool.html) tool to export NIST 20 database to *mgf* format.
     2) Refer the scripts [here](https://github.com/hcji/DeepMASS2_Data_Processing/blob/master/Scripts/training_data_collection/clean_nist.py),
        and transform the data into DeepMASS required format.
     3) Refer the scripts [here](https://github.com/hcji/DeepMASS2_Data_Processing/blob/master/Scripts/training_models/train_ms2vec.py),
