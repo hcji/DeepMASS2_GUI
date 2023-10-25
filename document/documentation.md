@@ -78,7 +78,7 @@ re-train the model.
 
 ## Quick start
 
-1. DeepMASS may need some time after start for auto-loads the dependent data. Please wait until the 
+1. DeepMASS may need some time for auto-loading the dependent data. Please wait until the 
 buttons become active.
 
 <div align="center">
