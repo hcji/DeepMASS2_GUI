@@ -109,7 +109,7 @@ Wait for the progress bar to finish.
 
 ## Advanced usage
 
-1. Construct *mgf* file from MS-DIAL results.
+1. Constructing *mgf* file from MS-DIAL results.
 
     1) Process your ms files of DDA/DIA mode metabolomic study following the MS-DIAL [tutorial](https://mtbinfo-team.github.io/mtbinfo.github.io/MS-DIAL/tutorial).
     2) Export the alignment result with *txt* format. Refer the [tutorial-section 5-6-(B)](https://mtbinfo-team.github.io/mtbinfo.github.io/MS-DIAL/tutorial#section-5-6).
