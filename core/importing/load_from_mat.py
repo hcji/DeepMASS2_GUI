@@ -43,8 +43,6 @@ def load_from_mat(filename: str,
                        metadata_harmonization=metadata_harmonization)
 
 
-
-
 def parse_mat_file(filename: str) -> Generator[dict, None, None]:
     """Read msp file and parse info in List of spectrum dictionaries."""
 
