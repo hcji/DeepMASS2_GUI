@@ -28,6 +28,17 @@ class Spectrum(mSpectrum):
         
         if (len(isotopic_mz) == len(isotopic_intensities)) and len(isotopic_mz) > 0:
             self.isotopic_pattern = Fragments(mz=mz, intensities=intensities)
+            self.clean_isotopic_pattern()
         else:
             self.isotopic_pattern = None
 
+
+    def clean_isotopic_pattern(self, tolerence = 0.01):
+        precursor_mz = self.get('precursor_mz')
+        isotopic_mz_ = precursor_mz + np.arange(5) * 1.00866
+        minimum_diff = np.array([np.min(np.abs(m - isotopic_mz_)) for m in self.isotopic_pattern.mz])
+        k = np.where(minimum_diff <= tolerence)[0]
+        if len(k) >= 2:
+            self.isotopic_pattern = Fragments(mz=self.isotopic_pattern.mz, intensities=self.isotopic_pattern.intensities)
+        else:
+            self.isotopic_pattern = None
