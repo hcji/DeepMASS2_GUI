@@ -16,9 +16,9 @@ Please follow the following installation steps:
         conda create -n deepmass python=3.8.13
         conda activate deepmass
 
-3. Clone the repository and enter:
+3. Download the [lastest released version](https://github.com/hcji/DeepMASS2_GUI/tags) of source codes, unzip, enter:
 
-        git clone https://github.com/hcji/DeepMASS2_GUI.git
+        # download and unzip, then,
         cd DeepMASS2_GUI
     
 4. Install dependency (note, for *MacOS* some dependency may install with conda manually):
