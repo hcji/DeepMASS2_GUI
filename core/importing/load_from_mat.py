@@ -76,8 +76,8 @@ def parse_mat_file(filename: str) -> Generator[dict, None, None]:
                 intensities = np.append(intensities, ints)
                 peakscount += len(mz)
             elif params['mstype'] == 'MS1':
-                isotopic_masses = np.append(masses, mz)
-                isotopic_intensities = np.append(intensities, ints)
+                isotopic_masses = np.append(isotopic_masses, mz)
+                isotopic_intensities = np.append(isotopic_intensities, ints)
             else:
                 pass
             

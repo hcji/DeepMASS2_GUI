@@ -7,7 +7,6 @@ Created on Tue Nov 14 15:53:12 2023
 
 
 import numpy as np
-import matchms.filtering as msfilters
 from typing import Optional
 from matchms.Spectrum import Fragments
 from matchms.Spectrum import Spectrum as mSpectrum
@@ -27,20 +26,11 @@ class Spectrum(mSpectrum):
                          metadata = metadata,
                          metadata_harmonization = metadata_harmonization)
         
-        self.clean_spectrum()
-        
         if (len(isotopic_mz) == len(isotopic_intensities)) and len(isotopic_mz) > 0:
-            self.isotopic_pattern = Fragments(mz=mz, intensities=intensities)
+            self.isotopic_pattern = Fragments(mz=isotopic_mz, intensities=isotopic_intensities)
             self.clean_isotopic_pattern()
         else:
             self.isotopic_pattern = None
-
-
-    def clean_spectrum(self):
-        self = msfilters.default_filters(self)
-        self = msfilters.correct_charge(self)
-        self = msfilters.add_parent_mass(self)
-        self = msfilters.normalize_intensities(self)
 
 
     def clean_isotopic_pattern(self, tolerence = 0.01):

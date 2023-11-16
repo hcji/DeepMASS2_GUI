@@ -24,7 +24,11 @@ def search_from_database(s, database, ppm = 10):
         candidates = retrieve_by_exact_mass_database(mass, database, ppm = ppm)
     else:
         candidates = None
-    s.set('candidates', candidates)
+    if candidates is not None:
+        candidates['Formula Score'] = np.nan
+        candidates['Structure Score'] = np.nan
+        candidates['Consensus Score'] = np.nan
+    s.set('annotation', candidates)
     return s
 
 
@@ -43,7 +47,11 @@ def search_from_pubchem(s, ppm = 10):
             candidates = None
     else:
         candidates = None
-    s.set('candidates', candidates)
+    if candidates is not None:
+        candidates['Formula Score'] = np.nan
+        candidates['Structure Score'] = np.nan
+        candidates['Consensus Score'] = np.nan
+    s.set('annotation', candidates)
     return s
 
 

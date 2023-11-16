@@ -8,11 +8,21 @@ Created on Wed Nov 15 08:43:08 2023
 
 from typing import List
 
+import matchms.filtering as msfilters
 from matchms.importing import load_from_msp
 from matchms.importing import load_from_mgf
 
 from core.Spectrum import Spectrum
 from core.importing.load_from_mat import load_from_mat
+
+
+
+def clean_spectrum(s):
+    s = msfilters.default_filters(s)
+    s = msfilters.correct_charge(s)
+    s = msfilters.add_parent_mass(s)
+    s = msfilters.normalize_intensities(s)
+    return s
 
 
 def load_from_files(filenames: List[str]) -> List[Spectrum]:
@@ -22,19 +32,28 @@ def load_from_files(filenames: List[str]) -> List[Spectrum]:
         if patt == 'msp':
             spectrums = load_from_msp(filename)
             for s in spectrums:
+                s = clean_spectrum(s)
                 output.append(Spectrum(mz=s.mz,
                                        intensities=s.intensities,
                                        metadata=s.metadata))
         elif patt == 'mgf':
             spectrums = load_from_mgf(filename)
             for s in spectrums:
+                s = clean_spectrum(s)
                 output.append(Spectrum(mz=s.mz,
                                        intensities=s.intensities,
                                        metadata=s.metadata))
         elif patt == 'mat':
             spectrums = load_from_mat(filename)
             for s in spectrums:
-                output.append(s)
+                isotopic_mz = s.isotopic_pattern.mz
+                isotopic_intensities = s.isotopic_pattern.intensities
+                s = clean_spectrum(s)
+                output.append(Spectrum(mz=s.mz,
+                                       intensities=s.intensities,
+                                       isotopic_mz=isotopic_mz,
+                                       isotopic_intensities=isotopic_intensities,
+                                       metadata=s.metadata))
         else:
             continue
     return output
