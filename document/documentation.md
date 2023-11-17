@@ -85,7 +85,7 @@ buttons become active.
 <img src="https://github.com/hcji/DeepMASS2_GUI/blob/main/document/imgs/sceenshot_1.png" width="50%">
 </div>
 
-2. Click **Open** button, select a mgf file containing one or multiple MS/MS spectra. 
+2. Click **Open** button, select an **mgf** file containing one or multiple MS/MS spectra. 
 See [this](https://github.com/hcji/DeepMASS2_GUI/blob/main/example/all_casmi.mgf) for an example. 
 Except *SMILES* and *INCHIKEY* lines, the other meta information is necessary for each spectrum.
 
