@@ -10,13 +10,13 @@ import numpy as np
 import pandas as pd
 
 from core.pycdk import IsotopeFromString, IsotopeSimilarity, getFormulaExactMass
-from core.annotating.fragmentation.mass_spectrum import MassSpectrum
+# from core.annotating.fragmentation.mass_spectrum import MassSpectrum
 
 
 def check_inputs(s):
     if s.get('annotation') is None:
         return False
-    elif s.get('isotopic_pattern') is None:
+    elif s.isotopic_pattern is None:
         return False
     elif s.get('parent_mass') is None:
         return False
@@ -50,10 +50,6 @@ def calc_isotopic_score(s):
 
 
 def calc_exact_mass_score(s):
-    if not check_inputs(s):
-        return None
-    else:
-        pass
     parent_mass = s.get('parent_mass')
     formula = set(s.get('annotation').loc[:,'MolecularFormula'])
     exact_mass_score = {}
@@ -65,7 +61,21 @@ def calc_exact_mass_score(s):
         except:
             exact_mass_score[f] = 0
     return exact_mass_score
+
+
+def calc_formula_score(s):
+    isotope_score = calc_isotopic_score(s)
+    exact_mass_score = calc_exact_mass_score(s)
+    if isotope_score is None:
+        return exact_mass_score
     
+    keys = exact_mass_score.keys()
+    consesus_score = {}
+    for k in keys:
+        consesus_score[k] = (exact_mass_score[k] + isotope_score[k]) / 2
+    return consesus_score
+
+
 
 '''
 def calc_fragmentation_tree_score(s):
@@ -87,13 +97,12 @@ def calc_fragmentation_tree_score(s):
 
 if __name__ == '__main__':
     
-    '''
+
     from core.importing.load_from_files import load_from_files
     from core.annotating.candidates import search_from_database
     
     s = load_from_files(['example/minimum_example.mat'])[0]
-    
     database = pd.read_csv('data/DeepMassStructureDB-v1.1.csv')
     s = search_from_database(s, database, ppm = 500)
-    '''
+
     

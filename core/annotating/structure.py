@@ -22,8 +22,6 @@ from spec2vec.vector_operations import calc_vector
 def check_inputs(s):
     if s.get('annotation') is None:
         return False
-    elif s.get('isotopic_pattern') is None:
-        return False
     elif s.get('parent_mass') is None:
         return False
     elif s.get('precursor_mz') is None:
@@ -32,7 +30,7 @@ def check_inputs(s):
         return True
 
 
-def calc_deepmass_score(s, p, references):
+def calc_deepmass_score(s, p, model, references):
     if not check_inputs(s):
         return None
     else:

@@ -126,7 +126,6 @@ def retrieve_by_formula_pubchem(formula, timeout=999):
     return result
 
 
-
 def retrieve_by_exact_mass_database(mass, database, ppm = 10):
     min_mass = mass - mass * ppm / 10 ** 6
     max_mass = mass + mass * ppm / 10 ** 6
