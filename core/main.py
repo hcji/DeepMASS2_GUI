@@ -39,17 +39,43 @@ def identify_unknown(s, p, model, references, database):
 
 
 
+def match_spectrum(s, precursors, references, database):
+    s = search_from_database(s, database, ppm = 50)
+    candidate = s.get('annotation')
+    if candidate is None:
+        s = search_from_pubchem(s, database, ppm = 500)
+    if len(candidate) == 0:
+        s = search_from_pubchem(s, database, ppm = 500)
+    
+    candidate = s.get('annotation')
+    if candidate is None:
+        return s
+    if len(candidate) == 0:
+        return s
+    
+    formula_score = calc_formula_score(s)
+    structure_score, reference_spectrum = calc_matchms_score(s, precursors, references)
+    for i in candidate.index:
+        k = candidate.loc[i, 'InChIKey']
+        f = candidate.loc[i, 'MolecularFormula']
+        candidate.loc[i, 'Formula Score'] = formula_score[f]
+        candidate.loc[i, 'Structure Score'] = structure_score[k]
+        candidate.loc[i, 'Consensus Score'] = 0.3*formula_score[f] + 0.7*structure_score[k]
+    s.set('annotation', candidate)
+    s.set('reference', reference_spectrum)    
+    return s
+
+
 
 if __name__ == '__main__':
 
-
+    '''
     import hnswlib
     import pickle
     import numpy as np
     import pandas as pd
     from gensim.models import Word2Vec
     from core.importing.load_from_files import load_from_files
-    from core.annotating.candidates import search_from_database
     
     s = load_from_files(['example/minimum_example.mat'])[0]
     database = pd.read_csv('data/DeepMassStructureDB-v1.1.csv')
@@ -64,4 +90,6 @@ if __name__ == '__main__':
     precursors = [s.get('precursor_mz') for s in references]
     precursors = np.array(precursors)
     
-
+    s1 = identify_unknown(s, p, model, references, database)
+    s2 = match_spectrum(s, precursors, references, database)
+    '''
