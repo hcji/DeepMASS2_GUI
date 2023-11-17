@@ -14,7 +14,7 @@ from core.annotating.fragmentation.mass_spectrum import MassSpectrum
 
 
 def check_inputs(s):
-    if s.get('candidates') is None:
+    if s.get('annotation') is None:
         return False
     elif s.get('isotopic_pattern') is None:
         return False
@@ -23,12 +23,12 @@ def check_inputs(s):
     elif s.get('precursor_mz') is None:
         return False
     else:
-        return True    
+        return True
 
 
 def calc_isotopic_score(s):
     if not check_inputs(s):
-        return s
+        return None
     else:
         pass
     formula = set(s.get('annotation').loc[:,'MolecularFormula'])
@@ -51,7 +51,7 @@ def calc_isotopic_score(s):
 
 def calc_exact_mass_score(s):
     if not check_inputs(s):
-        return s
+        return None
     else:
         pass
     parent_mass = s.get('parent_mass')
@@ -67,6 +67,7 @@ def calc_exact_mass_score(s):
     return exact_mass_score
     
 
+'''
 def calc_fragmentation_tree_score(s):
     if not check_inputs(s):
         return s
@@ -81,11 +82,12 @@ def calc_fragmentation_tree_score(s):
     pred_formula = fragmentation.get_spectral_annotations(allowed_elements, fragmentation.product_scoring_function)
     
     pass
-    
+'''
     
 
 if __name__ == '__main__':
     
+    '''
     from core.importing.load_from_files import load_from_files
     from core.annotating.candidates import search_from_database
     
@@ -93,8 +95,5 @@ if __name__ == '__main__':
     
     database = pd.read_csv('data/DeepMassStructureDB-v1.1.csv')
     s = search_from_database(s, database, ppm = 500)
-    
-    
-    
-    
+    '''
     
