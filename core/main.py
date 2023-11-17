@@ -33,10 +33,10 @@ def identify_unknown(s, p, model, references, database):
         candidate.loc[i, 'Formula Score'] = formula_score[f]
         candidate.loc[i, 'Structure Score'] = structure_score[k]
         candidate.loc[i, 'Consensus Score'] = 0.3*formula_score[f] + 0.7*structure_score[k]
+    candidate = candidate.sort_values('DeepMass Score', ignore_index = True, ascending = False)
     s.set('annotation', candidate)
     s.set('reference', reference_spectrum)
     return s
-
 
 
 def match_spectrum(s, precursors, references, database):
@@ -61,10 +61,10 @@ def match_spectrum(s, precursors, references, database):
         candidate.loc[i, 'Formula Score'] = formula_score[f]
         candidate.loc[i, 'Structure Score'] = structure_score[k]
         candidate.loc[i, 'Consensus Score'] = 0.3*formula_score[f] + 0.7*structure_score[k]
+    candidate = candidate.sort_values('DeepMass Score', ignore_index = True, ascending = False)
     s.set('annotation', candidate)
     s.set('reference', reference_spectrum)    
     return s
-
 
 
 if __name__ == '__main__':
