@@ -15,7 +15,7 @@ def identify_unknown(s, p, model, references, database):
     s = search_from_database(s, database, ppm = 50)
     candidate = s.get('annotation')
     if candidate is None:
-        s = search_from_pubchem(s, database, ppm = 500)
+        s = search_from_pubchem(s, ppm = 50)
     
     candidate = s.get('annotation')
     if candidate is None:
@@ -39,9 +39,7 @@ def match_spectrum(s, precursors, references, database):
     s = search_from_database(s, database, ppm = 50)
     candidate = s.get('annotation')
     if candidate is None:
-        s = search_from_pubchem(s, database, ppm = 500)
-    if len(candidate) == 0:
-        s = search_from_pubchem(s, database, ppm = 500)
+        s = search_from_pubchem(s, ppm = 500)
     
     candidate = s.get('annotation')
     if candidate is None:
