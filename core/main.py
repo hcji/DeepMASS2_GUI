@@ -16,13 +16,9 @@ def identify_unknown(s, p, model, references, database):
     candidate = s.get('annotation')
     if candidate is None:
         s = search_from_pubchem(s, database, ppm = 500)
-    if len(candidate) == 0:
-        s = search_from_pubchem(s, database, ppm = 500)
     
     candidate = s.get('annotation')
     if candidate is None:
-        return s
-    if len(candidate) == 0:
         return s
     
     formula_score = calc_formula_score(s)
@@ -33,7 +29,7 @@ def identify_unknown(s, p, model, references, database):
         candidate.loc[i, 'Formula Score'] = formula_score[f]
         candidate.loc[i, 'Structure Score'] = structure_score[k]
         candidate.loc[i, 'Consensus Score'] = 0.3*formula_score[f] + 0.7*structure_score[k]
-    candidate = candidate.sort_values('DeepMass Score', ignore_index = True, ascending = False)
+    candidate = candidate.sort_values('Consensus Score', ignore_index = True, ascending = False)
     s.set('annotation', candidate)
     s.set('reference', reference_spectrum)
     return s
@@ -61,7 +57,7 @@ def match_spectrum(s, precursors, references, database):
         candidate.loc[i, 'Formula Score'] = formula_score[f]
         candidate.loc[i, 'Structure Score'] = structure_score[k]
         candidate.loc[i, 'Consensus Score'] = 0.3*formula_score[f] + 0.7*structure_score[k]
-    candidate = candidate.sort_values('DeepMass Score', ignore_index = True, ascending = False)
+    candidate = candidate.sort_values('Consensus Score', ignore_index = True, ascending = False)
     s.set('annotation', candidate)
     s.set('reference', reference_spectrum)    
     return s

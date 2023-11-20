@@ -31,12 +31,12 @@ from hnswlib import Index
 from rdkit import Chem
 from rdkit.Chem import Draw, rdFMCS
 from molmass import Formula
-from matchms.Spectrum import Spectrum
-from matchms.importing import load_from_mgf
 from gensim.models import Word2Vec
 
 from uic import main
-from core.identification import identify_unknown, match_spectrum
+from core.Spectrum import Spectrum
+from core.main import identify_unknown, match_spectrum
+from core.importing.load_from_files import load_from_files
 
 
 class DeepMASS2(QMainWindow, main.Ui_MainWindow):
@@ -84,7 +84,7 @@ class DeepMASS2(QMainWindow, main.Ui_MainWindow):
         self.default_reference_positive = 'data/references_spectrums_positive.pickle'
         self.default_reference_negative = 'data/references_spectrums_negative.pickle'
         try:
-            self.default_database = pd.read_csv('data/DeepMassStructureDB-v1.0.csv')
+            self.default_database = pd.read_csv('data/DeepMassStructureDB-v1.1.csv')
         except:
             self.ErrorMsg("Missing data files")
             return
@@ -270,9 +270,8 @@ class DeepMASS2(QMainWindow, main.Ui_MainWindow):
         if len(fileNames) == 0:
             self._set_finished()
             return
-        spectrums = []
-        for fileName in fileNames:
-            spectrums += [s for s in load_from_mgf(fileName) if 'compound_name' in list(s.metadata.keys())]
+        spectrums = load_from_files(fileNames)
+        spectrums += [s for s in spectrums if 'compound_name' in list(s.metadata.keys())]
         titles = [s.metadata['compound_name'] for s in spectrums]
         self.spectrums = pd.DataFrame({'title': titles, 'spectrum': spectrums})
         self.set_list_spectrums()
