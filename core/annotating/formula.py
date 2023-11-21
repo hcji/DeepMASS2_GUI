@@ -10,7 +10,7 @@ import numpy as np
 import pandas as pd
 
 from core.pycdk import IsotopeFromString, IsotopeSimilarity, getFormulaExactMass
-# from core.annotating.fragmentation.mass_spectrum import MassSpectrum
+from core.annotating.subformula.mass_spectrum import MassSpectrum
 
 
 def check_inputs(s):
@@ -63,9 +63,25 @@ def calc_exact_mass_score(s):
     return exact_mass_score
 
 
+def calc_fragmentation_tree_score(s):
+    if not check_inputs(s):
+        return s
+    else:
+        pass
+    formula = list(set(s.get('annotation').loc[:,'MolecularFormula']))
+    formula_mass = np.array([getFormulaExactMass(f) for f in formula])
+    formula_mass_ppm = np.max(np.abs(formula_mass - s.get('parent_mass')) / s.get('parent_mass')  * 10**6)
+    fragmentation = MassSpectrum(dict(zip(s.mz, s.intensities)), s.get('precursor_mz'), formula_mass_ppm)
+    annotations = fragmentation.compute_with_candidate_formula(formula, fragmentation.product_scoring_function)
+    scores = [fragmentation.product_scoring_function(s) for s in annotations]
+    fragmentation_tree_score = dict(zip(formula, scores))
+    return fragmentation_tree_score
+
+
 def calc_formula_score(s):
     isotope_score = calc_isotopic_score(s)
     exact_mass_score = calc_exact_mass_score(s)
+    # fragmentation_tree_score = calc_fragmentation_tree_score
     if isotope_score is None:
         return exact_mass_score
     
@@ -76,33 +92,14 @@ def calc_formula_score(s):
     return consesus_score
 
 
-
-'''
-def calc_fragmentation_tree_score(s):
-    if not check_inputs(s):
-        return s
-    else:
-        pass
-    formula = set(s.get('annotation').loc[:,'MolecularFormula'])
-    formula_mass = np.array([getFormulaExactMass(f) for f in formula])
-    formula_mass_ppm = np.max(np.abs(formula_mass - s.get('parent_mass')) * 10**6)
-    
-    fragmentation = MassSpectrum(dict(zip(s.mz, s.intensities)), formula_mass_ppm)
-    allowed_elements = ["C","H","N","O","P","S","F","Cl","Br"]
-    pred_formula = fragmentation.get_spectral_annotations(allowed_elements, fragmentation.product_scoring_function)
-    
-    pass
-'''
-    
-
 if __name__ == '__main__':
     
-
+    '''
     from core.importing.load_from_files import load_from_files
     from core.annotating.candidates import search_from_database
     
     s = load_from_files(['example/minimum_example.mat'])[0]
     database = pd.read_csv('data/DeepMassStructureDB-v1.1.csv')
     s = search_from_database(s, database, ppm = 500)
-
+    '''
     

@@ -130,10 +130,10 @@ def retrieve_by_exact_mass_database(mass, database, ppm = 10):
     min_mass = mass - mass * ppm / 10 ** 6
     max_mass = mass + mass * ppm / 10 ** 6
     result = database[np.logical_and(database['Exact mass']>=min_mass, database['Exact mass']<=max_mass)]
-    result = result[['Title', 'Formula', 'SMILES', 'InChIkey']]
+    result = result[['Title', 'Formula', 'SMILES', 'InChIkey', 'Database IDs']]
     if len(result) == 0:
         return None
-    result.columns = ['Title', 'MolecularFormula', 'CanonicalSMILES', 'InChIKey']
+    result.columns = ['Title', 'MolecularFormula', 'CanonicalSMILES', 'InChIKey', 'Database IDs']
     result = refine_compound_list(result)
     result = result.reset_index(drop=True)
     return result
@@ -141,10 +141,10 @@ def retrieve_by_exact_mass_database(mass, database, ppm = 10):
 
 def retrieve_by_formula_database(formula, database):   
     result = database[database['Formula'] == formula]
-    result = result[['Title', 'Formula', 'SMILES', 'InChIkey']]
+    result = result[['Title', 'Formula', 'SMILES', 'InChIkey', 'Database IDs']]
     if len(result) == 0:
         return None
-    result.columns = ['Title', 'MolecularFormula', 'CanonicalSMILES', 'InChIKey']
+    result.columns = ['Title', 'MolecularFormula', 'CanonicalSMILES', 'InChIKey', 'Database IDs']
     result = refine_compound_list(result)
     result = result.reset_index(drop=True)
     return result
