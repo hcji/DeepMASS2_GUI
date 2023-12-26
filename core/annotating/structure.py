@@ -6,7 +6,6 @@ Created on Fri Nov 17 08:32:04 2023
 """
 
 
-
 import numpy as np
 import pandas as pd
 from rdkit import Chem
@@ -40,7 +39,7 @@ def calc_deepmass_score(s, p, model, references):
     get_corr = lambda x, y: cosine_similarity([x], [y])[0][0]
     candidate_mol = [Chem.MolFromSmiles(smi) for smi in s.get('annotation')['CanonicalSMILES']]
 
-    query_vector = calc_vector(model, SpectrumDocument(s, n_decimals=2))
+    query_vector = calc_vector(model, SpectrumDocument(s, n_decimals=2), allowed_missing_percentage=100)
     xq = np.array(query_vector).astype('float32')
     I, D = p.knn_query(xq, 300)
     reference_spectrum = np.array(references)[I[0,:]]
@@ -110,18 +109,79 @@ def calc_matchms_score(s, precursors, references):
     return candidate_scores, reference_spectrum
 
 
+def calc_multiomics_score(s, association_data):
+    associated_id = s.get('associated_gene')
+    if associated_id is None:
+        return None
+    else:
+        get_fp = lambda x: AllChem.GetMorganFingerprintAsBitVect(x, radius=2)
+        get_sim = lambda x, y: DataStructs.FingerprintSimilarity(x, y)
+        associated_id = associated_id.split(',')
+    
+    associated_smiles = []
+    for gene in associated_id:
+        j = np.where(association_data['Gene Name'] == gene)[0]
+        if len(j) > 0:
+            for jj in j:
+                associated_smiles += list(association_data.loc[jj, 'Association SMILES'])
+    associated_smiles = np.array(associated_smiles)
+    
+    if s.get('smiles') is not None:
+        try:
+            true_molwt = AllChem.CalcExactMolWt(Chem.MolFromSmiles(s.get('smiles')))
+            associated_molwt = np.array([AllChem.CalcExactMolWt(Chem.MolFromSmiles(s)) for s in associated_smiles])
+            k = np.where(associated_molwt != true_molwt)[0]
+            associated_smiles = associated_smiles[k]
+        except:
+            pass
+    if len(associated_smiles) == 0:
+        return None
+    
+    k, associated_fp = [], []
+    for i, smi in enumerate(associated_smiles):
+        try:
+            mol = Chem.MolFromSmiles(smi)
+            associated_fp.append(get_fp(mol))
+            k.append(i)
+        except:
+            pass
+    
+    multiomics_score = []
+    candidate_mol = [Chem.MolFromSmiles(smi) for smi in s.get('annotation')['CanonicalSMILES']]
+    for i in range(len(candidate_mol)):
+        try:
+            candidate_fp_i = get_fp(candidate_mol[i])
+        except:
+            multiomics_score.append(0)
+
+        candidate_fpsim_i = [get_sim(candidate_fp_i, associated_fp_) for associated_fp_ in associated_fp]
+        candidate_fpsim_i = np.array(candidate_fpsim_i)
+        
+        top5 = np.argsort(-np.array(candidate_fpsim_i))[:5]
+        candidate_score_i = np.sum(candidate_fpsim_i[top5])
+        multiomics_score.append(candidate_score_i / 5)
+    multiomics_score = np.array(multiomics_score)
+    multiomics_score /= np.max(multiomics_score)
+    multiomics_score = dict(zip(s.get('annotation')['InChIKey'], multiomics_score))
+    return multiomics_score
+
+
+
+
 if __name__ == '__main__':
 
-    '''
+
     import hnswlib
     import pickle
     from gensim.models import Word2Vec
     from core.importing.load_from_files import load_from_files
     from core.annotating.candidates import search_from_database
     
-    s = load_from_files(['example/minimum_example.mat'])[0]
+    # s = load_from_files(['example/minimum_example.mat'])[0]
+    s = load_from_files(['example/all_casmi.mgf'])[2]
     database = pd.read_csv('data/DeepMassStructureDB-v1.1.csv')
     s = search_from_database(s, database, ppm = 500)
+    
     model = Word2Vec.load("model/Ms2Vec_allGNPSpositive.hdf5")
     p = hnswlib.Index(space='l2', dim=300) 
     p.load_index('data/references_index_positive_spec2vec.bin')
@@ -132,6 +192,8 @@ if __name__ == '__main__':
     precursors = [s.get('precursor_mz') for s in references]
     precursors = np.array(precursors)
     
-    calc_deepmass_score(s, p, references)
+    association_data = pd.read_pickle('data/metabolite_gene_associations.pickle')
+    
+    calc_deepmass_score(s, p, model, references)
     calc_matchms_score(s, precursors, references)
-    '''
+

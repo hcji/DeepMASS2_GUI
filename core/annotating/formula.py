@@ -48,7 +48,6 @@ def calc_isotopic_score(s):
     return isotope_score
 
 
-
 def calc_exact_mass_score(s):
     parent_mass = s.get('parent_mass')
     formula = set(s.get('annotation').loc[:,'MolecularFormula'])
