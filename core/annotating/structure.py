@@ -59,6 +59,9 @@ def calc_deepmass_score(s, p, model, references):
         reference_mol = np.array(reference_mol)[k]
         reference_vector = np.array(reference_vector)[k,:]
     
+    if len(candidate_mol) == 0:
+        return None
+    
     deepmass_score = []
     for i in range(len(candidate_mol)):
         try:
@@ -73,7 +76,7 @@ def calc_deepmass_score(s, p, model, references):
         candidate_score_i = np.sqrt(np.sum(candidate_vecsim_i[top20] * candidate_fpsim_i[top20]))
         deepmass_score.append(candidate_score_i / 20)
     deepmass_score = np.array(deepmass_score)
-    deepmass_score /= np.max(deepmass_score)
+    deepmass_score /= (np.max(deepmass_score) + 10 ** -10)
     deepmass_score = dict(zip(s.get('annotation')['InChIKey'], deepmass_score))
     return deepmass_score, reference_spectrum
 

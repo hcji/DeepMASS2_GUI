@@ -56,6 +56,7 @@ def load_from_files(filenames: List[str]) -> List[Spectrum]:
                                        metadata=s.metadata))
         else:
             continue
+    output = [s for s in output if s.get('compound_name') is not None]
     return output
     
 

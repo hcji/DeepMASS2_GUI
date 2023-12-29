@@ -259,19 +259,18 @@ class DeepMASS2(QMainWindow, main.Ui_MainWindow):
             self.Thread_LoadReference._reference_negative.connect(self._set_reference_negative)
             self.Thread_LoadReference._i.connect(self._set_process_bar)
             self.Thread_LoadReference.start()
-            self.Thread_LoadReference.finished.connect(self._set_finished)        
+            self.Thread_LoadReference.finished.connect(self._set_finished)
 
         
     def load_spectrums(self):
         self._set_busy()
         options = QtWidgets.QFileDialog.Options()
         options |= QtWidgets.QFileDialog.DontUseNativeDialog
-        fileNames, _ = QtWidgets.QFileDialog.getOpenFileNames(self, "Load", "","MGF Files (*.mgf)", options=options)
+        fileNames, _ = QtWidgets.QFileDialog.getOpenFileNames(self, "Load", "","MS Files (*.mgf, *.mat, *.msp)", options=options)
         if len(fileNames) == 0:
             self._set_finished()
             return
         spectrums = load_from_files(fileNames)
-        spectrums += [s for s in spectrums if 'compound_name' in list(s.metadata.keys())]
         titles = [s.metadata['compound_name'] for s in spectrums]
         self.spectrums = pd.DataFrame({'title': titles, 'spectrum': spectrums})
         self.set_list_spectrums()
@@ -654,7 +653,7 @@ class MakeFigure(FigureCanvas):
         abunds /= np.max(abunds)
         abunds1 /= np.max(abunds1)
         self.axes.vlines(mz, ymin=0, ymax=abunds, color='r', lw = 0.5)
-        self.axes.vlines(mz1, ymin = 0, ymax = -abunds1, color='b', lw = 0.5)
+        self.axes.vlines(mz1, ymin=0, ymax=-abunds1, color='b', lw = 0.5)
         self.axes.axhline(y=0,color='black', lw = 0.5)
         self.axes.set_xlabel('m/z', fontsize = 3.5)
         self.axes.set_ylabel('abundance', fontsize = 3.5)
