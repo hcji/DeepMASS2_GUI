@@ -617,7 +617,7 @@ class Thread_Matching(QThread):
                 else:
                     sn = match_spectrum(s, self.precursors_positive, self.reference_positive, self.database)
             else:
-                sn = match_spectrum(s, self.precursors_positive, self.reference_positive)
+                sn = match_spectrum(s, self.precursors_positive, self.reference_positive, self.database)
             self._i.emit(int(100 * i / len(self.spectrums)))
             self._result.emit(sn)
 
