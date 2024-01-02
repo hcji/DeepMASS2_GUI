@@ -43,6 +43,7 @@ def calc_deepmass_score(s, p, model, references):
     xq = np.array(query_vector).astype('float32')
     I, D = p.knn_query(xq, 300)
     reference_spectrum = np.array(references)[I[0,:]]
+    reference_spectrum = [s for s in reference_spectrum if s.get('smiles') is not None]
     reference_smile = [s.metadata['smiles'] for s in reference_spectrum]
     reference_mol = [Chem.MolFromSmiles(s) for s in reference_smile]
     reference_vector = np.array(p.get_items(I[0, :]))

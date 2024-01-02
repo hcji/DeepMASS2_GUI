@@ -331,7 +331,8 @@ class DeepMASS2(QMainWindow, main.Ui_MainWindow):
         precursors_negative = np.array([s.get('precursor_mz') for s in reference_negative])
         self.Thread_Matching = Thread_Matching(spectrums, 
                                                precursors_positive, precursors_negative, 
-                                               reference_positive, reference_negative)
+                                               reference_positive, reference_negative,
+                                               self.default_database)
         self.Thread_Matching._result.connect(self._set_succeed_annotation)
         self.Thread_Matching._i.connect(self._set_process_bar)
         self.Thread_Matching.start()
@@ -595,13 +596,14 @@ class Thread_Matching(QThread):
     _i = QtCore.pyqtSignal(int)
     _result = QtCore.pyqtSignal(Spectrum)
 
-    def __init__(self, spectrums, precursors_positive, precursors_negative, reference_positive, reference_negative):
+    def __init__(self, spectrums, precursors_positive, precursors_negative, reference_positive, reference_negative, database):
         super(Thread_Matching, self).__init__()
         self.spectrums = spectrums
         self.precursors_positive = precursors_positive
         self.precursors_negative = precursors_negative
         self.reference_positive = reference_positive
         self.reference_negative = reference_negative
+        self.database = database
 
     def __del__(self):
         self.wait()
@@ -611,9 +613,9 @@ class Thread_Matching(QThread):
         for i, s in enumerate(self.spectrums):
             if 'ionmode' in s.metadata.keys():
                 if s.metadata['ionmode'] == 'negative':
-                    sn = match_spectrum(s, self.precursors_negative, self.reference_negative)
+                    sn = match_spectrum(s, self.precursors_negative, self.reference_negative, self.database)
                 else:
-                    sn = match_spectrum(s, self.precursors_positive, self.reference_positive)
+                    sn = match_spectrum(s, self.precursors_positive, self.reference_positive, self.database)
             else:
                 sn = match_spectrum(s, self.precursors_positive, self.reference_positive)
             self._i.emit(int(100 * i / len(self.spectrums)))
