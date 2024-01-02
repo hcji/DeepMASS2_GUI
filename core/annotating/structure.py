@@ -91,13 +91,18 @@ def calc_matchms_score(s, precursors, references):
     lb, ub = precursor - 0.05, precursor + 0.05
     li = np.searchsorted(precursors, lb)
     ui = np.searchsorted(precursors, ub)
+    
+    reference_spectrum = np.array(references)[li:ui]
+    reference_spectrum = np.array([s for s in reference_spectrum if s.get('inchikey') is not None])
+    if len(reference_spectrum) == 0:
+        return None, None
 
-    match_scores = calculate_scores(references = references[li:ui], queries = [s], similarity_function = CosineGreedy())
+    match_scores = calculate_scores(references = reference_spectrum, queries = [s], similarity_function = CosineGreedy())
     # match_scores = match_scores.scores.to_array()
     match_scores = np.array([s[0].tolist()[0] for s in match_scores.scores.to_array()])
     w = np.argsort(-match_scores)
     match_scores = match_scores[w]
-    reference_spectrum = np.array(references)[li:ui][w]
+    reference_spectrum = reference_spectrum[w]
     reference_inchikey = np.array([s.get('inchikey')[:14] for s in reference_spectrum])
     
     candidate_inchiky = s.get('annotation')['InChIKey']
