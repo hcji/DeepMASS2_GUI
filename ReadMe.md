@@ -8,7 +8,7 @@ DeepMASS2 is a cross-platform GUI software tool, which enables deep-learning bas
 
 
 <video width="320" height="240" controls>
-  <source src="https://github.com/hcji/DeepMASS2_GUI/blob/main/example/video_DeepMASS-GUI.mov" type="video/mp4">
+  <source src="https://github.com/hcji/DeepMASS2_GUI/blob/main/example/video_DeepMASS-GUI.mov" type="video/mov">
 </video>
 
 
