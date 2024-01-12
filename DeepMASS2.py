@@ -266,7 +266,7 @@ class DeepMASS2(QMainWindow, main.Ui_MainWindow):
         self._set_busy()
         options = QtWidgets.QFileDialog.Options()
         options |= QtWidgets.QFileDialog.DontUseNativeDialog
-        fileNames, _ = QtWidgets.QFileDialog.getOpenFileNames(self, "Load", "","MS Files (*.mgf, *.mat, *.msp)", options=options)
+        fileNames, _ = QtWidgets.QFileDialog.getOpenFileNames(self, "Load", "","MS Files (*.mgf *.mat *.msp)", options=options)
         if len(fileNames) == 0:
             self._set_finished()
             return
