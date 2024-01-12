@@ -10,21 +10,8 @@ import numpy as np
 import pandas as pd
 from tqdm import tqdm
 
-from matchms.Spectrum import Spectrum
-from matchms.similarity import CosineGreedy
-
-from rdkit import Chem, DataStructs
-from rdkit.Chem import AllChem
-from rdkit.Chem import rdFMCS
-
-
-import base64
-import numpy as np
-import pandas as pd
-from tqdm import tqdm
-from matchms import Spectrum
-from core.identification import spectrum_processing
-
+from core.Spectrum import Spectrum
+from core.importing.load_from_files import clean_spectrum
 
 
 def load_MS_DIAL_Peaklist(filename, exclude_precursor = False):
@@ -78,14 +65,13 @@ def load_MS_DIAL_Peaklist(filename, exclude_precursor = False):
             continue
 
         obj = Spectrum(mz = mz, intensities = intensity,
+                       isotopic_mz = isotope_mz, isotopic_intensities = isotope_intensity,
                        metadata={"precursor_mz": precursor_mz,
                                  "peak_index": index,
                                  "rt": rt,
                                  "smiles": smiles,
-                                 "adduct": adduct,
-                                 "isotope_mz": base64.b64encode(str(isotope_mz).encode("ascii")),
-                                 "isotope_intensity": base64.b64encode(str(isotope_intensity).encode("ascii"))})
-        output.append(spectrum_processing(obj))
+                                 "adduct": adduct})
+        output.append(clean_spectrum(obj))
     return output
 
 
@@ -140,18 +126,15 @@ def load_MS_DIAL_Alginment(filename, exclude_precursor = False, sample_cols = []
         isotope_mz = np.array([float(ss.split(':')[0]) for ss in isotope])
         isotope_intensity = np.array([float(ss.split(':')[1]) for ss in isotope])
         sample_abundance = np.array(data.loc[i, sample_cols])
-        precursor_intensity = np.nanmean(sample_abundance)
 
         obj = Spectrum(mz = mz, intensities = intensity,
+                       isotopic_mz = isotope_mz, isotopic_intensities = isotope_intensity,
                        metadata={"precursor_mz": precursor_mz,
                                  "peak_index": index,
                                  "rt": rt,
                                  "smiles": smiles,
-                                 "adduct": adduct,
-                                 "precursor_intensity": precursor_intensity,
-                                 "isotope_mz": base64.b64encode(str(isotope_mz).encode("ascii")),
-                                 "isotope_intensity": base64.b64encode(str(isotope_intensity).encode("ascii"))})
-        output.append(spectrum_processing(obj))
+                                 "adduct": adduct})
+        output.append(clean_spectrum(obj))
     return output
 
 
@@ -178,7 +161,7 @@ def remove_duplicate(spectrums):
             mz.append(mz_)
             iontype.append(iontype_)
             intensities.append(intensity_)
-            new_spectrums.append(spectrum_processing(s))
+            new_spectrums.append(clean_spectrum(s))
     return new_spectrums
 
 
@@ -189,8 +172,8 @@ def save_as_sirius(spectrums, export_path):
         parentmass = s.get('parent_mass')
         ionization = s.get('adduct')
 
-        isotope_mz = base64.b64decode(s.get('isotope_mz')).decode("ascii").replace('\n', '')
-        isotope_intensity = base64.b64decode(s.get('isotope_intensity')).decode("ascii").replace('\n', '')
+        isotope_mz = s.isotopic_pattern.mz
+        isotope_intensity = s.isotopic_pattern.intensities
         isotope_mz = [float(s) for s in isotope_mz.replace('[', '').replace(']', '').split(' ') if s != '']
         isotope_intensity = [float(s) for s in isotope_intensity.replace('[', '').replace(']', '').split(' ') if s != '']
 
@@ -224,8 +207,8 @@ def save_as_msfinder(spectrums, export_path):
         ionmode = s.get('ionmode').capitalize()
         ionization = s.get('adduct')
 
-        isotope_mz = base64.b64decode(s.get('isotope_mz')).decode("ascii").replace('\n', '')
-        isotope_intensity = base64.b64decode(s.get('isotope_intensity')).decode("ascii").replace('\n', '')
+        isotope_mz = s.isotopic_pattern.mz
+        isotope_intensity = s.isotopic_pattern.intensities
         isotope_mz = [float(s) for s in isotope_mz.replace('[', '').replace(']', '').split(' ') if s != '']
         isotope_intensity = [float(s) for s in isotope_intensity.replace('[', '').replace(']', '').split(' ') if s != '']
 

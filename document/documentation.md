@@ -194,9 +194,38 @@ Here's a simplified example of an MGF file:
 
 ## Constructing *mgf* file from MS-DIAL
 
-  1) Process your ms files of DDA/DIA mode metabolomic study following the MS-DIAL [tutorial](https://mtbinfo-team.github.io/mtbinfo.github.io/MS-DIAL/tutorial).
-  2) Export the alignment result with *txt* format. Refer the [tutorial-section 5-6-(B)](https://mtbinfo-team.github.io/mtbinfo.github.io/MS-DIAL/tutorial#section-5-6).
-  3) Refer the scripts [here](https://github.com/hcji/DeepMASS2_Data_Processing/blob/master/Scripts/test_data_collection/processing_tomato.py).
+MS-DIAL is an open-source software designed for the processing and analysis of mass spectrometry (MS) data. You can get 
+the latest version [here](http://prime.psc.riken.jp/compms/msdial/main.html). Please follow the [tutorial](https://github.com/systemsomicslab/mtbinfo.github.io/blob/master/MS-DIAL/tutorial.md). 
+to process your ms files of DDA/DIA mode metabolomic study, the export the alignment result. The following codes can be used 
+for transforming the obtained *csv* file to *mgf* file, which can be loaded with DeepMASS.
+
+
+        import pandas as pd
+        
+        from matchms.exporting import save_as_mgf
+        from core.external import load_MS_DIAL_Alginment, remove_duplicate
+        
+        pos_path = pd.read_csv('example/Tomato/tomato_positive_msdial.csv') # replace with your own data path
+        pos_cols = list(pos_data.columns[32:]) # these columns are 
+        
+        spectrums_positive = load_MS_DIAL_Alginment('example/Tomato/tomato_positive_msdial.csv', sample_cols = pos_cols)
+        spectrums_negative = load_MS_DIAL_Alginment('example/Tomato/tomato_negative_msdial.csv', sample_cols = neg_cols)
+        
+        spectrums_positive = [s for s in spectrums_positive if len(s.intensities[s.intensities > 0.05]) >= 3]
+        spectrums_positive = [s for s in spectrums_positive if s.get('parent_mass') is not None]
+        spectrums_negative = [s for s in spectrums_negative if len(s.intensities[s.intensities > 0.05]) >= 3]
+        spectrums_negative = [s for s in spectrums_negative if s.get('parent_mass') is not None]
+        spectrums_positive = [s.set('compound_name', 'Compound_{}'.format(i)) for i, s in enumerate(spectrums_positive)]
+        spectrums_negative = [s.set('compound_name', 'Compound_{}'.format(i)) for i, s in enumerate(spectrums_negative)]
+        save_as_mgf(spectrums_positive, 'example/Tomato/ms_ms_tomato_all_positive.mgf')
+        save_as_mgf(spectrums_negative, 'example/Tomato/ms_ms_tomato_all_negative.mgf')
+        
+        spectrums = spectrums_positive + spectrums_negative
+        spectrums = remove_duplicate(spectrums)
+        
+        save_as_mgf(spectrums, 'example/Tomato/ms_ms_tomato_identified.mgf')
+
+
 
 ## Training models with NIST 20.
 
