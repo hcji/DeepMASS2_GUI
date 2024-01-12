@@ -115,44 +115,44 @@ software tools. Below is a brief description of the typical format of an MGF fil
 
 1. Header Information:
 
-The file begins with optional header information, which may include metadata about the MS data, such as 
+  The file begins with optional header information, which may include metadata about the MS data, such as 
 instrument parameters, acquisition settings, and other experimental details.  
 
 2. BEGIN IONS:
 
-Marks the beginning of the MS/MS data section.  
+  Marks the beginning of the MS/MS data section.  
 
 3. Spectrum Information:
 
-Each MS/MS spectrum is represented by a set of parameters and a list of mass-to-charge ratio (m/z) and intensity pairs.
+  Each MS/MS spectrum is represented by a set of parameters and a list of mass-to-charge ratio (m/z) and intensity pairs.
 Common parameters include precursor ion charge, precursor ion m/z, compound name, challenge information, molecular formula, 
 SMILES notation, InChIKey, adduct information, ionization mode, parent mass, and others.  
 
 4. Peak Data:
 
-The mass spectrum is described by a list of m/z and intensity pairs. Each line typically contains two values separated by a space: the m/z value and the intensity value.
+  The mass spectrum is described by a list of m/z and intensity pairs. Each line typically contains two values separated by a space: the m/z value and the intensity value.
 The intensity values indicate the abundance or intensity of ions at specific m/z values.  
 
 5. END IONS:
 
-Marks the end of the MS/MS data section for a specific spectrum.  
+  Marks the end of the MS/MS data section for a specific spectrum.  
 
 6. Repeating Sections:
 
-The file may contain multiple MS/MS spectra, each preceded by the "BEGIN IONS" header and followed by the "END IONS" footer.      
+  The file may contain multiple MS/MS spectra, each preceded by the "BEGIN IONS" header and followed by the "END IONS" footer.      
 
 **These spectrum information are essential for DeepMASS inputs:**    
 
-**CHARGE:** Indicates the number of charge of the precursor ion.   
-**PRECURSOR_MZ:** Specifies the precursor ion's mass-to-charge ratio.   
-**COMPOUND_NAME:** Not the true name of the compound, but a identifier (in fact the true name is unknown), for example, "unknown_1".    
-**IONMODE:** Specifies the ionization mode of the precursor ion.    
-**ADDUCT:** Specifies the type of the adduct of the precursor ion. 
+  **CHARGE:** Indicates the number of charge of the precursor ion.   
+  **PRECURSOR_MZ:** Specifies the precursor ion's mass-to-charge ratio.   
+  **COMPOUND_NAME:** Not the true name of the compound, but a identifier (in fact the true name is unknown), for example, "unknown_1".    
+  **IONMODE:** Specifies the ionization mode of the precursor ion.    
+  **ADDUCT:** Specifies the type of the adduct of the precursor ion. 
 
 **At least one of the following information is necessary for DeepMASS inputs:**  
 
-**FORMULA:** Represents the molecular formula of the compound.    
-**PARENT_MASS**: Specifies the monoisotopic mass of the compound.
+  **FORMULA:** Represents the molecular formula of the compound.    
+  **PARENT_MASS**: Specifies the monoisotopic mass of the compound.
  
 Here's a simplified example of an MGF file:
 
@@ -194,20 +194,20 @@ Here's a simplified example of an MGF file:
 
 ## Constructing *mgf* file from MS-DIAL
 
-    1) Process your ms files of DDA/DIA mode metabolomic study following the MS-DIAL [tutorial](https://mtbinfo-team.github.io/mtbinfo.github.io/MS-DIAL/tutorial).
-    2) Export the alignment result with *txt* format. Refer the [tutorial-section 5-6-(B)](https://mtbinfo-team.github.io/mtbinfo.github.io/MS-DIAL/tutorial#section-5-6).
-    3) Refer the scripts [here](https://github.com/hcji/DeepMASS2_Data_Processing/blob/master/Scripts/test_data_collection/processing_tomato.py).
+  1) Process your ms files of DDA/DIA mode metabolomic study following the MS-DIAL [tutorial](https://mtbinfo-team.github.io/mtbinfo.github.io/MS-DIAL/tutorial).
+  2) Export the alignment result with *txt* format. Refer the [tutorial-section 5-6-(B)](https://mtbinfo-team.github.io/mtbinfo.github.io/MS-DIAL/tutorial#section-5-6).
+  3) Refer the scripts [here](https://github.com/hcji/DeepMASS2_Data_Processing/blob/master/Scripts/test_data_collection/processing_tomato.py).
 
 ## Training models with NIST 20.
 
-    1) Use [LIB2NIST](https://chemdata.nist.gov/mass-spc/ms-search/Library_conversion_tool.html) tool to export NIST 20 database to *mgf* format.
-    2) Refer the scripts [here](https://github.com/hcji/DeepMASS2_Data_Processing/blob/master/Scripts/training_data_collection/clean_nist.py),
+  1) Use [LIB2NIST](https://chemdata.nist.gov/mass-spc/ms-search/Library_conversion_tool.html) tool to export NIST 20 database to *mgf* format.
+  2) Refer the scripts [here](https://github.com/hcji/DeepMASS2_Data_Processing/blob/master/Scripts/training_data_collection/clean_nist.py),
        and transform the data into DeepMASS required format.
-    3) Refer the scripts [here](https://github.com/hcji/DeepMASS2_Data_Processing/blob/master/Scripts/training_models/train_ms2vec.py),
+  3) Refer the scripts [here](https://github.com/hcji/DeepMASS2_Data_Processing/blob/master/Scripts/training_models/train_ms2vec.py),
        and train your *ms2vec* model.
-    4) Refer the scripts [here](https://github.com/hcji/DeepMASS2_Data_Processing/blob/master/Scripts/training_models/vectorize_reference_by_ms2vec.py),
+  4) Refer the scripts [here](https://github.com/hcji/DeepMASS2_Data_Processing/blob/master/Scripts/training_models/vectorize_reference_by_ms2vec.py),
        and build index for the spectra of NIST 20.
-    5) Copy all the generated files into corresponding folder of DeepMASS.
+  5) Copy all the generated files into corresponding folder of DeepMASS.
 
 ## Reference
 
