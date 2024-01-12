@@ -7,10 +7,7 @@ DeepMASS2 is a cross-platform GUI software tool, which enables deep-learning bas
  metabolites and assist in ranking candidates obtained from molecular structure databases. 
 
 
-<video width="320" height="240" controls>
-  <source src="https://raw.githubusercontent.com/hcji/DeepMASS2_GUI/main/example/video_DeepMASS-GUI.mov">
-  Your browser does not support the video tag.
-</video>
+<video src="https://raw.githubusercontent.com/hcji/DeepMASS2_GUI/main/example/video_DeepMASS-GUI.mov">
 
 
 ## Installation
