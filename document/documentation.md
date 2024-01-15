@@ -174,7 +174,7 @@ Here's a simplified example of an MGF file:
 
 [MS-DIAL](http://prime.psc.riken.jp/compms/msdial/main.html) is open-source software for processing and analyzing mass spectrometry (MS) data. You can get 
 Follow [tutorial](https://github.com/systemsomicslab/mtbinfo.github.io/blob/master/MS-DIAL/tutorial.md). 
-to process DDA/DIA mode metabolomic study MS files and export the alignment result. An example output can be found [here](https://github.com/hcji/DeepMASS2_GUI/blob/main/example/MS_DIAL_example.txt). The following codes can be used 
+to process DDA/DIA mode metabolomic study MS files and export the alignment result. An example output can be found [here](https://github.com/hcji/DeepMASS2_GUI/blob/main/example/MS_DIAL_example.txt).  
 
 Use the following code to transform the obtained csv or txt file to an mgf file, which can be directly upload in DeepMASS GUI:
 
@@ -188,7 +188,15 @@ Use the following code to transform the obtained csv or txt file to an mgf file,
 
 ## Training models with NIST 20.
 
-  1) Use [LIB2NIST](https://chemdata.nist.gov/mass-spc/ms-search/Library_conversion_tool.html) tool to export NIST 20 database to *mgf* format.
+  1) Use [LIB2NIST](https://chemdata.nist.gov/mass-spc/ms-search/Library_conversion_tool.html) to export the NIST 20 database with *msp* and *mol* format respectively. 
+  Then you will get an *msp* file and a folder of *mol* files. The *msp* file includes the information of peak list of ms/ms and the NIST index of each molecule, while 
+  the *mol* file includes the structural information of molecules.
+  
+  2) Refer the scripts [here] to correlate the ms/ms and the chemical structures. 
+  
+  
+  
+  
   2) Refer the scripts [here](https://github.com/hcji/DeepMASS2_Data_Processing/blob/master/Scripts/training_data_collection/clean_nist.py),
        and transform the data into DeepMASS required format.
   3) Refer the scripts [here](https://github.com/hcji/DeepMASS2_Data_Processing/blob/master/Scripts/training_models/train_ms2vec.py),
