@@ -192,18 +192,16 @@ Use the following code to transform the obtained csv or txt file to an mgf file,
   Then you will get an *msp* file and a folder of *mol* files. The *msp* file includes the information of peak list of ms/ms and the NIST index of each molecule, while 
   the *mol* file includes the structural information of molecules.
   
-  2) Refer the scripts [here] to correlate the ms/ms and the chemical structures. 
+  2) Refer the scripts [here](https://github.com/hcji/DeepMASS2_GUI/blob/main/scripts/Processing_NIST20_data.ipynb) to 
+  correlate the ms/ms and the chemical structures, add spectral meta-information and save them to binary files.
   
-  
-  
-  
-  2) Refer the scripts [here](https://github.com/hcji/DeepMASS2_Data_Processing/blob/master/Scripts/training_data_collection/clean_nist.py),
-       and transform the data into DeepMASS required format.
-  3) Refer the scripts [here](https://github.com/hcji/DeepMASS2_Data_Processing/blob/master/Scripts/training_models/train_ms2vec.py),
-       and train your *ms2vec* model.
-  4) Refer the scripts [here](https://github.com/hcji/DeepMASS2_Data_Processing/blob/master/Scripts/training_models/vectorize_reference_by_ms2vec.py),
+  3) Refer the scripts [here](https://github.com/hcji/DeepMASS2_GUI/blob/main/scripts/Traning_Spec2vec_Model.ipynb),
+       and train your *ms2vec* model with the above data.
+       
+  4) Refer the scripts [here](https://github.com/hcji/DeepMASS2_GUI/blob/main/scripts/Vectorize_Spectra.ipynb),
        and build index for the spectra of NIST 20.
-  5) Copy all the generated files into corresponding folder of DeepMASS.
+       
+  5) Copy all the generated files into corresponding folder of DeepMASS, refer the installation step 5.
 
 ## Reference
 
