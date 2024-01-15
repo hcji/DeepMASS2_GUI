@@ -1,159 +1,137 @@
 # DeepMASS2 Documentation
-### Oct 16th, 2023
-
-**Package:**
-	Version: 1.0.0, released at Oct 16th, 2023    
-	Maintainer: Ji Hongchao *(jihongchao@caas.cn)*     
+*Version 1.0.0*  
+*Released on October 16th, 2023*  
+*Maintainer: Ji Hongchao*  
+*Email: [jihongchao@caas.cn](mailto:jihongchao@caas.cn)*  
 
 ## Introduction
 
-DeepMASS is an innovative software tool offering a powerful solution for annotating and 
-discovering metabolites within complex biological systems. Its foundation lies in a sophisticated 
-deep-learning-based semantic similarity model, which seamlessly connects mass spectra to 
-structurally related compounds, effectively mapping the chemical space of the unknown. 
-DeepMASS maximizes the utility of mass spectrometry big data, positioning itself for 
-further development as data scales continue to expand.
-
+DeepMASS is an innovative software tool providing a robust solution for annotating and 
+discovering metabolites within complex biological systems. Its foundation lies in a 
+sophisticated deep-learning-based semantic similarity model, seamlessly connecting mass 
+spectra to structurally related compounds. This connection effectively maps the chemical 
+space of the unknown metabolites. DeepMASS maximizes the utility of mass spectrometry big 
+data, positioning itself for further development as data scales continue to expand.
 
 ## Installation
 
-**System Recommended:**    
-Operating Systems: 
+**System Requirements:**  
+**Operating Systems:**
+- Windows 11
+- MacOS
 
-    - Windows 11
-    - MacOS
- 
-Recommended Hardware:
+**Recommended Hardware:**
+- Intel Core i5 or greater
+- 16 GB RAM or more
+- 5 GB hard drive space
 
-    - Intel Core i5 or greater
-    - 16 GB RAM or more
-    - 5 GB hard drive space
+**Installation Steps:**
 
-**Please follow the following installation steps:**
-
-1. Install [Anaconda](https://www.anaconda.com/)  or [Miniconda](https://docs.conda.io/en/latest/miniconda.html)   
+1. Install [Anaconda](https://www.anaconda.com/) or [Miniconda](https://docs.conda.io/en/latest/miniconda.html).
 2. Create a new conda environment and activate:
 
-        conda create -n deepmass python=3.8.13
-        conda activate deepmass
+    ```bash
+    conda create -n deepmass python=3.8.13
+    conda activate deepmass
+    ```
 
 3. Clone the repository and enter:
 
-        git clone https://github.com/hcji/DeepMASS2_GUI.git
-        cd DeepMASS2_GUI
-    
-4. Install dependency (for *MacOS*, some dependency may install with conda manually):
+    ```bash
+    git clone https://github.com/hcji/DeepMASS2_GUI.git
+    cd DeepMASS2_GUI
+    ```
 
-        pip install -r requirements.txt
-        
-5. Download the [dependent data](https://github.com/hcji/DeepMASS2_GUI/releases/tag/v0.99.0).     
+4. Install dependencies (for *MacOS*, some dependencies may need manual installation with conda):
 
-    1) put the following files into *data* folder:
-    
-                DeepMassStructureDB-v1.0.csv
-                references_index_negative_spec2vec.bin
-                references_index_positive_spec2vec.bin
-                references_spectrums_negative.pickle
-                references_spectrums_positive.pickle
-    
-    2) put the following files into *model* folder:
-    
-                Ms2Vec_allGNPSnegative.hdf5
-                Ms2Vec_allGNPSnegative.hdf5.syn1neg.npy
-                Ms2Vec_allGNPSnegative.hdf5.wv.vectors.npy
-                Ms2Vec_allGNPSpositive.hdf5
-                Ms2Vec_allGNPSpositive.hdf5.syn1neg.npy
-                Ms2Vec_allGNPSpositive.hdf5.wv.vectors.npy
+    ```bash
+    pip install -r requirements.txt
+    ```
 
-Please note, these dependent data are introduced as public version of the published paper. It 
-means they are based on the GNPS dataset only. If you test on CASMI dataset with these version, 
-there may be some difference compared with the reported results in the paper. If you have the 
-accessibility of NIST 20, please referred the introduction of the *Advanced usage* part, and 
-re-train the model.
+5. Download the [dependent data](https://github.com/hcji/DeepMASS2_GUI/releases/tag/v0.99.0).
 
-6. Run DeepMASS
+    - Put the following files into the *data* folder:
 
-        python DeepMASS2.py
+        ```
+        DeepMassStructureDB-v1.0.csv
+        references_index_negative_spec2vec.bin
+        references_index_positive_spec2vec.bin
+        references_spectrums_negative.pickle
+        references_spectrums_positive.pickle
+        ```
+
+    - Put the following files into the *model* folder:
+
+        ```
+        Ms2Vec_allGNPSnegative.hdf5
+        Ms2Vec_allGNPSnegative.hdf5.syn1neg.npy
+        Ms2Vec_allGNPSnegative.hdf5.wv.vectors.npy
+        Ms2Vec_allGNPSpositive.hdf5
+        Ms2Vec_allGNPSpositive.hdf5.syn1neg.npy
+        Ms2Vec_allGNPSpositive.hdf5.wv.vectors.npy
+        ```
+
+    Please note that these dependent data are based on the GNPS dataset. If testing on the CASMI dataset, 
+    there may be differences compared to reported results in the paper. For NIST 20 access, 
+    refer to the *Training models with NIST 20* section and re-train the model.
+
+6. Run DeepMASS:
+
+    ```bash
+    python DeepMASS2.py
+    ```
 
 
-## Quick start
+## Quick Start
 
-1. DeepMASS may need some time for auto-loading the dependent data. Please wait until the 
-buttons become active.
+1. DeepMASS may require some time for auto-loading dependent data. Please wait until the buttons become active.
 
 <div align="center">
 <img src="https://github.com/hcji/DeepMASS2_GUI/blob/main/document/imgs/sceenshot_1.png" width="50%">
 </div>
 
-2. Click **Open** button, select an **mgf** file containing one or multiple MS/MS spectra. 
-See [this](https://github.com/hcji/DeepMASS2_GUI/blob/main/example/all_casmi.mgf) for an example. 
+2. Click the **Open** button and select an **mgf** file containing one or multiple MS/MS spectra. [Example here](https://github.com/hcji/DeepMASS2_GUI/blob/main/example/all_casmi.mgf)
 
 <div align="center">
 <img src="https://github.com/hcji/DeepMASS2_GUI/blob/main/document/imgs/sceenshot_2.png" width="50%">
 </div>
 
-3. Click **Run DeepMASS** for annotating with DeepMASS algorithm, or click **Run MatchMS** for library matching. 
-Wait for the progress bar to finish.
+3. Click **Run DeepMASS** for annotating with the DeepMASS algorithm or **Run MatchMS** for library matching. Wait for the progress bar to finish.
 
 <div align="center">
 <img src="https://github.com/hcji/DeepMASS2_GUI/blob/main/document/imgs/sceenshot_3.png" width="50%">
 </div>
 
-4. Click **Save** button, select the folder path to save the annotation results.
+4. Click the **Save** button and select the folder path to save the annotation results.
 
 <div align="center">
 <img src="https://github.com/hcji/DeepMASS2_GUI/blob/main/document/imgs/sceenshot_4.png" width="50%">
 </div>
 
 
-## Input file format
+## Input File Format
 
-DeepMASS accept **mgf** file containing one or multiple MS/MS spectra. The Mascot Generic Format (MGF) is a 
-standard file format used to store mass spectrometry (MS) data, particularly tandem mass spectrometry (MS/MS) 
-data. MGF files are commonly employed for exchanging spectral information between different mass spectrometry 
-software tools. Below is a brief description of the typical format of an MGF file:
+DeepMASS accepts **mgf** files containing one or multiple MS/MS spectra. The Mascot Generic Format (MGF) 
+is a standard file format used to store mass spectrometry (MS) data, particularly tandem mass spectrometry (MS/MS) data.
 
-1. Header Information:
+- **Header Information:** Optional metadata about the MS data, including instrument parameters, acquisition settings, and other experimental details.
+- **BEGIN IONS:** Marks the beginning of the MS/MS data section.
+- **Spectrum Information:** Parameters and a list of mass-to-charge ratio (m/z) and intensity pairs.
+- **Peak Data:** Describes the mass spectrum with m/z and intensity pairs.
+- **END IONS:** Marks the end of the MS/MS data section for a specific spectrum.
 
-  The file begins with optional header information, which may include metadata about the MS data, such as 
-instrument parameters, acquisition settings, and other experimental details.  
+Essential DeepMASS input information includes:
+- **CHARGE:** Number of charges of the precursor ion.
+- **PRECURSOR_MZ:** Precursor ion's mass-to-charge ratio.
+- **COMPOUND_NAME:** Identifier for the compound.
+- **IONMODE:** Ionization mode of the precursor ion.
+- **ADDUCT:** Type of adduct of the precursor ion.
 
-2. BEGIN IONS:
-
-  Marks the beginning of the MS/MS data section.  
-
-3. Spectrum Information:
-
-  Each MS/MS spectrum is represented by a set of parameters and a list of mass-to-charge ratio (m/z) and intensity pairs.
-Common parameters include precursor ion charge, precursor ion m/z, compound name, challenge information, molecular formula, 
-SMILES notation, InChIKey, adduct information, ionization mode, parent mass, and others.  
-
-4. Peak Data:
-
-  The mass spectrum is described by a list of m/z and intensity pairs. Each line typically contains two values separated by a space: the m/z value and the intensity value.
-The intensity values indicate the abundance or intensity of ions at specific m/z values.  
-
-5. END IONS:
-
-  Marks the end of the MS/MS data section for a specific spectrum.  
-
-6. Repeating Sections:
-
-  The file may contain multiple MS/MS spectra, each preceded by the "BEGIN IONS" header and followed by the "END IONS" footer.      
-
-**These spectrum information are essential for DeepMASS inputs:**    
-
-  **CHARGE:** Indicates the number of charge of the precursor ion.   
-  **PRECURSOR_MZ:** Specifies the precursor ion's mass-to-charge ratio.   
-  **COMPOUND_NAME:** Not the true name of the compound, but a identifier (in fact the true name is unknown), for example, "unknown_1".    
-  **IONMODE:** Specifies the ionization mode of the precursor ion.    
-  **ADDUCT:** Specifies the type of the adduct of the precursor ion. 
-
-**At least one of the following information is necessary for DeepMASS inputs:**  
-
-  **FORMULA:** Represents the molecular formula of the compound.    
-  **PARENT_MASS**: Specifies the monoisotopic mass of the compound.
+At least one of the following is necessary for DeepMASS inputs:
+- **FORMULA:** Molecular formula of the compound.
+- **PARENT_MASS:** Monoisotopic mass of the compound.
  
+
 Here's a simplified example of an MGF file:
 
         BEGIN IONS
@@ -194,37 +172,18 @@ Here's a simplified example of an MGF file:
 
 ## Constructing *mgf* file from MS-DIAL
 
-MS-DIAL is an open-source software designed for the processing and analysis of mass spectrometry (MS) data. You can get 
-the latest version [here](http://prime.psc.riken.jp/compms/msdial/main.html). Please follow the [tutorial](https://github.com/systemsomicslab/mtbinfo.github.io/blob/master/MS-DIAL/tutorial.md). 
-to process your ms files of DDA/DIA mode metabolomic study, the export the alignment result. The following codes can be used 
-for transforming the obtained *csv* file to *mgf* file, which can be loaded with DeepMASS.
+[MS-DIAL](http://prime.psc.riken.jp/compms/msdial/main.html) is open-source software for processing and analyzing mass spectrometry (MS) data. You can get 
+Follow [tutorial](https://github.com/systemsomicslab/mtbinfo.github.io/blob/master/MS-DIAL/tutorial.md). 
+to process DDA/DIA mode metabolomic study MS files and export the alignment result. An example output can be found [here](https://github.com/hcji/DeepMASS2_GUI/blob/main/example/MS_DIAL_example.txt). The following codes can be used 
+
+Use the following code to transform the obtained csv or txt file to an mgf file, which can be directly upload in DeepMASS GUI:
 
 
-        import pandas as pd
-        
         from matchms.exporting import save_as_mgf
-        from core.external import load_MS_DIAL_Alginment, remove_duplicate
+        from core.external import load_MS_DIAL_Alginment
         
-        pos_path = pd.read_csv('example/Tomato/tomato_positive_msdial.csv') # replace with your own data path
-        pos_cols = list(pos_data.columns[32:]) # these columns are 
-        
-        spectrums_positive = load_MS_DIAL_Alginment('example/Tomato/tomato_positive_msdial.csv', sample_cols = pos_cols)
-        spectrums_negative = load_MS_DIAL_Alginment('example/Tomato/tomato_negative_msdial.csv', sample_cols = neg_cols)
-        
-        spectrums_positive = [s for s in spectrums_positive if len(s.intensities[s.intensities > 0.05]) >= 3]
-        spectrums_positive = [s for s in spectrums_positive if s.get('parent_mass') is not None]
-        spectrums_negative = [s for s in spectrums_negative if len(s.intensities[s.intensities > 0.05]) >= 3]
-        spectrums_negative = [s for s in spectrums_negative if s.get('parent_mass') is not None]
-        spectrums_positive = [s.set('compound_name', 'Compound_{}'.format(i)) for i, s in enumerate(spectrums_positive)]
-        spectrums_negative = [s.set('compound_name', 'Compound_{}'.format(i)) for i, s in enumerate(spectrums_negative)]
-        save_as_mgf(spectrums_positive, 'example/Tomato/ms_ms_tomato_all_positive.mgf')
-        save_as_mgf(spectrums_negative, 'example/Tomato/ms_ms_tomato_all_negative.mgf')
-        
-        spectrums = spectrums_positive + spectrums_negative
-        spectrums = remove_duplicate(spectrums)
-        
-        save_as_mgf(spectrums, 'example/Tomato/ms_ms_tomato_identified.mgf')
-
+        spectrums = load_MS_DIAL_Alginment('example/MS_DIAL_example.txt')
+        save_as_mgf(spectrums, 'example/MS_DIAL_example.mgf')
 
 
 ## Training models with NIST 20.
