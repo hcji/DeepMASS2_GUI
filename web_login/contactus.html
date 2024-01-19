@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>My Website</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: white;
+      box-sizing: border-box;
+      padding: 160px 0 0 240px;
+    }
+    h1 {
+      text-align: center;
+      color: white;
+    }
+    .container {
+      width: 1000px;
+      height:400px;
+      margin-top: 30px;
+      margin-right: 30px;
+      margin-left: 50px;
+      padding: 20px;
+      background-color: white;
+      border: 2px solid powderblue;
+    }
+    .contact {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .contact img {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+    }
+    .contact p {
+      font-size: 18px;
+    }
+
+
+
+    .doorWrap {
+        width: 1000px;
+        height: 480px;
+        border: 1px solid #666;
+        perspective: 500px;
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        box-shadow: 10px 5px 5px #aac6e7;
+    }
+
+    .leftDoor,
+    .rightDoor {
+        width: 1000px;
+        height: 480px;
+        background-color: rgb(223, 241, 240);
+        transition: 1.8s;
+        z-index: 2;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        border: 1px solid #171716;
+        box-shadow: 10px 5px 5px #ace5dc;
+
+    }
+
+    .leftDoor {
+        transform-origin: left;
+    }
+
+    .rightDoor {
+        transform-origin: right;
+    }
+
+    .doorWrap:hover .leftDoor {
+        transform: rotateY(-130deg);
+    }
+
+    .doorWrap:hover .rightDoor {
+        transform: rotateY(130deg);
+    }
+
+    .content {
+        position: absolute;
+        z-index: 1;
+        width:100%;
+        height: 100%;
+        background-color: #abf;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        box-shadow: 10px 5px 5px #aac6e7;
+    }
+
+
+  </style>
+</head>
+<body>
+  <div class="doorWrap">
+        <div class="leftDoor">Left Door</div>
+        <div class="rightDoor">Right Door</div>
+        <div class="content">
+        <div class="container">
+          <h2>Contact Us</h2>
+          <div class="contact">
+            <img src="../icon/shiyan.jpg" alt="My Photo">
+            <p>You can contact me through:</p>
+            <ul>
+              <li>Email: jihongchao@caas.cn</li>
+<!--              <li>Phone: 123-456-7890</li>-->
+<!--              <li>WeChat: me123</li>-->
+            </ul>
+          </div>
+  </div>
+        </div>
+    </div>
+
+
+
+</body>
+</html>

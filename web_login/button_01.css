@@ -1,0 +1,100 @@
+body {
+    font-family: "Lucida Grande", system-ui, sans-serif;
+    min-height: 5vh;
+    display: flex;
+    /* justify-content: center;
+    align-items: center; */
+    background-image: repeating-linear-gradient(
+        hsl(0, 0%, 100%) 0%,
+        /* #fff 50%, */
+        /* #f0f0f0 50%, */
+        #f0f0f0 300%
+    );
+    /* background-size: 0.5ch 0.5ch; */
+    /* Try changing these values to change the color	 */
+    --light-adjust: 10%;
+    --chroma-base: 41; /* Default: 41 */
+    --chroma-range: 13; /* Default: 13 */
+    --hue-base: 267deg; /* Default: 267deg */
+}
+
+button {
+    appearance: none;
+    font-family: inherit;
+    font-size: 1.5rem;
+    text-shadow: 0 0.25ch 0.25ch
+        lch(calc(30% + var(--light-adjust)) var(--chroma-base) var(--hue-base) / 50%);
+    position: relative;
+    border: none;
+    color: lch(0% 0 0deg);
+}
+
+button,
+button::after {
+    border-radius: 1.5ch;
+    padding: 0.5ch 1.5ch;
+    background-color: lch(
+        calc(98% + var(--light-adjust))
+            calc(var(--chroma-base) + (var(--chroma-range) * 2)) var(--hue-base) / 50%
+    );
+    box-shadow: inset 0 0 0.05ch 0.025ch
+            lch(
+                calc(100% + var(--light-adjust))
+                    calc(var(--chroma-base) + var(--chroma-range)) var(--hue-base) / 10%
+            ),
+        inset 0 0 0.1ch 0.05ch
+            lch(
+                calc(100% + var(--light-adjust))
+                    calc(var(--chroma-base) + var(--chroma-range)) var(--hue-base) / 50%
+            ),
+        inset 0 0.2ch 0.4ch 0.1ch
+            lch(calc(60% + var(--light-adjust)) var(--chroma-base) var(--hue-base) / 50%),
+        inset 0 -0.25ch 0.25ch 0 lch(calc(20% + var(--light-adjust)) 41
+                    var(--hue-base) / 10%),
+        inset -0.25ch 0 0.25ch 0 lch(calc(20% + var(--light-adjust))
+                    calc(var(--chroma-base) + var(--chroma-range)) var(--hue-base) / 40%),
+        inset 0.25ch 0 0.25ch 0
+            lch(
+                calc(20% + var(--light-adjust))
+                    calc(var(--chroma-base) + var(--chroma-range)) var(--hue-base) / 40%
+            ),
+        inset 0 0.5ch 1ch 0.5ch
+            lch(
+                calc(30% + var(--light-adjust))
+                    calc(var(--chroma-base) + var(--chroma-range)) var(--hue-base) / 60%
+            );
+    transition: all ease-in-out 250ms;
+}
+
+button:hover {
+    --light-adjust: 30%;
+}
+
+button::before,
+button::after {
+    content: "";
+    display: block;
+    position: absolute;
+}
+
+button::before {
+    inset: 0.25ch 0.75ch auto;
+    background: linear-gradient(
+        lch(calc(100% + var(--light-adjust)) 0 var(--hue-base) / 50%),
+        lch(
+            calc(100% + var(--light-adjust)) var(--chroma-base) var(--hue-base) / 30%
+        ),
+        lch(calc(98% + var(--light-adjust)) var(--chroma-base) var(--hue-base) / 5%)
+    );
+    height: 0.875ch;
+    border-radius: 2ch 2ch 0.5ch 0.5ch;
+    z-index: 1;
+}
+
+button::after {
+    inset: 0;
+    opacity: 80%;
+    filter: blur(0.25ch);
+    translate: 0 0.875ch;
+    z-index: -1;
+}
