@@ -52,6 +52,7 @@ Please follow the following installation steps:
 ## Release
 
 * [Version 0.99.0](https://github.com/hcji/DeepMASS2_GUI/releases/tag/v0.99.0)
+* [Version 0.99.1](https://github.com/hcji/DeepMASS2_GUI/releases/tag/v0.99.1)
 
 ## Documentation
 
