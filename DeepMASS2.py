@@ -42,16 +42,16 @@ class DeepMASS2(QMainWindow, main.Ui_MainWindow):
         super(DeepMASS2, self).__init__(parent)
         self.setupUi(self)
         self.setWindowTitle("DeepMASS2")
-        self.setWindowIcon(QtGui.QIcon("web_login/icon/favicon.ico"))
+        self.setWindowIcon(QtGui.QIcon("frontend/icon/favicon.ico"))
 
         try:
             shutil.rmtree("temp")
             os.mkdir("temp")
         except:
-            pass
+            print("exist temp dir")
 
         # window
-        self.label_logo.setPixmap(QPixmap("web_login/icon/logo_deepmass.png"))
+        self.label_logo.setPixmap(QPixmap("frontend/icon/logo_deepmass.png"))
 
         # plot
         self.LabelAnno = QLabel()

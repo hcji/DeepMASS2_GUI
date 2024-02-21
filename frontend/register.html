@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Demo</title>
+
+    <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <link href="https://cdn.bootcdn.net/ajax/libs/layui/2.8.17/css/layui.min.css" rel="stylesheet" crossorigin="anonymous" referrerpolicy="no-referrer">
+    <script src="https://cdn.bootcdn.net/ajax/libs/layui/2.8.17/layui.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <link href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+
+</head>
+<body>
+<style>
+    .demo-reg-container {
+        width: 320px;
+        margin: 21px auto 0;
+    }
+
+    .demo-reg-other .layui-icon {
+        position: relative;
+        display: inline-block;
+        margin: 0 2px;
+        top: 2px;
+        font-size: 26px;
+    }
+</style>
+<form class="layui-form" action="http://218.245.102.112:8000/register/" method="post" id="addForm">
+    <div class="demo-reg-container">
+        <div class="layui-form-item">
+            <div class="layui-row">
+                <div class="layui-col-xs7">
+                    <div class="layui-input-wrap">
+                        <div class="layui-input-prefix">
+                            <i class="layui-icon layui-icon-email"></i>
+                        </div>
+                        <input type="text" name="contact_info" value="" lay-verify="required|email" placeholder="email"
+                               lay-reqtext="please enter email" autocomplete="off" class="layui-input"
+                               id="reg-cellphone">
+                    </div>
+                </div>
+                <div class="layui-col-xs5">
+                    <div style="margin-left: 11px;">
+                        <button type="button" class="layui-btn layui-btn-fluid " onclick="mail()"
+                                lay-on="reg-get-vercode" name="btnSendCode" id="btnSendCode">Get verify code
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-input-wrap">
+                <div class="layui-input-prefix">
+                    <i class="layui-icon layui-icon-vercode"></i>
+                </div>
+                <input type="text" name="vercode" value="" lay-verify="required" placeholder="verification code"
+                       lay-reqtext="please enter verification code" autocomplete="off" class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-input-wrap">
+                <div class="layui-input-prefix">
+                    <i class="layui-icon layui-icon-password"></i>
+                </div>
+                <input type="password" name="passwd" value="" lay-verify="required" placeholder="password"
+                       autocomplete="off" class="layui-input" id="reg-password" lay-affix="eye">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-input-wrap">
+                <div class="layui-input-prefix">
+                    <i class="layui-icon layui-icon-password"></i>
+                </div>
+                <input type="password" name="confirmPassword" value="" lay-verify="required|confirmPassword"
+                       placeholder="Confirm  password" autocomplete="off" class="layui-input" lay-affix="eye">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-input-wrap">
+                <div class="layui-input-prefix">
+                    <i class="layui-icon layui-icon-username"></i>
+                </div>
+                <input type="text" name="name" value="" lay-verify="required" placeholder="nickname" autocomplete="off"
+                       class="layui-input" lay-affix="clear">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <input type="checkbox" name="agreement" lay-verify="required" lay-skin="primary" title="Agree">
+            <a href="#terms" target="_blank" style="position: relative; top: 6px; left: -15px;">
+                <ins>User Agreement</ins>
+            </a>
+        </div>
+        <div class="layui-form-item">
+            <button class="layui-btn layui-btn-fluid " lay-submit lay-filter="demo-reg">register</button>
+        </div>
+        <a href="#login">Login to existing account</a>
+    </div>
+</form>
+
+<script src="./layui/layui.js"></script>
+<script src="https://cdn.bootcdn.net/ajax/libs/axios/1.5.0/axios.js"></script>
+<script src="https://cdn.staticfile.org/jquery/1.10.2/jquery.min.js"></script>
+<script>
+    layui.use(function () {
+        var $ = layui.$;
+        var form = layui.form;
+        var layer = layui.layer;
+        var util = layui.util;
+
+        // 自定义验证规则
+        form.verify({
+            // 确认密码
+            confirmPassword: function (value, item) {
+                var passwordValue = $('#reg-password').val();
+                if (value !== passwordValue) {
+                    return 'The two password inputs are inconsistent';
+                }
+            }
+        });
+
+        // 提交事件
+        form.on('submit(demo-reg)', function (data) {
+            var field = data.field; // 获取表单字段值
+
+            // 是否勾选同意
+            if (!field.agreement) {
+                layer.msg('You must check "Agree to User Agreement" in order to register');
+                return false;
+            }
+
+            $.ajax({
+                type: "POST",
+                url: getURL("insert"),
+                data: new FormData($("#addForm")[0]),	//获取表单数据，addForm是表单id
+                processData: false,
+                contentType: false,
+                success: function (data) {
+                    alert(data)
+                    if (data == 'success') {
+                        $("input[type=reset]").trigger("click");	//清空表单
+                    }
+                }
+            })
+
+
+            // 显示填写结果，仅作演示用
+            // layer.alert(JSON.stringify(field), {
+            //     title: 'The current field value filled in'
+            // });
+
+            // 此处可执行 Ajax 等操作
+            // …
+
+            // return false; // 阻止默认 form 跳转
+        });
+
+    });
+</script>
+<script>
+
+    var $ = layui.jquery, element = layui.element; //Tab的切换功能，切换事件监听等，需要依赖element模块
+    var form = layui.form;
+
+
+    var InterValObj; //timer变量，控制时间
+    var count = 60; //间隔函数，1秒执行
+    var curCount;//当前剩余秒数
+    //发送验证码
+    function mail() {
+        curCount = count;
+        const email = document.getElementsByName("contact_info")[0].value;
+
+        layer.msg('请稍后');
+        document.getElementById("btnSendCode").setAttribute("disabled", "true");//设置按钮为禁用状态
+        $('#btnSendCode').addClass('layui-btn-disabled');
+        $('#btnSendCode').text(curCount + "秒后重获");
+        InterValObj = window.setInterval(SetRemainTime, 1000); // 启动计时器timer处理函数，1秒执行一次
+        $.get(`http://218.245.102.112:8000/sendmail?email=${email}`);
+
+    }
+
+    //timer处理函数
+    function SetRemainTime() {
+        if (curCount == 0) {
+            $('#btnSendCode').removeClass('layui-btn-disabled');
+            $('#btnSendCode').text("重获验证码");
+            window.clearInterval(InterValObj);// 停止计时器
+            document.getElementById("btnSendCode").removeAttribute("disabled");//移除禁用状态改为可用
+        } else {
+            curCount--;
+            $('#btnSendCode').text(curCount + "秒后重获");
+        }
+    }
+</script>
+</body>
+</html>
