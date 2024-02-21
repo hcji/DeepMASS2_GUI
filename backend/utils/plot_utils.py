@@ -16,6 +16,8 @@ def show_mol(structure_state, cur_spectrum, evt: gr.SelectData):
     ref_smi = cur_spectrum.metadata["reference"][line_num].metadata["smiles"]
     anno_img, ref_img = plot_2_mol(structure_state, ref_smi)
     return anno_img, ref_img
+
+
 def get_formula_mass(formula):
     f = Formula(formula)
     return f.isotope.mass
@@ -41,7 +43,7 @@ def plot_2_spectrum(spectrum: Spectrum, reference: Spectrum, loss=False):
             abundance /= np.max(abundance)
     abunds1 /= np.max(abunds1)
 
-    fig = Figure(figsize=(2, 1), dpi=300)
+    fig = Figure(figsize=(2, 1), dpi=900)
     fig.subplots_adjust(top=0.95, bottom=0.3, left=0.18, right=0.95)
 
     axes = fig.add_subplot(111)
@@ -82,6 +84,7 @@ def plot_2_mol(smi_anno, smi_ref, hightlight=True):
     ref_img = Draw.MolToImage(mol_ref, highlightAtoms=all_subs_ref, wedgeBonds=False)
     anno_img = Draw.MolToImage(mol_anno, highlightAtoms=all_subs_anno, wedgeBonds=False)
     return anno_img, ref_img
+
 
 def show_ref_spectrums(spectrum_state, structure_obj, evt: gr.SelectData):
     line_num = evt.index[0]

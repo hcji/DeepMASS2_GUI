@@ -3,7 +3,6 @@ import os
 import gradio as gr
 
 from backend.gradio_service import (
-    click_matchms_fn,
     show_ref_spectrum,
     show_info,
     save_identification_csv,
@@ -43,7 +42,7 @@ with gr.Blocks(
         run_deepms_btn = gr.Button(
             "Run DeepMS",
         )
-        run_matchms_btn = gr.Button("Run MatchMS")
+        # run_matchms_btn = gr.Button("Run MatchMS")
     #
     with gr.Row():
         with gr.Column(scale=1):
@@ -139,17 +138,17 @@ with gr.Blocks(
         ],
         concurrency_limit=4,
     )
-    run_matchms_btn.click(
-        fn=click_matchms_fn,
-        inputs=[res_state],
-        outputs=[
-            res_state,
-            spectrum_state,
-            formula_state,
-            structure_state,
-            formula_obj,
-        ],
-    )
+    # run_matchms_btn.click(
+    #     fn=click_matchms_fn,
+    #     inputs=[res_state],
+    #     outputs=[
+    #         res_state,
+    #         spectrum_state,
+    #         formula_state,
+    #         structure_state,
+    #         formula_obj,
+    #     ],
+    # )
 
     ref_spectrums.select(
         fn=show_ref_spectrum,
