@@ -10,6 +10,13 @@ from molmass import Formula
 from rdkit import Chem
 from rdkit.Chem import rdFMCS, Draw
 
+from backend.load_config import GLOBAL_CONFIG
+
+# 从配置文件获取质谱图DPI和比例
+dpi_config = GLOBAL_CONFIG["identification"]["plot"]["dpi"]
+width_config = GLOBAL_CONFIG["identification"]["plot"]["width"]
+length_config = GLOBAL_CONFIG["identification"]["plot"]["length"]
+
 
 def show_mol(structure_state, cur_spectrum, evt: gr.SelectData):
     line_num = evt.index[0]
@@ -43,7 +50,7 @@ def plot_2_spectrum(spectrum: Spectrum, reference: Spectrum, loss=False):
             abundance /= np.max(abundance)
     abunds1 /= np.max(abunds1)
 
-    fig = Figure(figsize=(2, 1), dpi=900)
+    fig = Figure(figsize=(width_config, length_config), dpi=dpi_config)
     fig.subplots_adjust(top=0.95, bottom=0.3, left=0.18, right=0.95)
 
     axes = fig.add_subplot(111)
@@ -120,3 +127,7 @@ def show_ref_spectrums(spectrum_state, structure_obj, evt: gr.SelectData):
     )  # 创建一个DataFrame对象，用于存储参考表格的数据
 
     return reference_table, smi_anno
+
+
+if __name__ == "__main__":
+    print(dpi_config, width_config, length_config)

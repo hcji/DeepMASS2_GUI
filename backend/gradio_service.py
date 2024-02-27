@@ -7,10 +7,14 @@ from zipfile import ZipFile
 import gradio as gr
 import numpy as np
 import pandas as pd
-from matchms.importing import load_from_mgf
 
+from backend.load_config import GLOBAL_CONFIG
 from backend.utils.identify_unkown import id_spectrum_list
 from backend.utils.plot_utils import get_formula_mass
+
+MAX_SPECTRUM_NUM = GLOBAL_CONFIG["identification"]["max_spectrum"]
+MAX_FILES = GLOBAL_CONFIG["identification"]["max_files"]
+MAX_FILE_SIZE = GLOBAL_CONFIG["identification"]["max_file_size"]
 
 
 def show_formula_from_state(res_state, idx):
@@ -87,9 +91,18 @@ def show_info(cur_spectrum, evt: gr.SelectData):
 
 
 def show_formula(res_state, evt: gr.SelectData):
-    # print(evt)
-    # print(evt.__dict__)
-    print(f"You selected {evt.value} at {evt.index} from {evt.target}")
+    """
+
+    Args:
+        res_state:鉴定结果
+        evt:点击事件
+
+    Returns: 当前选中的质谱，当前质谱候选分子式的DataFrame
+
+    """
+    print(
+        f"Spectrum List Click----selected {evt.value} at {evt.index} from {evt.target}"
+    )
 
     # 从click事件中获取行号
     line_num = evt.index[0]
@@ -98,20 +111,40 @@ def show_formula(res_state, evt: gr.SelectData):
 
 
 def load_files(file_list, request: gr.Request):
-    # if os.path.getsize(file_list[0])>1024*1024:
-    #     raise gr.Error('File size too large')
-    if any(os.path.getsize(file) > 1024 * 1024 for file in file_list):
+    """
+    从文件列表中读取质谱，并输出到窗口
+    Args:
+        file_list: 文件名列表，是保存在服务器临时路径中
+        request: Gradio自带Reqyest对象，可用于获取信息
+
+    Returns:
+        所有读取的质谱
+        所有质谱的显示名称
+    """
+    # 判断文件大小总和，不接受大于一定阈值的请求
+    sum_file_size = 0
+    for file in file_list:
+        sum_file_size += os.path.getsize(file)
+    if sum_file_size > MAX_FILE_SIZE:
         raise gr.Error("File size too large")
-    if len(file_list) > 500:
-        raise gr.Error("Too many spectra, please upload a smaller number of files")
+    # 读取每个质谱文件
+    # try:
+    #     spectrum_list = load_from_files(file_list)
+    # except:
+    #     raise gr.Error("Please upload standard file")
+    spectrum_list = []
+    for file_name in file_list:  # 遍历每一个文件名
+        try:
+            loaded_spectra_list = load_files(file_name)
+        except Exception as e:
+            raise gr.Error("Please upload standard file")
+        spectrum_list.extend(loaded_spectra_list)
+        if len(spectrum_list) > MAX_SPECTRUM_NUM:
+            raise gr.Error(
+                f"Only a maximum of {MAX_SPECTRUM_NUM} spectra are allowed to be uploaded"
+            )
 
-    try:
-        spectrum_list = []
-        for fileName in file_list:  # 遍历每一个文件名
-            spectrum_list += [s for s in load_from_mgf(fileName)]
-    except Exception as e:
-        raise gr.Error("Please upload mgf file")
-
+    # 获取所有的质谱名称，若无，则使用编号代替
     titles = [
         s.metadata["compound_name"]
         if "compound_name" in list(s.metadata.keys())
