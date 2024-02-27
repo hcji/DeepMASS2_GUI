@@ -19,6 +19,7 @@ from core.importing.load_from_mat import load_from_mat
 
 def clean_spectrum(s):
     s = msfilters.default_filters(s)
+    s = msfilters.add_compound_name(s)
     s = msfilters.correct_charge(s)
     s = msfilters.add_parent_mass(s)
     s = msfilters.normalize_intensities(s)
@@ -56,7 +57,11 @@ def load_from_files(filenames: List[str]) -> List[Spectrum]:
                                        metadata=s.metadata))
         else:
             continue
-    output = [s for s in output if s.get('compound_name') is not None]
-    return output
+    output_1 = []
+    for s in output:
+        if s.get('compound_name') is None:
+            s.set('compound_name', 'Unknown_{}'.format(len(output_1)))
+        output_1.append(s)
+    return output_1
     
 
