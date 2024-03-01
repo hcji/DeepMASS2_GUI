@@ -2,7 +2,7 @@ import os
 
 import gradio as gr
 
-from backend.gradio_service import (
+from backend.service.gradio_service import (
     show_ref_spectrum,
     show_info,
     save_identification_csv,
@@ -130,11 +130,7 @@ with gr.Blocks(
         fn=deepms_click_fn,
         inputs=[res_state],
         outputs=[
-            res_state,
-            spectrum_state,
-            formula_state,
-            structure_state,
-            formula_obj,
+            res_state,formula_obj
         ],
         concurrency_limit=4,
     )

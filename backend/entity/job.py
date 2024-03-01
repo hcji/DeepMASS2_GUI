@@ -4,9 +4,10 @@ from sqlalchemy import REAL
 from backend.entity.base import Base
 
 
-class Work(Base):
+class Job(Base):
     __tablename__ = "deepmass_work"
-    contact_info = Column(String, primary_key=True, doc="user email")
+    id = Column(Integer, primary_key=True)
+    email = Column(String, doc="user email")
     spectrum_count = Column(Integer, doc="spectrum processed in a work")
     submit_time = Column(REAL, doc="user submit time")
     end_time = Column(REAL, doc="work end time")

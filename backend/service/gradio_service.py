@@ -1,6 +1,6 @@
 import hashlib
+import logging
 import os
-import time
 import zipfile
 from zipfile import ZipFile
 
@@ -9,12 +9,14 @@ import numpy as np
 import pandas as pd
 
 from backend.load_config import GLOBAL_CONFIG
+from backend.service.job_service import JobService
 from backend.utils.identify_unkown import id_spectrum_list
 from backend.utils.plot_utils import get_formula_mass
+from backend.utils.spectrum_process import load_spectrum_file
 
 MAX_SPECTRUM_NUM = GLOBAL_CONFIG["identification"]["max_spectrum"]
 MAX_FILES = GLOBAL_CONFIG["identification"]["max_files"]
-MAX_FILE_SIZE = GLOBAL_CONFIG["identification"]["max_file_size"]
+MAX_FILE_SIZE = eval(GLOBAL_CONFIG["identification"]["max_file_size"])
 
 
 def show_formula_from_state(res_state, idx):
@@ -135,7 +137,7 @@ def load_files(file_list, request: gr.Request):
     spectrum_list = []
     for file_name in file_list:  # 遍历每一个文件名
         try:
-            loaded_spectra_list = load_files(file_name)
+            loaded_spectra_list = load_spectrum_file(file_name)
         except Exception as e:
             raise gr.Error("Please upload standard file")
         spectrum_list.extend(loaded_spectra_list)
@@ -177,93 +179,79 @@ def deepms_click_fn(state_df, request: gr.Request, progress=gr.Progress()):
     # print(request.__dict__)
     contract_info = request.username
     try:
-        from backend.entity.user import Work
-
-        start_time = time.time()
+        job_id = JobService().start_job(contract_info)
         res = id_spectrum_list(state_df["spectrum"], progress)
+        JobService().end_job(job_id)
 
     except Exception as e:
+        logging.error(e)
         raise gr.Error("Error processing data")
-
-    # end_time = time.time()
-    # work_duration = end_time - start_time
-    # w = Work(
-    #     contact_info=contract_info,
-    #     spectrum_count=len(res),
-    #     submit_time=start_time,
-    #     end_time=end_time,
-    #     work_duration=work_duration,
-    # )
-    # engine = create_engine("sqlite:///./User_Information.db", echo=True)
-    # Session = sessionmaker(bind=engine)
-    # session = Session()
-    # session.add(w)
-    # session.commit()
 
     state_df["Identified Spectrum"] = res
-    (
-        annotation,
-        spectrum_state,
-        formula_df,
-        formula_state,
-        structural_table,
-        structure_state,
-    ) = (None, None, None, None, None, None)
+    gr.Info("Identified Success")
+    # (
+    #     annotation,
+    #     spectrum_state,
+    #     formula_df,
+    #     formula_state,
+    #     structural_table,
+    #     structure_state,
+    # ) = (None, None, None, None, None, None)
+    #
+    # try:
+    #     if "annotation" in res[0].metadata.keys():
+    #         annotation = res[0].metadata["annotation"]
+    #     else:
+    #         return state_df, spectrum_state, formula_state, structure_state, formula_df
+    #     spectrum_state, formula_df = show_formula_from_state(state_df, 0)
+    #     formula_state = annotation["MolecularFormula"][0]
+    #     structural_table = annotation.loc[
+    #         annotation["MolecularFormula"] == formula_state, :
+    #     ]
+    #     structure_state = structural_table["CanonicalSMILES"][0]
+    # except Exception as e:
+    #     logging.error(str(e))
+    #     gr.Warning(str(e))
 
-    try:
-        if "annotation" in res[0].metadata.keys():
-            annotation = res[0].metadata["annotation"]
-        else:
-            return state_df, spectrum_state, formula_state, structure_state, formula_df
-        spectrum_state, formula_df = show_formula_from_state(state_df, 0)
-        formula_state = annotation["MolecularFormula"][0]
-        structural_table = annotation.loc[
-            annotation["MolecularFormula"] == formula_state, :
-        ]
-        structure_state = structural_table["CanonicalSMILES"][0]
-    except Exception as e:
-        raise gr.Error(str(e))
-
-    return state_df, spectrum_state, formula_state, structure_state, formula_df
+    return state_df, pd.DataFrame(columns=["formula", "mass", "error (mDa)"])
 
 
-def click_matchms_fn(state_df, progress=gr.Progress()):
-    try:
-        res = id_spectrum_list(state_df["spectrum"], progress, is_deepmass=False)
-
-        state_df["Identified Spectrum"] = res
-
-    except Exception as e:
-        raise gr.Error("Error processing data")
-
-    try:
-        annotation = res[0].metadata["annotation"]
-        spectrum_state, formula_df = show_formula_from_state(state_df, 0)
-
-        formula_state = annotation["MolecularFormula"][0]
-        structural_table = annotation.loc[
-            annotation["MolecularFormula"] == formula_state, :
-        ]
-        structure_state = structural_table["CanonicalSMILES"][0]
-        # TODO 拿到username，并向数据库中插入一条该用户的作业信息
-
-    except:
-        # raise gr.Error("Error processing data")
-        spectrum_state, formula_state, structure_state, formula_df = (
-            None,
-            None,
-            None,
-            None,
-        )
-        pass
-
-    return state_df, spectrum_state, formula_state, structure_state, formula_df
+# def click_matchms_fn(state_df, progress=gr.Progress()):
+#     try:
+#         res = id_spectrum_list(state_df["spectrum"], progress, is_deepmass=False)
+#
+#         state_df["Identified Spectrum"] = res
+#
+#     except Exception as e:
+#         raise gr.Error("Error processing data")
+#
+#     try:
+#         annotation = res[0].metadata["annotation"]
+#         spectrum_state, formula_df = show_formula_from_state(state_df, 0)
+#
+#         formula_state = annotation["MolecularFormula"][0]
+#         structural_table = annotation.loc[
+#             annotation["MolecularFormula"] == formula_state, :
+#         ]
+#         structure_state = structural_table["CanonicalSMILES"][0]
+#
+#     except:
+#         # raise gr.Error("Error processing data")
+#         spectrum_state, formula_state, structure_state, formula_df = (
+#             None,
+#             None,
+#             None,
+#             None,
+#         )
+#         pass
+#
+#     return state_df, spectrum_state, formula_state, structure_state, formula_df
 
 
 def save_identification_csv(res_state):
     try:
         file_list = []
-        dir_path = "../temp"
+        dir_path = "./backend/temp/"
         for s in res_state["Identified Spectrum"]:
             name = s.metadata["compound_name"]
             if "annotation" in s.metadata.keys():
