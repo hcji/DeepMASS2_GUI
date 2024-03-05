@@ -10,6 +10,7 @@ import pandas as pd
 
 from backend.load_config import GLOBAL_CONFIG
 from backend.service.job_service import JobService
+from backend.utils.common_utils import get_title_from_spectrum
 from backend.utils.identify_unkown import id_spectrum_list
 from backend.utils.plot_utils import get_formula_mass
 from backend.utils.spectrum_process import load_spectrum_file
@@ -19,6 +20,10 @@ MAX_FILES = GLOBAL_CONFIG["identification"]["max_files"]
 MAX_FILE_SIZE = eval(GLOBAL_CONFIG["identification"]["max_file_size"])
 
 
+def validate_spectrum_annotation(spectrum):
+    pass
+
+
 def show_formula_from_state(res_state, idx):
     """
     从spectrum state中读取当前选中的spectrum
@@ -26,39 +31,57 @@ def show_formula_from_state(res_state, idx):
         res_state: 当前选中的spectrum
         idx: 当前选中的idx
 
-    Returns:
+    Returns:当前选中质谱
+            当前选中质谱的候选分子式表格Dataframe
 
     """
     formula_list = []
-    cur_spectrum = None
-    try:
-        formula_list = np.unique(
-            res_state["Identified Spectrum"][idx].metadata["annotation"][
-                "MolecularFormula"
-            ]
-        )
-        cur_spectrum = res_state["Identified Spectrum"][idx]
-    except:
-        print("no identified spectrum found")
-
+    # 判断是否已经被鉴定
+    if "Identified Spectrum" not in res_state.keys():
+        gr.Error("Missing Identified Spectrum")
+    # 选中质谱
+    cur_spectrum = res_state["Identified Spectrum"][idx]
+    # 判断当前选中质谱是否拥有注释
+    if "annotation" not in cur_spectrum.metadata.keys():
+        gr.Error("Missing Identified Spectrum annotation")
+    annotation = cur_spectrum.metadata["annotation"]
+    # 判断返回结果是否含有分子式
+    if "MolecularFormula" not in annotation.keys():
+        gr.Error("Missing Annotation MolecularFormula")
+    # 获取分子式列表
+    formula_list = np.unique(annotation["MolecularFormula"])
+    # 获取分子式的相对分子质量
     mass = [get_formula_mass(f) for f in formula_list]
-
+    # 获取相对分子质量与母离子质量差
     if cur_spectrum and ("parent_mass" in cur_spectrum.metadata.keys()):
-        diff = np.array(
-            [abs(m - float(cur_spectrum.metadata["parent_mass"])) for m in mass]
-        )
+        parent_mass = float(cur_spectrum.metadata["parent_mass"])
+        diff = np.array([abs(m - parent_mass) for m in mass])
     else:
         diff = np.repeat(np.nan, len(mass))
-
+        gr.Warning("Spectrum Missing Parent Mass")
+    # 分子式表格
     formula_df = pd.DataFrame(
         {"formula": formula_list, "mass": mass, "error (mDa)": 1000 * diff}
     )
-
     return cur_spectrum, formula_df
 
 
 def show_structure(spectrum_state, evt: gr.SelectData):
+    """
+    Show the structure table
+    展示候选结构表
+    于点击分子式时触发
+    Args:
+        spectrum_state: 当前选中的质谱
+        evt: 点击事件
+
+    Returns:选择的分子式
+            候选结构表
+
+    """
+    # 获取点击行号
     line_num = evt.index[0]
+
     formula_list = spectrum_state.metadata["annotation"]["MolecularFormula"]
     select_formula = formula_list[line_num]
 
@@ -85,10 +108,19 @@ def show_ref_spectrum(cur_spectrum, evt: gr.SelectData):
 
 def show_info(cur_spectrum, evt: gr.SelectData):
     line_num = evt.index[0]
-    d = cur_spectrum.metadata["reference"][line_num].metadata
+    logging.info("点击结构行")
+    if "reference" not in cur_spectrum.metadata.keys():
+        gr.Error("No reference")
+    try:
+        d = cur_spectrum.metadata["reference"][line_num].metadata
+    except:
+        logging.info("没有选中的质谱")
+        return pd.DataFrame()
+    # 输出质谱元数据
     df = pd.DataFrame.from_dict(d, orient="index", columns=["value"])
     df.reset_index(inplace=True)
     df.rename(columns={"index": "key"}, inplace=True)
+    logging.info("获取质谱元数据成功")
     return df
 
 
@@ -130,10 +162,6 @@ def load_files(file_list, request: gr.Request):
     if sum_file_size > MAX_FILE_SIZE:
         raise gr.Error("File size too large")
     # 读取每个质谱文件
-    # try:
-    #     spectrum_list = load_from_files(file_list)
-    # except:
-    #     raise gr.Error("Please upload standard file")
     spectrum_list = []
     for file_name in file_list:  # 遍历每一个文件名
         try:
@@ -178,40 +206,18 @@ def deepms_click_fn(state_df, request: gr.Request, progress=gr.Progress()):
     """
     # print(request.__dict__)
     contract_info = request.username
+    logging.info(f"用户{contract_info}点击了run deepmass")
     try:
         job_id = JobService().start_job(contract_info)
+        gr.Info("Start Identifing")
         res = id_spectrum_list(state_df["spectrum"], progress)
         JobService().end_job(job_id)
-
     except Exception as e:
         logging.error(e)
         raise gr.Error("Error processing data")
 
     state_df["Identified Spectrum"] = res
-    gr.Info("Identified Success")
-    # (
-    #     annotation,
-    #     spectrum_state,
-    #     formula_df,
-    #     formula_state,
-    #     structural_table,
-    #     structure_state,
-    # ) = (None, None, None, None, None, None)
-    #
-    # try:
-    #     if "annotation" in res[0].metadata.keys():
-    #         annotation = res[0].metadata["annotation"]
-    #     else:
-    #         return state_df, spectrum_state, formula_state, structure_state, formula_df
-    #     spectrum_state, formula_df = show_formula_from_state(state_df, 0)
-    #     formula_state = annotation["MolecularFormula"][0]
-    #     structural_table = annotation.loc[
-    #         annotation["MolecularFormula"] == formula_state, :
-    #     ]
-    #     structure_state = structural_table["CanonicalSMILES"][0]
-    # except Exception as e:
-    #     logging.error(str(e))
-    #     gr.Warning(str(e))
+    gr.Info("Identified Successed")
 
     return state_df, pd.DataFrame(columns=["formula", "mass", "error (mDa)"])
 
@@ -249,28 +255,36 @@ def deepms_click_fn(state_df, request: gr.Request, progress=gr.Progress()):
 
 
 def save_identification_csv(res_state):
-    try:
-        file_list = []
-        dir_path = "./backend/temp/"
-        for s in res_state["Identified Spectrum"]:
-            name = s.metadata["compound_name"]
-            if "annotation" in s.metadata.keys():
-                annotation = s.metadata["annotation"]
-            else:
-                annotation = pd.DataFrame(
-                    columns=["Title", "MolecularFormula", "CanonicalSMILES", "InChIKey"]
-                )
-            path = os.path.join(dir_path, f"{name}.csv")
-            csv = annotation.to_csv(path)
-            file_list.append(path)
-        md5_obj = hashlib.md5()
-        md5_obj.update(str(file_list).encode("utf-8"))
-        md5_name = md5_obj.hexdigest()
-        zip_path = os.path.join(dir_path, f"{md5_name}.zip")
-        with ZipFile(zip_path, "w") as zip_obj:
-            for f in file_list:
-                zip_obj.write(f, compress_type=zipfile.ZIP_DEFLATED)
-        file_list.insert(0, zip_path)
-        return gr.File(file_list, visible=True)
-    except Exception as e:
-        raise gr.Error("Error saving identification CSV")
+    gr.Info('Saving identification CSV"')
+    file_list = []
+    dir_path = "./backend/temp/"
+    # 判断是否有鉴定结果
+    if res_state is None or "Identified Spectrum" not in res_state.columns:
+        gr.Error("Missing Identified results, Run Identify First")
+    for idx, s in enumerate(res_state["Identified Spectrum"]):
+        # name = s.metadata["compound_name"]
+        name = get_title_from_spectrum(spectrum=s, idx=idx)
+        # 判断是否有鉴定结果，若无，则给空表
+        if "annotation" in s.metadata.keys():
+            annotation = s.metadata["annotation"]
+        else:
+            annotation = pd.DataFrame(
+                columns=["Title", "MolecularFormula", "CanonicalSMILES", "InChIKey"]
+            )
+        # 生成文件名
+        path = os.path.join(dir_path, f"{name}.csv")
+        # 转csv文件
+        csv = annotation.to_csv(path)
+        file_list.append(path)
+    # 计算压缩包文件名和路径
+    md5_obj = hashlib.md5()
+    md5_obj.update(str(file_list).encode("utf-8"))
+    md5_name = md5_obj.hexdigest()
+    zip_path = os.path.join(dir_path, f"{md5_name}.zip")
+    # 生成压缩文件
+    with ZipFile(zip_path, "w") as zip_obj:
+        for f in file_list:
+            zip_obj.write(f, compress_type=zipfile.ZIP_DEFLATED)
+    file_list.insert(0, zip_path)
+    # 返回文件列表，第一个是压缩包，其他的是单个谱的鉴定结果
+    return gr.File(file_list, visible=True)

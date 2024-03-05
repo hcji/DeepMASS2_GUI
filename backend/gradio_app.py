@@ -82,7 +82,7 @@ with gr.Blocks(
             headers=["name", "adduct", "smiles", "parent_mass", "database"],
             interactive=False,
             height=200,
-            column_widths="20%",
+            column_widths=["20%"],
         )
     with gr.Row():
         with gr.Tab(label="Spectrum"):
@@ -129,9 +129,7 @@ with gr.Blocks(
     run_deepms_btn.click(
         fn=deepms_click_fn,
         inputs=[res_state],
-        outputs=[
-            res_state,formula_obj
-        ],
+        outputs=[res_state, formula_obj],
         concurrency_limit=4,
     )
     # run_matchms_btn.click(

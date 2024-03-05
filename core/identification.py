@@ -160,8 +160,8 @@ def calc_deepmass_score(
 
 def calc_wt_score(s, candidate_mol):
     candidate_mass = [AllChem.CalcExactMolWt(m) for m in candidate_mol]
-    diff_mass = np.array([abs(m - float(s.get["parent_mass"])) for m in candidate_mass])
-    wt_score = 1 - 50000 * diff_mass / float(s.get["parent_mass"])
+    diff_mass = np.array([abs(m - float(s.get("parent_mass"))) for m in candidate_mass])
+    wt_score = 1 - 50000 * diff_mass / float(s.get("parent_mass"))
     return wt_score
 
 

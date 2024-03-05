@@ -15,6 +15,14 @@ from matchms.importing import (
 
 
 def load_spectrum_file(file_name: str):
+    '''
+    从文件名中读取质谱
+    Args:
+        file_name:
+
+    Returns:
+
+    '''
     if file_name.lower().endswith("msp"):
         spectra_list = load_from_msp(file_name)
     elif file_name.lower().endswith("mgf"):
@@ -25,6 +33,9 @@ def load_spectrum_file(file_name: str):
         spectra_list = load_from_mzxml(file_name)
     elif file_name.lower().endswith("json"):
         spectra_list = load_from_json(file_name)
+    # TODO 写mat文件读取方法
+    elif file_name.lower().endswith("mat"):
+        spectra_list = []
     else:
         spectra_list = []
     spectra_list = [spectra for spectra in spectra_list]

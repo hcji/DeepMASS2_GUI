@@ -1,11 +1,9 @@
-import gradio as gr
 from fastapi import FastAPI
 from fastapi import Form
 from fastapi.responses import JSONResponse
 from sqlalchemy import create_engine
 from sqlalchemy.orm import declarative_base
 
-from backend.gradio_app import demo as io
 from backend.service.email_service import EmailSenderService
 from backend.service.user_service import UserService
 
@@ -36,5 +34,5 @@ def register(email: str):
 if __name__ == "__main__":
     import uvicorn
 
-    app = gr.mount_gradio_app(app, io, path="/gradio")
+    # app = gr.mount_gradio_app(app, io, path="/gradio")
     uvicorn.run(app, host="0.0.0.0", port=8000)
