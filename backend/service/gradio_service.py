@@ -1,6 +1,6 @@
-import hashlib
 import logging
 import os
+import uuid
 import zipfile
 from zipfile import ZipFile
 
@@ -155,12 +155,17 @@ def load_files(file_list, request: gr.Request):
         所有读取的质谱
         所有质谱的显示名称
     """
+    is_super_user = request.username == "admin@deepmass.cn"
     # 判断文件大小总和，不接受大于一定阈值的请求
     sum_file_size = 0
     for file in file_list:
         sum_file_size += os.path.getsize(file)
-    if sum_file_size > MAX_FILE_SIZE:
+    if sum_file_size > MAX_FILE_SIZE and (not is_super_user):
         raise gr.Error("File size too large")
+    # 目标保存压缩文件名称
+    target_zip_file_name = "result.zip"
+    if len(file_list) == 1:
+        target_zip_file_name = f"{os.path.basename(file_list[0])}.zip"
     # 读取每个质谱文件
     spectrum_list = []
     for file_name in file_list:  # 遍历每一个文件名
@@ -169,7 +174,7 @@ def load_files(file_list, request: gr.Request):
         except Exception as e:
             raise gr.Error("Please upload standard file")
         spectrum_list.extend(loaded_spectra_list)
-        if len(spectrum_list) > MAX_SPECTRUM_NUM:
+        if len(spectrum_list) > MAX_SPECTRUM_NUM and (not is_super_user):
             raise gr.Error(
                 f"Only a maximum of {MAX_SPECTRUM_NUM} spectra are allowed to be uploaded"
             )
@@ -185,7 +190,7 @@ def load_files(file_list, request: gr.Request):
     # 用于返回nav的质谱名列表
     name_list = spectrums_df[["title"]]
 
-    return spectrums_df, name_list
+    return spectrums_df, name_list, target_zip_file_name
 
 
 def deepms_click_fn(state_df, request: gr.Request, progress=gr.Progress()):
@@ -254,10 +259,13 @@ def deepms_click_fn(state_df, request: gr.Request, progress=gr.Progress()):
 #     return state_df, spectrum_state, formula_state, structure_state, formula_df
 
 
-def save_identification_csv(res_state):
+def save_identification_csv(res_state, target_zip_file_name_state):
     gr.Info('Saving identification CSV"')
     file_list = []
     dir_path = "./backend/temp/"
+    dir_path = os.path.join(dir_path, uuid.uuid4().hex)
+    if not os.path.exists(dir_path):
+        os.makedirs(dir_path)
     # 判断是否有鉴定结果
     if res_state is None or "Identified Spectrum" not in res_state.columns:
         gr.Error("Missing Identified results, Run Identify First")
@@ -277,14 +285,13 @@ def save_identification_csv(res_state):
         csv = annotation.to_csv(path)
         file_list.append(path)
     # 计算压缩包文件名和路径
-    md5_obj = hashlib.md5()
-    md5_obj.update(str(file_list).encode("utf-8"))
-    md5_name = md5_obj.hexdigest()
-    zip_path = os.path.join(dir_path, f"{md5_name}.zip")
+    zip_path = os.path.join(dir_path, target_zip_file_name_state)
     # 生成压缩文件
     with ZipFile(zip_path, "w") as zip_obj:
         for f in file_list:
-            zip_obj.write(f, compress_type=zipfile.ZIP_DEFLATED)
+            zip_obj.write(
+                f, compress_type=zipfile.ZIP_DEFLATED, arcname=os.path.basename(f)
+            )
     file_list.insert(0, zip_path)
     # 返回文件列表，第一个是压缩包，其他的是单个谱的鉴定结果
     return gr.File(file_list, visible=True)

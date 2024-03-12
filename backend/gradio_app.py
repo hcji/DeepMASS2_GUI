@@ -33,6 +33,8 @@ with gr.Blocks(
     formula_state = gr.State([])
     # 保存当前选择的structure
     structure_state = gr.State([])
+    # 保存压缩文件目标名称
+    target_zip_file_name_state = gr.State([])
 
     with gr.Row():
         file_obj = gr.File(file_count="multiple", type="filepath", height=100)
@@ -104,10 +106,7 @@ with gr.Blocks(
     file_obj.change(
         load_files,
         inputs=file_obj,
-        outputs=[
-            res_state,
-            nav_obj,
-        ],
+        outputs=[res_state, nav_obj, target_zip_file_name_state],
     )
 
     nav_obj.select(
@@ -165,7 +164,9 @@ with gr.Blocks(
         fn=show_info, inputs=[spectrum_state], outputs=[information_obj]
     )
     run_save_btn.click(
-        fn=save_identification_csv, inputs=[res_state], outputs=[download]
+        fn=save_identification_csv,
+        inputs=[res_state, target_zip_file_name_state],
+        outputs=[download],
     )
 
 if __name__ == "__main__":
