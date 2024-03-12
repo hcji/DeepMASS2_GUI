@@ -100,6 +100,7 @@ def plot_2_spectrum(spectrum: Spectrum, reference: Spectrum, loss=False):
     axes.set_ylabel("abundance", fontsize=3.5)
     add_topk_mz_text(axes, mz, abundance)
     add_topk_mz_text(axes, mz1, abunds1, is_reverse=True)
+    axes.set_ylim(-1.9, 1.9)
     return fig
 
 
