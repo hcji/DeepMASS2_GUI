@@ -1,4 +1,3 @@
-import hashlib
 import logging
 import os
 import uuid
@@ -64,6 +63,8 @@ def show_formula_from_state(res_state, idx):
     formula_df = pd.DataFrame(
         {"formula": formula_list, "mass": mass, "error (mDa)": 1000 * diff}
     )
+    formula_df = formula_df.round(3)
+
     return cur_spectrum, formula_df
 
 
@@ -91,6 +92,7 @@ def show_structure(spectrum_state, evt: gr.SelectData):
         annotation["MolecularFormula"] == select_formula, :
     ]
     structural_table = structural_table.reset_index(drop=True)
+    structural_table = structural_table.round(3)
     return select_formula, structural_table
 
 
