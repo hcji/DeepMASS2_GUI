@@ -1,3 +1,4 @@
+import heapq
 from itertools import chain
 
 import gradio as gr
@@ -18,6 +19,24 @@ width_config = GLOBAL_CONFIG["identification"]["plot"]["width"]
 length_config = GLOBAL_CONFIG["identification"]["plot"]["length"]
 
 
+_annotation_kws = {
+    "horizontalalignment": "left",  # if not mirror_intensity else "right",
+    "verticalalignment": "center",
+    "fontsize": 2,
+    "rotation": 90,
+    "rotation_mode": "anchor",
+    "zorder": 5,
+}
+_annotation_reverse_kws = {
+    "horizontalalignment": "left",  # if not mirror_intensity else "right",
+    "verticalalignment": "center",
+    "fontsize": 2,
+    "rotation": 270,
+    "rotation_mode": "anchor",
+    "zorder": 5,
+}
+
+
 def show_mol(structure_state, cur_spectrum, evt: gr.SelectData):
     line_num = evt.index[0]
     ref_smi = cur_spectrum.metadata["reference"][line_num].metadata["smiles"]
@@ -28,6 +47,20 @@ def show_mol(structure_state, cur_spectrum, evt: gr.SelectData):
 def get_formula_mass(formula):
     f = Formula(formula)
     return f.isotope.mass
+
+
+def add_topk_mz_text(ax, mz, intensities, is_reverse=False, top_k=3):
+    nlargest_index = heapq.nlargest(
+        top_k, range(len(intensities)), intensities.__getitem__
+    )
+    print(nlargest_index)
+    for idx in nlargest_index:
+        if not is_reverse:
+            ax.text(mz[idx], intensities[idx], f"{mz[idx]}", _annotation_kws)
+        else:
+            ax.text(
+                mz[idx], -1 * intensities[idx], f"{mz[idx]}", _annotation_reverse_kws
+            )
 
 
 def plot_2_spectrum(spectrum: Spectrum, reference: Spectrum, loss=False):
@@ -65,6 +98,8 @@ def plot_2_spectrum(spectrum: Spectrum, reference: Spectrum, loss=False):
     axes.axhline(y=0, color="black", lw=0.5)
     axes.set_xlabel("m/z", fontsize=3.5)
     axes.set_ylabel("abundance", fontsize=3.5)
+    add_topk_mz_text(axes, mz, abundance)
+    add_topk_mz_text(axes, mz1, abunds1, is_reverse=True)
     return fig
 
 
