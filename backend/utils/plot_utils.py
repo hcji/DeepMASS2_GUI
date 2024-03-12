@@ -56,10 +56,13 @@ def add_topk_mz_text(ax, mz, intensities, is_reverse=False, top_k=3):
     print(nlargest_index)
     for idx in nlargest_index:
         if not is_reverse:
-            ax.text(mz[idx], intensities[idx], f"{mz[idx]}", _annotation_kws)
+            ax.text(mz[idx], intensities[idx], f"{round(mz[idx],4)}", _annotation_kws)
         else:
             ax.text(
-                mz[idx], -1 * intensities[idx], f"{mz[idx]}", _annotation_reverse_kws
+                mz[idx],
+                -1 * intensities[idx],
+                f"{round(mz[idx],4)}",
+                _annotation_reverse_kws,
             )
 
 
