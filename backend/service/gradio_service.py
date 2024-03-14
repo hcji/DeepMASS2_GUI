@@ -38,16 +38,16 @@ def show_formula_from_state(res_state, idx):
     formula_list = []
     # 判断是否已经被鉴定
     if "Identified Spectrum" not in res_state.keys():
-        gr.Error("Missing Identified Spectrum")
+        raise gr.Error("Missing Identified Spectrum")
     # 选中质谱
     cur_spectrum = res_state["Identified Spectrum"][idx]
     # 判断当前选中质谱是否拥有注释
     if "annotation" not in cur_spectrum.metadata.keys():
-        gr.Error("Missing Identified Spectrum annotation")
+        raise gr.Error("Missing Identified Spectrum annotation")
     annotation = cur_spectrum.metadata["annotation"]
     # 判断返回结果是否含有分子式
     if "MolecularFormula" not in annotation.keys():
-        gr.Error("Missing Annotation MolecularFormula")
+        raise gr.Error("Missing Annotation MolecularFormula")
     # 获取分子式列表
     formula_list = np.unique(annotation["MolecularFormula"])
     # 获取分子式的相对分子质量

@@ -54,6 +54,7 @@ with gr.Blocks(
                 interactive=False,
                 height=200,
                 label="Navigator",
+                wrap=True,
             )
         with gr.Column(scale=1):
             formula_obj = gr.DataFrame(
@@ -62,6 +63,7 @@ with gr.Blocks(
                 interactive=False,
                 height=200,
                 label="Formula Finder",
+                wrap=True,
             )
     with gr.Row():
         structure_obj = gr.DataFrame(
@@ -76,6 +78,7 @@ with gr.Blocks(
             elem_classes=["scroll"],
             height=200,
             label="Structure Finder",
+            wrap=True,
         )
 
     with gr.Row():
@@ -85,6 +88,7 @@ with gr.Blocks(
             interactive=False,
             height=200,
             column_widths=["20%"],
+            wrap=True,
         )
     with gr.Row():
         with gr.Tab(label="Spectrum"):
@@ -100,7 +104,10 @@ with gr.Blocks(
                     label="Reference Structure", height=200, width=200
                 )
         with gr.Tab(label="Information"):
-            information_obj = gr.DataFrame(interactive=False)
+            information_obj = gr.DataFrame(
+                interactive=False,
+                wrap=True,
+            )
 
     # 上传文件自动更新
     file_obj.change(

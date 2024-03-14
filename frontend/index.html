@@ -6,9 +6,11 @@
     <link rel="icon" href="img/DeepMass.ico">
     <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/3.4.1/css/bootstrap.min.css"
           integrity="sha384-HSMxcRTRxnN+Bdg0JdbxYKrThecOKuH5zCYotlSAcp1+c8xmyTe9GYg1l9a69psu" crossorigin="anonymous">
+    <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script src="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js"
             integrity="sha384-aJ21OjlMXNL5UyIl/XNwTMqvzeRMZH2w8c5cRVpzpU8Y5bApTppSuUkhZXN0VxHd" crossorigin="anonymous">
     </script>
+
 </head>
 <style>
     * {
@@ -19,14 +21,24 @@
 
     a {
         text-decoration: none;
+        color: black;
     }
+
+    a:hover {
+        text-decoration: none;
+    }
+
+    li {
+        list-style-type: none;
+    }
+
 
     .top {
         padding: 0 15px;
         height: 50px;
         width: 100%;
         box-sizing: border-box;
-        background-color: #409EFF;
+        background-color: rgb(64, 158, 255);
     }
 
     .tmic-banner {
@@ -55,7 +67,7 @@
         position: absolute;
         top: 25%;
         height: 50%;
-        background-color: rgba(255, 255, 255, 0.8);
+        background-color: rgba(255, 255, 255, 0.59);
         width: 100%;
     }
 
@@ -69,7 +81,7 @@
     .link-bar {
         height: 10%;
         float: right;
-        background-color: #409EFF;
+        background-color: rgba(64, 158, 255, 0.83);
         display: table;
         white-space: nowrap;
         padding: 1%;
@@ -239,8 +251,13 @@
         margin: 0;
     }
 
+    .navbar-nav > li {
+        margin-right: 10px; /* 调整条目之间的间距 */
+    }
+
     .navbar-nav > li > a {
         color: #fff;
+        font-size: 15px;
     }
 
     .navbar-nav > li > a:hover {
@@ -249,8 +266,8 @@
     }
 
     .navbar-nav > li > a:focus {
-        background-color: #8cc5ff;
-        color: #fff;
+        background-color: #6943f3;
+        color: #92bbea;
     }
 
     .btn {
@@ -264,6 +281,142 @@
         background-color: #171d3f;
         border: 1px solid #171d3f;
         color: #fff;
+
+    }
+
+    .dropdown-item {
+        color: #4aaacc;
+        text-decoration: none;
+
+    }
+
+    .dropdown-item:hover {
+        color: #4c7aaf;
+
+
+    }
+
+    .dropdown-menu {
+        /*background-color: rgba(196, 183, 241, 0.6);*/
+        background-color: rgba(240, 250, 255, 0.76);
+        color: #f8f7f6;
+    }
+
+    @keyframes shake {
+        0% {
+            transform: translateX(0);
+        }
+        25% {
+            transform: translateX(-5px);
+        }
+        50% {
+            transform: translateX(5px);
+        }
+        75% {
+            transform: translateX(-5px);
+        }
+        100% {
+            transform: translateX(0);
+        }
+    }
+
+    @keyframes rotate {
+        0% {
+            transform: rotate(0);
+        }
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+
+    @keyframes blink {
+        0% {
+            opacity: 1;
+        }
+        50% {
+            opacity: 0;
+        }
+        100% {
+            opacity: 1;
+        }
+    }
+
+    @keyframes bounce {
+        0%, 20%, 50%, 80%, 100% {
+            transform: translateY(0);
+        }
+        40% {
+            transform: translateY(-30px);
+        }
+        60% {
+            transform: translateY(-15px);
+        }
+    }
+
+    @keyframes color-change {
+        0% {
+            color: #58e3c2;
+        }
+        50% {
+            color: #faf2d0;
+        }
+        100% {
+            color: #aaece6;
+        }
+    }
+
+    @keyframes swing {
+        0% {
+            transform: rotate(0);
+        }
+        10% {
+            transform: rotate(15deg);
+        }
+        20% {
+            transform: rotate(-10deg);
+        }
+        30% {
+            transform: rotate(5deg);
+        }
+        40% {
+            transform: rotate(-5deg);
+        }
+        50% {
+            transform: rotate(3deg);
+        }
+        60% {
+            transform: rotate(-3deg);
+        }
+        70% {
+            transform: rotate(2deg);
+        }
+        80% {
+            transform: rotate(-2deg);
+        }
+        90% {
+            transform: rotate(1deg);
+        }
+        100% {
+            transform: rotate(0);
+        }
+    }
+
+
+    .dropdown-item {
+        transition: transform 0.3s; /* 定义过渡效果 */
+    }
+
+    .dropdown-item:hover,
+    .dropdown-item:focus {
+        transform: translateY(-5px); /* 设置悬停时的位移效果，模拟踩楼梯的感觉 */
+        background-color: rgba(154, 205, 50, 0.94) !important; /* 设置悬停时的背景颜色为橙色，并添加 !important */
+        /*color: white; !* 设置悬停时的字体颜色 *!*/
+        font-size: 20px; /* 设置悬停和聚焦时的字体大小 */
+        color: black; /* 设置悬停和聚焦时的字体颜色 */
+        /*animation: rotate 5s linear infinite;*/
+        /*animation: blink 2s linear infinite;*/
+        /*animation: color-change 2s linear infinite;*/
+
     }
 </style>
 <body>
@@ -273,41 +426,80 @@
 
             <a class="navbar-brand" data-no-turbolink="true" href="http://218.245.102.112:12341/">DeepMass</a>
         </div>
+
         <div class="navbar-collapse collapse" id="main-nav" aria-expanded="false" style="height: 0.8px;">
             <ul class="nav navbar-nav">
-                <li class="dropdown"><a class="dropdown-toggle" data-toggle="dropdown" href="#"
-                                        aria-expanded="false">Browse <b class="caret"></b></a>
+
+
+                <li class="dropdown">
+                    <a class="dropdown-toggle" data-toggle="dropdown" href="#">Link <b
+                            class="caret"></b></a>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item"
+                               href="https://www.agis.org.cn/kydw/kydwyjzx/zxjsyjzx/00358335c1a44a9f83fd7918cfc225ec.htm">Links
+                            to Papers</a></li>
+                        <li><a class="dropdown-item"
+                               href="https://www.agis.org.cn/kydw/kydwyjzx/zxjsyjzx/00358335c1a44a9f83fd7918cfc225ec.htm">Research
+                            Groups</a></li>
+                        <!--                    <a class="dropdown-item" href="#">Data Versions</a>-->
+                        <li><a class="dropdown-item" href="https://github.com/hcji/DeepMASS2_GUI/invitations">GitHub</a>
+                        </li>
+                    </ul>
                 </li>
-                <li class="dropdown"><a class="dropdown-toggle" data-toggle="dropdown" href="#">Search <b
-                        class="caret"></b></a>
-                </li>
-                <li><a href="#">Downloads</a></li>
-                <li class="dropdown"><a class="dropdown-toggle" data-toggle="dropdown" href="#">About <b
-                        class="caret"></b></a>
+
+
+                <li class="dropdown">
+                    <a class="dropdown-toggle" data-toggle="dropdown" href="#">About <b
+                            class="caret"></b>
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li>
+                            <a class="dropdown-item" href="handbooks.html">Handbook</a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="opio.html">Product Introduction</a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="User_Reviews.html">User Reviews</a>
+                        </li>
+                    </ul>
+
 
                 </li>
-                <li><a data-no-turbolink="true" href="#">Contact Us</a></li>
+
+                <!--                <li class="dropdown">-->
+                <!--                    <a class="dropdown-toggle" data-toggle="dropdown" href="#">Search <b-->
+                <!--                            class="caret"></b></a>-->
+
+
+                <!--                </li>-->
+                <!--                <li><a href="#">Downloads</a></li>-->
+                <!--                <li class="dropdown"><a class="dropdown-toggle" data-toggle="dropdown" href="#">About <b-->
+                <!--                        class="caret"></b></a>-->
+
+                <!--                </li>-->
+                <li><a data-no-turbolink="true" href="contactus.html">Contact Us</a></li>
             </ul>
-            <form class="navbar-form navbar-right" accept-charset="UTF-8" method="get">
-                <input name="utf8" type="hidden" value="✓">
-                <div class="form-group"><span class="search-tooltip tooltip-format" data-html="true"
-                                              data-placement="left" data-toggle="tooltip" title=""
-                                              data-original-title=""><span
-                        class="glyphicon glyphicon-question-sign"> </span></span></div>
-                <div class="form-group"><input type="text" name="query" id="query"
-                                               class="search-query form-control input-sm" placeholder="Search"></div>
-                <div class="form-group"><select name="searcher" id="searcher" class="form-control input-sm">
-                    <option value="metabolites">metabolites</option>
-                    <option value="diseases">diseases</option>
-                    <option value="pathways">pathways</option>
-                    <option value="proteins">proteins</option>
-                    <option value="reactions">reactions</option>
-                </select></div>
-                <button name="button" type="submit"
-                        class="btn btn-default btn-sm btn-search"><span class="glyphicon glyphicon-search"> </span>
-                    Search
-                </button>
-            </form>
+            <!--            <form class="navbar-form navbar-right" accept-charset="UTF-8" method="get">-->
+            <!--                <input name="utf8" type="hidden" value="✓">-->
+            <!--                <div class="form-group"><span class="search-tooltip tooltip-format" data-html="true"-->
+            <!--                                              data-placement="left" data-toggle="tooltip" title=""-->
+            <!--                                              data-original-title=""><span-->
+            <!--                        class="glyphicon glyphicon-question-sign"> </span></span></div>-->
+            <!--                <div class="form-group"><input type="text" name="query" id="query"-->
+            <!--                                               class="search-query form-control input-sm" placeholder="Search"></div>-->
+            <!--                <div class="form-group"><select name="searcher" id="searcher" class="form-control input-sm">-->
+            <!--                    <option value="metabolites">metabolites</option>-->
+            <!--                    <option value="diseases">diseases</option>-->
+            <!--                    <option value="pathways">pathways</option>-->
+            <!--                    <option value="proteins">proteins</option>-->
+            <!--                    <option value="reactions">reactions</option>-->
+            <!--                </select></div>-->
+            <!--                <button name="button" type="submit"-->
+            <!--                        class="btn btn-default btn-sm btn-search"><span class="glyphicon glyphicon-search"> </span>-->
+            <!--                    Search-->
+            <!--                </button>-->
+            <!--            </form>-->
         </div>
     </div>
     <div class="home-banner">
