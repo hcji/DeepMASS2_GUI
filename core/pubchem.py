@@ -7,6 +7,7 @@ Created on Wed Jan 12 16:21:43 2022
 
 
 import json
+import logging
 
 import numpy as np
 import pandas as pd
@@ -58,10 +59,15 @@ def refine_compound_list(res):
             continue
         if "." in smi:
             continue
-        key = res.loc[i, "InChIKey"].split("-")[0]
-        if key not in keys:
-            keep.append(i)
-            keys.append(key)
+        try:
+            key = res.loc[i, "InChIKey"].split("-")[0]
+            if key not in keys:
+                keep.append(i)
+                keys.append(key)
+        except:
+            logging.warn(
+                f'{res.loc[i, "InChIKey"]} is not a InChIKey string at line {i}'
+            )
     keep, keys = np.array(keep), np.array(keys)
     return res.loc[keep]
 

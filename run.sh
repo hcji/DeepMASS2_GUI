@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 pwd
 git remote add origin https://github.com/hcji/DeepMASS2_GUI
+git pull origin lkr_dev:lkr_dev
 git reset --hard origin/lkr_dev
 source activate deepmass2
 lsof -i:12341 | grep 'TCP' | awk '{print $2}' | xargs kill -9
