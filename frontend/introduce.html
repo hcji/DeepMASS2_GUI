@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background: #1e1e1e;
+        }
+
+        canvas {
+            position: absolute;
+            z-index: 1;
+        }
+
+        #content {
+            position: absolute;
+            z-index: 2;
+            color: white;
+            padding: 20px;
+        }
+
+        h1 {
+            color: #00FF00;
+            margin-left: 20px;
+        }
+
+
+        p {
+            line-height: 1.5;
+            margin-left: 20px;
+        }
+
+        video {
+            display: block;
+            max-width: 100%;
+            height: 300px;
+            z-index: 2;
+            padding: 20px;
+        }
+
+        h4 {
+            margin-left: 20px;
+        }
+    </style>
+</head>
+<body>
+<div id="content">
+    <h1>DeepMASS2</h1>
+    <p>DeepMASS2 is a cross-platform GUI software tool, which enables deep-learning based metabolite annotation via
+        semantic
+        similarity analysis of mass spectral language. This approach enables the prediction of structurally related
+        metabolites for the unknown compounds. By considering the chemical space, these structurally related metabolites
+        provide valuable information about the potential location of the unknown metabolites and assist in ranking
+        candidates obtained from molecular structure databases.</p>
+    <br>
+    <h4>video_DeepMASS</h4>
+    <video controls>
+        <source src="https://private-user-images.githubusercontent.com/17610691/296148317-16589373-3c8f-4e85-9e7b-41310dfb34b2.mov?jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3MTEzMzI0MDMsIm5iZiI6MTcxMTMzMjEwMywicGF0aCI6Ii8xNzYxMDY5MS8yOTYxNDgzMTctMTY1ODkzNzMtM2M4Zi00ZTg1LTllN2ItNDEzMTBkZmIzNGIyLm1vdj9YLUFtei1BbGdvcml0aG09QVdTNC1ITUFDLVNIQTI1NiZYLUFtei1DcmVkZW50aWFsPUFLSUFWQ09EWUxTQTUzUFFLNFpBJTJGMjAyNDAzMjUlMkZ1cy1lYXN0LTElMkZzMyUyRmF3czRfcmVxdWVzdCZYLUFtei1EYXRlPTIwMjQwMzI1VDAyMDE0M1omWC1BbXotRXhwaXJlcz0zMDAmWC1BbXotU2lnbmF0dXJlPWJkNWYyNjgzOTY2ZDU1MWUxMDI5ZWExOGJmM2RmMTY2MTA3ZTBiODg2MzRmYWZkODc4YzljOTkzMWY1MDExNzkmWC1BbXotU2lnbmVkSGVhZGVycz1ob3N0JmFjdG9yX2lkPTAma2V5X2lkPTAmcmVwb19pZD0wIn0.yYeZ_f0Ak_zwMdRMi0AWMzBHYkChSdlH4jrBAleJwYw"
+                type="video/quicktime">
+
+    </video>
+
+</div>
+<canvas id="rainCanvas"></canvas>
+<script>
+    var canvas = document.getElementById('rainCanvas');
+    var ctx = canvas.getContext('2d');
+
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    var raindrops = [];
+
+    function Raindrop() {
+        this.x = Math.random() * canvas.width;
+        this.y = Math.random() * canvas.height;
+        this.length = Math.random() * 5 + 5; // 雨滴长度
+        this.opacity = Math.random() * 0.5 + 0.5;
+        this.speed = Math.random() * 10 + 10; // 增加雨滴下落速度
+    }
+
+    Raindrop.prototype.fall = function () {
+        this.y += this.speed;
+        // 移除速度增加部分以保持雨滴形状不变
+
+        if (this.y > canvas.height) {
+            this.y = -this.length;
+            this.speed = Math.random() * 10 + 10; // 重置速度
+        }
+    };
+
+    Raindrop.prototype.show = function () {
+        ctx.beginPath();
+        ctx.moveTo(this.x, this.y);
+        ctx.lineTo(this.x, this.y + this.length);
+        ctx.strokeStyle = 'rgba(0,100,0,' + this.opacity + ')'; // 墨绿色
+        ctx.lineWidth = 2; // 雨滴宽度
+        ctx.stroke();
+    };
+
+    function createRain() {
+        for (var i = 0; i < 300; i++) { // 增加雨滴数量以使其更密集
+            raindrops.push(new Raindrop());
+        }
+    }
+
+    function drawRain() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        for (var i = 0; i < raindrops.length; i++) {
+            raindrops[i].fall();
+            raindrops[i].show();
+        }
+    }
+
+    createRain();
+    setInterval(drawRain, 30); // 减少间隔时间以加快动画速度
+</script>
+</body>
+</html>

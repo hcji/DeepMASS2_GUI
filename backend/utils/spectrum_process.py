@@ -4,6 +4,7 @@ from matchms.filtering import (
     normalize_intensities,
     add_parent_mass,
     correct_charge,
+    derive_ionmode,
 )
 from matchms.importing import (
     load_from_msp,
@@ -15,14 +16,14 @@ from matchms.importing import (
 
 
 def load_spectrum_file(file_name: str):
-    '''
+    """
     从文件名中读取质谱
     Args:
         file_name:
 
     Returns:
 
-    '''
+    """
     if file_name.lower().endswith("msp"):
         spectra_list = load_from_msp(file_name)
     elif file_name.lower().endswith("mgf"):
@@ -46,7 +47,8 @@ def load_spectrum_file(file_name: str):
 
 def deepmass_default_filter(spectrum: Spectrum):
     spectrum = default_filters(spectrum)
-    spectrum = correct_charge(spectrum)
     spectrum = normalize_intensities(spectrum)
+    spectrum = derive_ionmode(spectrum)
+    spectrum = correct_charge(spectrum)
     spectrum = add_parent_mass(spectrum)
     return spectrum
