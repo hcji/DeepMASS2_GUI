@@ -11,32 +11,54 @@
     <link href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <style>
-        /* 这里可以添加自定义的样式 */
         body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
+            margin: 0;
+            overflow: auto;
+            background: #1e1e1e;
         }
 
-        header {
-            background-color: #165b2a;
-            color: #fff;
+        canvas {
+            position: fixed;
+            z-index: 1;
+        }
+
+        #content {
+            position: absolute;
+            z-index: 2;
+            color: white;
             padding: 20px;
+            /*left: 50%;*/
+            /*top: 50%;*/
+            /*transform: translate(-50%, -50%);*/
+        }
+
+        h1 {
+            color: #00FF00;
+            margin-left: 20px;
             text-align: center;
+        }
+
+
+        p {
+            line-height: 1.5;
+            margin-left: 20px;
+            text-align: center;
+        }
+
+        h4 {
+            margin-left: 20px;
         }
 
         .container {
             margin: 20px auto;
             width: 80%;
-            background-color: #fff;
+            /*background-color: #fff;*/
             padding: 20px;
             border-radius: 5px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            align-items: center;
         }
 
-        .header {
-            text-align: center;
-            margin-bottom: 20px;
-        }
 
         .header h1 {
             font-size: 37px;
@@ -54,7 +76,7 @@
         .content img {
             width: 60%;
             height: auto;
-            border: 1px solid #ccc;
+            border: none;
             border-radius: 5px;
             box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
         }
@@ -68,56 +90,109 @@
         .content ul li {
             margin: 10px 0;
             padding: 10px;
-            border: 1px solid #ccc;
+            border: none;
             border-radius: 5px;
-            background-color: #f9f9f9;
+            /*background-color: #f9f9f9;*/
         }
 
         .content ul li span {
             font-weight: bold;
             color: #1E9FFF;
+            border: none;
         }
 
-        .footer {
-            text-align: center;
-            color: #666;
-            margin-top: 20px;
-        }
     </style>
 </head>
 <body>
-<div class="container">
-    <div class="header">
-        <header>
-            <h1>Manual</h1>
-        </header>
-        <p>This is a simple manual that introduces the basic functions and operation methods of mass spectrometry
-            identification.</p>
-    </div>
-    <div class="content">
-        <img src="icon/document_ui_1.png" alt="website">
+<div id="content">
+    <h1>Manual</h1>
+    <p>This is a simple manual that introduces the basic functions and operation methods of mass spectrometry
+        identification.</p>
+    <div class="container">
+        <div class="content">
+            <img src="icon/document_ui_1.png" alt="website">
+            <ul>
+                <li><span>1. Upload file</span>：Requires you to upload a file in MGF format</li>
+                <li><span>2. Identification methods</span>：Choose one of the two different identification methods, and
+                    the
+                    corresponding results will be generated later
+                </li>
+            </ul>
+        </div>
+        <!--        <hr style="border-color: #b2efd3; box-shadow: 0 0 10px #69d0ef;">-->
+        <div class="content">
+            <img src="icon/document_ui_2.png" alt="website">
 
-        <ul>
-            <li><span>1. Upload file</span>：Requires you to upload a file in MGF format</li>
-            <li><span>2. Identification methods</span>：Choose one of the two different identification methods, and the
-                corresponding results will be generated later
-            </li>
-        </ul>
+            <ul>
+                <li><span>3. Navigator</span>：Choose one, and the corresponding results will be generated later</li>
+                <li><span>4. Formula Finder</span>：Choose one, and the corresponding results will be generated later
+                </li>
+                <li><span>5. Structure Finder</span>：Choose one, and the corresponding results will be generated later
+                </li>
+                <li><span>6. Reference Spectrums</span>：Choose one, and the corresponding results will be generated
+                    later
+                </li>
+                <li><span>7. Spectrum | structure | Information</span>：Check out the different build results</li>
+                <li><span>8. Save</span>：Choose to save all or one</li>
+            </ul>
+        </div>
     </div>
-    <hr style="border-color: #b2efd3; box-shadow: 0 0 10px #69d0ef;">
-    <div class="content">
-        <img src="icon/document_ui_2.png" alt="website">
 
-        <ul>
-            <li><span>3. Navigator</span>：Choose one, and the corresponding results will be generated later</li>
-            <li><span>4. Formula Finder</span>：Choose one, and the corresponding results will be generated later</li>
-            <li><span>5. Structure Finder</span>：Choose one, and the corresponding results will be generated later</li>
-            <li><span>6. Reference Spectrums</span>：Choose one, and the corresponding results will be generated later
-            </li>
-            <li><span>7. Spectrum | structure | Information</span>：Check out the different build results</li>
-            <li><span>8. Save</span>：Choose to save all or one</li>
-        </ul>
-    </div>
 </div>
+<canvas id="rainCanvas"></canvas>
+<script>
+    var canvas = document.getElementById('rainCanvas');
+    var ctx = canvas.getContext('2d');
+
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    var raindrops = [];
+
+    function Raindrop() {
+        this.x = Math.random() * canvas.width;
+        this.y = Math.random() * canvas.height;
+        this.length = Math.random() * 5 + 5; // 雨滴长度
+        this.opacity = Math.random() * 0.5 + 0.5;
+        this.speed = Math.random() * 10 + 10; // 增加雨滴下落速度
+    }
+
+    Raindrop.prototype.fall = function () {
+        this.y += this.speed;
+        // 移除速度增加部分以保持雨滴形状不变
+
+        if (this.y > canvas.height) {
+            this.y = -this.length;
+            this.speed = Math.random() * 10 + 10; // 重置速度
+        }
+    };
+
+    Raindrop.prototype.show = function () {
+        ctx.beginPath();
+        ctx.moveTo(this.x, this.y);
+        ctx.lineTo(this.x, this.y + this.length);
+        ctx.strokeStyle = 'rgba(0, 100, 0' + this.opacity + ')'; // 墨绿色
+        ctx.lineWidth = 2; // 雨滴宽度
+        ctx.stroke();
+    };
+
+    function createRain() {
+        for (var i = 0; i < 300; i++) { // 增加雨滴数量以使其更密集
+            raindrops.push(new Raindrop());
+        }
+    }
+
+    function drawRain() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        for (var i = 0; i < raindrops.length; i++) {
+            raindrops[i].fall();
+            raindrops[i].show();
+        }
+    }
+
+    createRain();
+    setInterval(drawRain, 30); // 减少间隔时间以加快动画速度
+</script>
 </body>
 </html>
