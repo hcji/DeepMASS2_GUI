@@ -34,10 +34,23 @@
 
         video {
             display: block;
-            max-width: 100%;
-            height: 300px;
+            /*max-width: 100%;*/
+            height: 320px;
+            width: 720px;
             z-index: 2;
-            padding: 20px;
+            /*padding: 20px;*/
+            margin-left: 20px;
+            animation: fadeIn 3s ease-in-out;
+            /*filter: sepia(30%);*/
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
         }
 
         h4 {
@@ -57,8 +70,7 @@
     <br>
     <h4>video_DeepMASS</h4>
     <video controls>
-        <source src="https://private-user-images.githubusercontent.com/17610691/296148317-16589373-3c8f-4e85-9e7b-41310dfb34b2.mov?jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3MTEzMzI0MDMsIm5iZiI6MTcxMTMzMjEwMywicGF0aCI6Ii8xNzYxMDY5MS8yOTYxNDgzMTctMTY1ODkzNzMtM2M4Zi00ZTg1LTllN2ItNDEzMTBkZmIzNGIyLm1vdj9YLUFtei1BbGdvcml0aG09QVdTNC1ITUFDLVNIQTI1NiZYLUFtei1DcmVkZW50aWFsPUFLSUFWQ09EWUxTQTUzUFFLNFpBJTJGMjAyNDAzMjUlMkZ1cy1lYXN0LTElMkZzMyUyRmF3czRfcmVxdWVzdCZYLUFtei1EYXRlPTIwMjQwMzI1VDAyMDE0M1omWC1BbXotRXhwaXJlcz0zMDAmWC1BbXotU2lnbmF0dXJlPWJkNWYyNjgzOTY2ZDU1MWUxMDI5ZWExOGJmM2RmMTY2MTA3ZTBiODg2MzRmYWZkODc4YzljOTkzMWY1MDExNzkmWC1BbXotU2lnbmVkSGVhZGVycz1ob3N0JmFjdG9yX2lkPTAma2V5X2lkPTAmcmVwb19pZD0wIn0.yYeZ_f0Ak_zwMdRMi0AWMzBHYkChSdlH4jrBAleJwYw"
-                type="video/quicktime">
+        <source src="./icon/2024329-152024.mp4" type="video/mp4">
 
     </video>
 
