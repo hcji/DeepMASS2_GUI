@@ -1,4 +1,5 @@
 # 导入SQLAlchemy模块
+import uuid
 
 from sqlalchemy import select
 
@@ -25,9 +26,9 @@ class UserDAO(BaseDao):
     def query_email_exist(self, email):
         obj = self.session.execute(select(User).where(User.contact_info.in_([email])))
         results = obj.scalars().all()
-        return results > 0
+        return len(results) > 0
 
     def add_user(self, email, password, name):
-        user = User(name=name, contact_info=email, passwd=password)
+        user = User(id=uuid.uuid4().hex, name=name, contact_info=email, passwd=password)
         self.session.add(user)
         self.session.commit()

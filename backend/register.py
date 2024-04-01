@@ -1,6 +1,6 @@
 from fastapi import FastAPI
-from fastapi import Form
 from fastapi.responses import JSONResponse
+from pydantic import BaseModel
 from sqlalchemy import create_engine
 from sqlalchemy.orm import declarative_base
 
@@ -13,22 +13,27 @@ Base = declarative_base()
 app = FastAPI()
 
 
+class Register(BaseModel):
+    contact_info: str
+    vercode: str
+    passwd: str
+    confirmPassword: str
+    name: str
+    agreement: str
+
+
 @app.post("/register")
-async def register(
-    name: str = Form(),
-    passwd: str = Form(),
-    confirmPassword: str = Form(),
-    contact_info: str = Form(),
-    vercode: str = Form(),
-):
-    res = UserService().user_register(contact_info, passwd, name, vercode)
+def register(reg: Register):
+    res = UserService().user_register(
+        reg.contact_info, reg.passwd, reg.name, reg.vercode
+    )
     return JSONResponse(res)
 
 
 @app.get("/sendmail")
 def register(email: str):
     EmailSenderService().send_captcha(email)
-    return JSONResponse({"code": 200, "msg": "发送成功"})
+    return JSONResponse({"msg": "发送成功"})
 
 
 if __name__ == "__main__":

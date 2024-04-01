@@ -13,6 +13,7 @@ from backend.service.job_service import JobService
 from backend.utils.common_utils import get_title_from_spectrum
 from backend.utils.identify_unkown import id_spectrum_list
 from backend.utils.plot_utils import get_formula_mass
+from backend.utils.plot_utils import plot_2_spectrum
 from backend.utils.spectrum_process import load_spectrum_file
 
 MAX_SPECTRUM_NUM = GLOBAL_CONFIG["identification"]["max_spectrum"]
@@ -84,8 +85,13 @@ def show_structure(spectrum_state, evt: gr.SelectData):
     # 获取点击行号
     line_num = evt.index[0]
 
+    structural_table = get_structure_data_frame(spectrum_state, line_num)
+    return structural_table
+
+
+def get_structure_data_frame(spectrum_state, idx=0):
     formula_list = spectrum_state.metadata["annotation"]["MolecularFormula"]
-    select_formula = formula_list[line_num]
+    select_formula = formula_list[idx]
 
     annotation = spectrum_state.metadata["annotation"]
     structural_table = annotation.loc[
@@ -93,18 +99,20 @@ def show_structure(spectrum_state, evt: gr.SelectData):
     ]
     structural_table = structural_table.reset_index(drop=True)
     structural_table = structural_table.round(3)
-    return select_formula, structural_table
+    return structural_table
 
 
 def show_ref_spectrum(cur_spectrum, evt: gr.SelectData):
     line_num = evt.index[0]
-    from backend.utils.plot_utils import plot_2_spectrum
+    return show_default_ref_spectrum(cur_spectrum, line_num)
 
+
+def show_default_ref_spectrum(cur_spectrum, idx=0):
     fig_loss = plot_2_spectrum(
-        cur_spectrum, cur_spectrum.metadata["reference"][line_num], loss=True
+        cur_spectrum, cur_spectrum.metadata["reference"][idx], loss=True
     )
     fig = plot_2_spectrum(
-        cur_spectrum, cur_spectrum.metadata["reference"][line_num], loss=False
+        cur_spectrum, cur_spectrum.metadata["reference"][idx], loss=False
     )
     return fig_loss, fig
 
@@ -115,7 +123,8 @@ def show_info(cur_spectrum, evt: gr.SelectData):
     if "reference" not in cur_spectrum.metadata.keys():
         gr.Error("No reference")
     try:
-        d = cur_spectrum.metadata["reference"][line_num].metadata
+        d = cur_spectrum.metadata.copy()
+        del d["reference"]
     except:
         logging.info("没有选中的质谱")
         return pd.DataFrame()
@@ -200,6 +209,8 @@ def deepms_click_fn(state_df, request: gr.Request, progress=gr.Progress()):
     """点击run deepms的按钮触发事件
 
     Args:
+        progress:
+        request:
         state_df (_type_): _description_
         输入为一个dataframe,列名为title,spectrum
 
@@ -226,8 +237,13 @@ def deepms_click_fn(state_df, request: gr.Request, progress=gr.Progress()):
 
     state_df["Identified Spectrum"] = res
     gr.Info("Identified Successed")
+    spectrum_state = res[0] if len(res) > 0 else None
+    formula_dataframe = get_default_formula_dataframe(state_df)
+    return state_df, spectrum_state, formula_dataframe
 
-    return state_df, pd.DataFrame(columns=["formula", "mass", "error (mDa)"])
+
+def get_default_formula_dataframe(state_df):
+    return show_formula_from_state(state_df, 0)
 
 
 # def click_matchms_fn(state_df, progress=gr.Progress()):
@@ -298,3 +314,12 @@ def save_identification_csv(res_state, target_zip_file_name_state):
     file_list.insert(0, zip_path)
     # 返回文件列表，第一个是压缩包，其他的是单个谱的鉴定结果
     return gr.File(file_list, visible=True)
+
+
+def clear_files():
+    """
+    删除文件时，清空所有显示的状态
+    Returns:
+
+    """
+    return None, None, None, None, None, None, None, None, None, None

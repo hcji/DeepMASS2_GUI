@@ -45,10 +45,25 @@ def load_spectrum_file(file_name: str):
     return spectra_list
 
 
+def fill_pos_charge(spectrum: Spectrum):
+    """
+    当没有识别到模式时，默认注入正模式
+    Args:
+        spectrum:
+
+    Returns:
+
+    """
+    if spectrum.metadata.get("ionmode") == "n/a":
+        spectrum.set("ionmode", "positive")
+    return spectrum
+
+
 def deepmass_default_filter(spectrum: Spectrum):
     spectrum = default_filters(spectrum)
     spectrum = normalize_intensities(spectrum)
     spectrum = derive_ionmode(spectrum)
     spectrum = correct_charge(spectrum)
+    spectrum = fill_pos_charge(spectrum)
     spectrum = add_parent_mass(spectrum)
     return spectrum

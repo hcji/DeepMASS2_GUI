@@ -39,7 +39,11 @@ _annotation_reverse_kws = {
 
 def show_mol(structure_state, cur_spectrum, evt: gr.SelectData):
     line_num = evt.index[0]
-    ref_smi = cur_spectrum.metadata["reference"][line_num].metadata["smiles"]
+    return show_default_mol(structure_state, cur_spectrum, line_num)
+
+
+def show_default_mol(structure_state, cur_spectrum, idx=0):
+    ref_smi = cur_spectrum.metadata["reference"][idx].metadata["smiles"]
     anno_img, ref_img = plot_2_mol(structure_state, ref_smi)
     return anno_img, ref_img
 
@@ -134,7 +138,11 @@ def plot_2_mol(smi_anno, smi_ref, hightlight=True):
 
 def show_ref_spectrums(spectrum_state, structure_obj, evt: gr.SelectData):
     line_num = evt.index[0]
-    smi_anno = structure_obj["CanonicalSMILES"][line_num]
+    return get_reference_table(spectrum_state, structure_obj, line_num)
+
+
+def get_reference_table(spectrum_state, structure_obj, idx=0):
+    smi_anno = structure_obj["CanonicalSMILES"][idx]
     current_reference = spectrum_state.metadata["reference"]
     annotation = spectrum_state.metadata["annotation"]
     i = np.where(annotation["CanonicalSMILES"].values == smi_anno)[0][0]
