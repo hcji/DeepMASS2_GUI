@@ -14,6 +14,8 @@ from matchms.importing import (
     load_from_json,
 )
 
+from core.importing.load_from_mat import load_from_mat
+
 
 def load_spectrum_file(file_name: str):
     """
@@ -34,9 +36,9 @@ def load_spectrum_file(file_name: str):
         spectra_list = load_from_mzxml(file_name)
     elif file_name.lower().endswith("json"):
         spectra_list = load_from_json(file_name)
-    # TODO 写mat文件读取方法
+    # 写mat文件读取方法
     elif file_name.lower().endswith("mat"):
-        spectra_list = []
+        spectra_list = load_from_mat(file_name)
     else:
         spectra_list = []
     spectra_list = [spectra for spectra in spectra_list]
@@ -67,3 +69,7 @@ def deepmass_default_filter(spectrum: Spectrum):
     spectrum = fill_pos_charge(spectrum)
     spectrum = add_parent_mass(spectrum)
     return spectrum
+
+
+if __name__ == '__main__':
+    print(load_spectrum_file('./example/minimum_example(2).mat'))

@@ -30,7 +30,7 @@ class Seafoam(Base):
 def evaluate(username, issue, category, improvement, contact):
     if not issue:  # 确保问题字段是必填的
         return "请填写存在的问题。"
-    feedback = f"收到来自{'匿名' if not username else username}的评价：\n问题：{issue}\n问题类别：{category}\n改进建议：{improvement}\n联系方式：{'未提供' if not contact else contact}"
+    feedback = f"收到来自{'匿名' if not username else username}的反馈：\n问题：{issue}\n问题类别：{category}\n改进建议：{improvement}\n联系方式：{'未提供' if not contact else contact}"
     return feedback
 
 

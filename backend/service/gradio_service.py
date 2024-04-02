@@ -34,6 +34,7 @@ def show_formula_from_state(res_state, idx):
 
     Returns:当前选中质谱
             当前选中质谱的候选分子式表格Dataframe
+            当前选中质谱的元数据
 
     """
     formula_list = []
@@ -66,7 +67,7 @@ def show_formula_from_state(res_state, idx):
     )
     formula_df = formula_df.round(3)
 
-    return cur_spectrum, formula_df
+    return cur_spectrum, formula_df, show_info(cur_spectrum)
 
 
 def show_structure(spectrum_state, evt: gr.SelectData):
@@ -117,14 +118,14 @@ def show_default_ref_spectrum(cur_spectrum, idx=0):
     return fig_loss, fig
 
 
-def show_info(cur_spectrum, evt: gr.SelectData):
-    line_num = evt.index[0]
+def show_info(cur_spectrum):
     logging.info("点击结构行")
     if "reference" not in cur_spectrum.metadata.keys():
         gr.Error("No reference")
     try:
         d = cur_spectrum.metadata.copy()
         del d["reference"]
+        del d["annotation"]
     except:
         logging.info("没有选中的质谱")
         return pd.DataFrame()
@@ -237,9 +238,9 @@ def deepms_click_fn(state_df, request: gr.Request, progress=gr.Progress()):
 
     state_df["Identified Spectrum"] = res
     gr.Info("Identified Successed")
-    spectrum_state = res[0] if len(res) > 0 else None
-    formula_dataframe = get_default_formula_dataframe(state_df)
-    return state_df, spectrum_state, formula_dataframe
+    # spectrum_state = res[0] if len(res) > 0 else None
+    cur_spectrum, formula_df, info_df = get_default_formula_dataframe(state_df)
+    return state_df, cur_spectrum, formula_df, info_df
 
 
 def get_default_formula_dataframe(state_df):

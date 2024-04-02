@@ -9,7 +9,7 @@ Created on Tue Nov 14 16:22:08 2023
 from typing import Generator
 
 import numpy as np
-# from matchms.importing.load_from_msp import _parse_line_with_peaks
+from matchms.importing.load_from_msp import _parse_line_with_peaks
 from matchms.importing.load_from_msp import contains_metadata
 from matchms.importing.load_from_msp import parse_metadata
 

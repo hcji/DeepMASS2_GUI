@@ -4,7 +4,6 @@ import gradio as gr
 
 from backend.service.gradio_service import (
     show_ref_spectrum,
-    show_info,
     save_identification_csv,
     show_structure,
     deepms_click_fn,
@@ -143,7 +142,7 @@ with gr.Blocks(
     run_deepms_btn.click(
         fn=deepms_click_fn,
         inputs=[res_state],
-        outputs=[res_state, formula_obj],
+        outputs=[res_state, spectrum_state, formula_obj, information_obj],
         concurrency_limit=4,
     )
     # run_matchms_btn.click(
@@ -160,7 +159,9 @@ with gr.Blocks(
 
     # 选中Navigator的一行
     nav_obj.select(
-        fn=show_formula, inputs=[res_state], outputs=[spectrum_state, formula_obj]
+        fn=show_formula,
+        inputs=[res_state],
+        outputs=[spectrum_state, formula_obj, information_obj],
     )
     # 选中Formula Finder的一行
     formula_obj.select(
@@ -227,8 +228,6 @@ with gr.Blocks(
             ref_structure_fig,
         ],
     )
-    # 当Formula Finder更新（选中不同的待注释质谱）时，更新Information
-    formula_obj.change(fn=show_info, inputs=[spectrum_state], outputs=[information_obj])
     # 点击保存按钮
     run_save_btn.click(
         fn=save_identification_csv,
