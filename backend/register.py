@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from sqlalchemy import create_engine
@@ -10,7 +11,19 @@ from backend.service.user_service import UserService
 engine = create_engine("sqlite:///./User_Information.db", echo=True)
 Base = declarative_base()
 
+
 app = FastAPI()
+
+# 允许所有来源的CORS(解决跨域问题)
+origins = ["*"]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 class Register(BaseModel):

@@ -153,7 +153,7 @@
 
 </head>
 <body class="radial-gradient-demo">
-<form class="layui-form" action="http://218.245.102.112:8000/register/" method="post" id="addForm">
+<form class="layui-form" id="addForm">
     <div class="demo-reg-container">
         <div class="layui-form-item">
             <div class="layui-row">
@@ -221,7 +221,7 @@
         <div class="layui-form-item">
             <button class="layui-btn layui-btn-fluid " lay-submit lay-filter="demo-reg">register</button>
         </div>
-        <a href="http://218.245.102.112:12341/">Login to existing account</a>
+        <a href="http://127.0.0.1:12341/">Login to existing account</a>
     </div>
 </form>
 
@@ -252,36 +252,37 @@
 
             // 是否勾选同意
             if (!field.agreement) {
-                layer.msg('You must check "Agree to User Agreement" in order to register');
+                layer.msg('您必须勾选同意用户协议才能注册');
                 return false;
             }
 
+            var json = JSON.stringify(field);
+            
             $.ajax({
-                type: "POST",
-                url: getURL("insert"),
-                data: new FormData($("#addForm")[0]),	//获取表单数据，addForm是表单id
-                processData: false,
-                contentType: false,
-                success: function (data) {
-                    alert(data)
-                    if (data == 'success') {
-                        $("input[type=reset]").trigger("click");	//清空表单
+                url: 'http://127.0.0.1:8000/register', // 服务器地址
+                type: 'POST',           // 请求方式
+                contentType: 'application/json;', // 设置请求内容类型
+                data: json, // 将JSON对象转换为字符串并发送
+                dataType: 'json',       // 预期服务器返回的数据类型
+                success: function (res) {
+                    // 请求成功后的回调函数
+                    console.log(res); // 打印返回的数据
+                    // 在这里你可以根据返回的数据进行页面更新等操作
+                    if (res['msg'] == "注册成功"){
+                        window.open('http://218.245.102.112:12341/', '_self')
                     }
+
+                },
+                error: function (err) {
+                    // 请求失败后的回调函数
+                    console.error(err); // 打印错误信息
                 }
-            })
+            });
 
 
-            // 显示填写结果，仅作演示用
-            // layer.alert(JSON.stringify(field), {
-            //     title: 'The current field value filled in'
-            // });
 
-            // 此处可执行 Ajax 等操作
-            // …
-
-            // return false; // 阻止默认 form 跳转
+            return false; // 阻止默认 form 跳转
         });
-
     });
 </script>
 <script>
@@ -303,7 +304,7 @@
         $('#btnSendCode').addClass('layui-btn-disabled');
         $('#btnSendCode').text(curCount + "秒后重获");
         InterValObj = window.setInterval(SetRemainTime, 1000); // 启动计时器timer处理函数，1秒执行一次
-        $.get(`http://218.245.102.112:8000/sendmail?email=${email}`);
+        $.get(`http://127.0.0.1:8000/sendmail?email=${email}`);
 
     }
 
@@ -320,5 +321,7 @@
         }
     }
 </script>
+</body>
+</html>
 </body>
 </html>
