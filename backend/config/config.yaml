@@ -1,17 +1,1 @@
-email:
-    mail_user: 3571267146@qq.com
-    mail_pwd: gpzhdwzjwgmrchgd
-    mail_sender: 3571267146@qq.com
-    port: 25
-    host: smtp.qq.com
-register:
-    captcha_expire_time:
-identification:
-    max_spectrum: 1000
-    max_files: 1000
-    max_file_size: 1024*1024*3
-    plot:
-        dpi: 900
-        width: 2
-        length: 1
 
