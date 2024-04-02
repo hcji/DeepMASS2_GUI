@@ -221,7 +221,7 @@
         <div class="layui-form-item">
             <button class="layui-btn layui-btn-fluid " lay-submit lay-filter="demo-reg">register</button>
         </div>
-        <a href="http://127.0.0.1:12341/">Login to existing account</a>
+        <a href="http://218.245.102.112:12341/">Login to existing account</a>
     </div>
 </form>
 
@@ -259,7 +259,7 @@
             var json = JSON.stringify(field);
             
             $.ajax({
-                url: 'http://127.0.0.1:8000/register', // 服务器地址
+                url: 'http://218.245.102.112:8000/register', // 服务器地址
                 type: 'POST',           // 请求方式
                 contentType: 'application/json;', // 设置请求内容类型
                 data: json, // 将JSON对象转换为字符串并发送
@@ -304,7 +304,7 @@
         $('#btnSendCode').addClass('layui-btn-disabled');
         $('#btnSendCode').text(curCount + "秒后重获");
         InterValObj = window.setInterval(SetRemainTime, 1000); // 启动计时器timer处理函数，1秒执行一次
-        $.get(`http://127.0.0.1:8000/sendmail?email=${email}`);
+        $.get(`http://218.245.102.112:8000/sendmail?email=${email}`);
 
     }
 
