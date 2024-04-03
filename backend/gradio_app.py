@@ -36,8 +36,6 @@ with gr.Blocks(
     res_state = gr.State([])
     # 保存当前选择的spectrum
     spectrum_state = gr.State([])
-    # 保存当前选择的formula
-    formula_state = gr.State([])
     # 保存当前选择的structure
     structure_state = gr.State([])
     # 保存压缩文件目标名称
@@ -128,6 +126,8 @@ with gr.Blocks(
         inputs=None,
         outputs=[
             res_state,
+            spectrum_state,
+            structure_state,
             nav_obj,
             formula_obj,
             structure_obj,

@@ -56,7 +56,10 @@ def fill_pos_charge(spectrum: Spectrum):
     Returns:
 
     """
-    if spectrum.metadata.get("ionmode") == "n/a":
+    if (
+        spectrum.metadata.get("ionmode") == "n/a"
+        or spectrum.metadata.get("ionmode") == None
+    ):
         spectrum.set("ionmode", "positive")
     return spectrum
 
@@ -71,5 +74,5 @@ def deepmass_default_filter(spectrum: Spectrum):
     return spectrum
 
 
-if __name__ == '__main__':
-    print(load_spectrum_file('./example/minimum_example(2).mat'))
+if __name__ == "__main__":
+    print(load_spectrum_file("./example/minimum_example(2).mat"))

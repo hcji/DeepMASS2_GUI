@@ -323,4 +323,4 @@ def clear_files():
     Returns:
 
     """
-    return None, None, None, None, None, None, None, None, None, None
+    return None, None, None, None, None, None, None, None, None, None, None, None
