@@ -1,4 +1,5 @@
 import heapq
+import logging
 from itertools import chain
 
 import gradio as gr
@@ -48,9 +49,14 @@ def show_default_mol(structure_state, cur_spectrum, idx=0):
     return anno_img, ref_img
 
 
-def get_formula_mass(formula):
-    f = Formula(formula)
-    return f.isotope.mass
+def get_formula_mass(formula: str):
+    f = Formula(formula.replace("-", ""))
+    try:
+        mass = f.isotope.mass
+    except Exception as e:
+        logging.warn(f"{e}")
+        mass = 0
+    return mass
 
 
 def add_topk_mz_text(ax, mz, intensities, is_reverse=False, top_k=3):
