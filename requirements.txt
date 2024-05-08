@@ -1,5 +1,5 @@
 gensim==4.3.2
-matchms==0.17.0
+matchms==0.24.2
 matplotlib==3.5.3
 molmass==2023.4.10
 networkx==3.1

@@ -38,7 +38,6 @@ def calc_deepmass_score(s, p, model, references):
     get_sim = lambda x, y: DataStructs.FingerprintSimilarity(x, y)
     get_corr = lambda x, y: cosine_similarity([x], [y])[0][0]
     candidate_mol = [Chem.MolFromSmiles(smi) for smi in s.get('annotation')['CanonicalSMILES']]
-
     query_vector = calc_vector(model, SpectrumDocument(s, n_decimals=2), allowed_missing_percentage=100)
     xq = np.array(query_vector).astype('float32')
     I, D = p.knn_query(xq, 300)
