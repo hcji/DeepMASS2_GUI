@@ -1,16 +1,7 @@
 # Data
-temp/
-*.npy
-*.npz
-*.bin
-*.model
-*.json
-*.esd
-*.hdf5
-*.csv
-*.zip
-*.xlsx
-*.pickle
+data/*
+model/*
+temp/*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
