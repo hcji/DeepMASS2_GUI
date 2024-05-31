@@ -31,7 +31,7 @@ def check_inputs(s):
 
 def calc_deepmass_score(s, p, model, references):
     if not check_inputs(s):
-        return None
+        return None, None
     else:
         pass
     get_fp = lambda x: AllChem.GetMorganFingerprintAsBitVect(x, radius=2)
@@ -60,7 +60,7 @@ def calc_deepmass_score(s, p, model, references):
         reference_vector = np.array(reference_vector)[k,:]
     
     if len(candidate_mol) == 0:
-        return None
+        return None, None
     
     deepmass_score = []
     for i in range(len(candidate_mol)):
@@ -83,7 +83,7 @@ def calc_deepmass_score(s, p, model, references):
 
 def calc_matchms_score(s, precursors, references):
     if not check_inputs(s):
-        return None
+        return None, None
     else:
         pass
     precursor = s.get('precursor_mz')
@@ -120,7 +120,7 @@ def calc_matchms_score(s, precursors, references):
 def calc_multiomics_score(s, association_data):
     associated_id = s.get('associated_gene')
     if associated_id is None:
-        return None
+        return None, None
     else:
         get_fp = lambda x: AllChem.GetMorganFingerprintAsBitVect(x, radius=2)
         get_sim = lambda x, y: DataStructs.FingerprintSimilarity(x, y)
@@ -143,7 +143,7 @@ def calc_multiomics_score(s, association_data):
         except:
             pass
     if len(associated_smiles) == 0:
-        return None
+        return None, None
     
     k, associated_fp = [], []
     for i, smi in enumerate(associated_smiles):

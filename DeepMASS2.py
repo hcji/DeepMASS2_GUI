@@ -512,7 +512,7 @@ class DeepMASS2(QMainWindow, main.Ui_MainWindow):
             for s in self.identified_spectrums:
                 name = s.metadata['compound_name']
                 name = re.sub(r'[^ \w+]', '', name)
-                if 'annotation' in s.metadata.keys():
+                if s.get('annotation') is not None:
                     annotation = s.metadata['annotation']
                 else:
                     annotation = pd.DataFrame(columns=['Title', 'MolecularFormula', 'CanonicalSMILES', 'InChIKey'])
