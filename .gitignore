@@ -2,6 +2,8 @@
 data/*
 model/*
 temp/*
+backup/*
+document/site/*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
