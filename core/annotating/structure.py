@@ -44,19 +44,19 @@ def calc_deepmass_score(s, p, model, references):
     reference_spectrum = np.array(references)[I[0,:]]
     reference_spectrum = [s for s in reference_spectrum if s.get('smiles') is not None]
     reference_smile = [s.metadata['smiles'] for s in reference_spectrum]
-    reference_mol = [Chem.MolFromSmiles(s) for s in reference_smile]
     reference_vector = np.array(p.get_items(I[0, :]))
 
     k, reference_fp = [], []
-    for i, m in enumerate(reference_mol):
+    for i, smi in enumerate(reference_smile):
         try:
+            m = Chem.MolFromSmiles(smi)
             reference_fp.append(get_fp(m))
             k.append(i)
         except:
             pass
-    if len(k) != len(reference_mol):
+    if len(k) != len(reference_smile):
         k = np.array(k)
-        reference_mol = np.array(reference_mol)[k]
+        reference_smile = np.array(reference_smile)[k]
         reference_vector = np.array(reference_vector)[k,:]
     
     if len(candidate_mol) == 0:
@@ -95,8 +95,11 @@ def calc_matchms_score(s, precursors, references):
     reference_spectrum = np.array([s for s in reference_spectrum if s.get('inchikey') is not None])
     if len(reference_spectrum) == 0:
         return None, None
-
-    match_scores = calculate_scores(references = reference_spectrum, queries = [s], similarity_function = CosineGreedy())
+    
+    try:
+        match_scores = calculate_scores(references = reference_spectrum, queries = [s], similarity_function = CosineGreedy())
+    except:
+        return None, None
     # match_scores = match_scores.scores.to_array()
     match_scores = np.array([s[0].tolist()[0] for s in match_scores.scores.to_array()])
     w = np.argsort(-match_scores)
