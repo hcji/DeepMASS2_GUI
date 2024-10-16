@@ -56,7 +56,7 @@ Please follow the following installation steps:
 
 ## Documentation
 
-For the details on how to use DeepMASS, please check [Ducomentation](https://github.com/hcji/DeepMASS2_GUI/blob/main/document/documentation.md).
+For the details on how to use DeepMASS, please check [Ducomentation](https://hcji.github.io/DeepMASS2_GUI/).
 
 ## Citation
 
