@@ -8,7 +8,8 @@ space of the unknown metabolites. DeepMASS maximizes the utility of mass spectro
 data, positioning itself for further development as data scales continue to expand.
 
 ## Getting Started
-Using DeepMASS locally, please reference the [document](), and refer the following video for quick start.
+Using DeepMASS locally, please refer the [document](https://hcji.github.io/DeepMASS2_GUI/start/), 
+and the following video for quick start.
 
 ![type:video](./videos/deepmass2.mov)
 

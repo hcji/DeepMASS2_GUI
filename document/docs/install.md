@@ -1,10 +1,12 @@
 ## System Requirements
 
 **Operating Systems:**
+
 - Windows 11
 - MacOS
 
 **Recommended Hardware:**
+
 - Intel Core i5 or greater
 - 16 GB RAM or more
 - 5 GB hard drive space
@@ -15,21 +17,21 @@
 1. Install [Anaconda](https://www.anaconda.com/) or [Miniconda](https://docs.conda.io/en/latest/miniconda.html).
 2. Create a new conda environment and activate:
 
-    ```bash
+    ```
     conda create -n deepmass python=3.8.13
     conda activate deepmass
     ```
 
 3. Clone the repository and enter:
 
-    ```bash
+    ```
     git clone https://github.com/hcji/DeepMASS2_GUI.git
     cd DeepMASS2_GUI
     ```
 
 4. Install dependencies (for *MacOS*, some dependencies may need manual installation with conda):
 
-    ```bash
+    ```
     pip install -r requirements.txt
     ```
 
@@ -61,7 +63,7 @@
 
 6. Run DeepMASS:
 
-    ```bash
+    ```
     python DeepMASS2.py
     ```
 
@@ -72,6 +74,7 @@ but can be purchased from an authorized distributor and exported using the instr
 
 ### Exporting NIST data
 *Note: this step requires a Windows System or Virtual Machine.*
+
 The spectra and associated compounds can be exported to MSP/MOL format using the free [lib2nist software](https://chemdata.nist.gov/mass-spc/ms-search/Library_conversion_tool.html). 
 The resulting export will contain a single MSP file with all of the mass spectra, 
 and multiple MOL files which include the molecular structure information (linked to the spectra by ID). 
@@ -83,16 +86,19 @@ After exporting the files, create a directory on your primary computer and save 
 If done correctly, inside "nist_20" there should be a single .MSP file with all the spectra, 
 `hr_nist_msms.MSP`, and a directory of .MOL files, `hr_nist_msms.MOL`.
 
+
 ### Preprocessing NIST data
 Refer the [Python script](https://github.com/hcji/DeepMASS2_GUI/blob/main/scripts/Processing_NIST20_data.ipynb) 
 processes mass spectrometry (MS/MS) data and corresponding chemical structures 
 to extract and clean metadata, filter the data based on adduct types, and organize the data for further analysis. 
+
 
 ### Training the Word2Vec model
 Refer the [Python script](https://github.com/hcji/DeepMASS2_GUI/blob/main/scripts/Traning_Spec2vec_Model.ipynb) 
 processes mass spectrometry (MS/MS) data to train word2vec models for positive and negative ion mode 
 spectra using the spec2vec approach.This script ultimately creates two spec2vec models: one for positive 
 ion mode spectra and one for negative ion mode spectra. 
+
 
 ### Generating spectral representation index
 Refer the [Python script](https://github.com/hcji/DeepMASS2_GUI/blob/main/scripts/Vectorize_Spectra.ipynb) 
