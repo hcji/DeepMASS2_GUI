@@ -32,7 +32,7 @@ Please follow the following installation steps:
 5. Download the [dependent data](https://github.com/hcji/DeepMASS2_GUI/releases/tag/v0.99.0).    
     1) put the following files into *data* folder:
     
-                DeepMassStructureDB-v1.0.csv
+                DeepMassStructureDB-v1.1.csv
                 references_index_negative_spec2vec.bin
                 references_index_positive_spec2vec.bin
                 references_spectrums_negative.pickle
