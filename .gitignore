@@ -170,4 +170,4 @@ backend/config
 backend/temp
 **.db
 **.sqlite3
-
+/backend/config/config.yaml
