@@ -1,4 +1,4 @@
-import hashlib
+
 
 from backend.dao.user_dao import UserDAO
 from backend.service.code_service import CaptchaService
@@ -10,10 +10,9 @@ class UserService:
         self.dao = UserDAO()
 
     def auth_login(self, email, password):
-        # 对密码取MD5
-        password = hashlib.new("md5", password.encode("utf-8")).hexdigest()
         # 验证密码
         login_flag = self.dao.login(email, password)
+        print(f"=============={login_flag}==================")
         # 登录成功，留下记录
         if login_flag:
             LoginLogService().insert_login_log(email)
