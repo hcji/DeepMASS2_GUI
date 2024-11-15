@@ -22,8 +22,6 @@ class UserDAO(BaseDao):
             select(User.passwd).where(User.contact_info.in_([email]))
         )
         res = results.scalars().one_or_none()
-        print(f"{res}<=db_passwd")
-        print(f"{password}<=client_passwd")
         if res == password:
             return True
         else:
