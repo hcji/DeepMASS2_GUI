@@ -30,42 +30,37 @@ def check_inputs(s):
 
 def calc_deepmass_score(s, p, model, references):
     if not check_inputs(s):
-        return None
+        return None, None
     else:
         pass
     get_fp = lambda x: AllChem.GetMorganFingerprintAsBitVect(x, radius=2)
     get_sim = lambda x, y: DataStructs.FingerprintSimilarity(x, y)
     get_corr = lambda x, y: cosine_similarity([x], [y])[0][0]
-    candidate_mol = [
-        Chem.MolFromSmiles(smi) for smi in s.get("annotation")["CanonicalSMILES"]
-    ]
-
-    query_vector = calc_vector(
-        model, SpectrumDocument(s, n_decimals=2), allowed_missing_percentage=100
-    )
-    xq = np.array(query_vector).astype("float32")
+    candidate_mol = [Chem.MolFromSmiles(smi) for smi in s.get('annotation')['CanonicalSMILES']]
+    query_vector = calc_vector(model, SpectrumDocument(s, n_decimals=2), allowed_missing_percentage=100)
+    xq = np.array(query_vector).astype('float32')
     I, D = p.knn_query(xq, 300)
-    reference_spectrum = np.array(references)[I[0, :]]
-    reference_spectrum = [s for s in reference_spectrum if s.get("smiles") is not None]
-    reference_smile = [s.metadata["smiles"] for s in reference_spectrum]
-    reference_mol = [Chem.MolFromSmiles(s) for s in reference_smile]
+    reference_spectrum = np.array(references)[I[0,:]]
+    reference_spectrum = [s for s in reference_spectrum if s.get('smiles') is not None]
+    reference_smile = [s.metadata['smiles'] for s in reference_spectrum]
     reference_vector = np.array(p.get_items(I[0, :]))
 
     k, reference_fp = [], []
-    for i, m in enumerate(reference_mol):
+    for i, smi in enumerate(reference_smile):
         try:
+            m = Chem.MolFromSmiles(smi)
             reference_fp.append(get_fp(m))
             k.append(i)
         except:
             pass
-    if len(k) != len(reference_mol):
+    if len(k) != len(reference_smile):
         k = np.array(k)
-        reference_mol = np.array(reference_mol)[k]
-        reference_vector = np.array(reference_vector)[k, :]
-
+        reference_smile = np.array(reference_smile)[k]
+        reference_vector = np.array(reference_vector)[k,:]
+    
     if len(candidate_mol) == 0:
-        return None
-
+        return None, None
+    
     deepmass_score = []
     for i in range(len(candidate_mol)):
         try:
@@ -94,7 +89,7 @@ def calc_deepmass_score(s, p, model, references):
 
 def calc_matchms_score(s, precursors, references):
     if not check_inputs(s):
-        return None
+        return None, None
     else:
         pass
     precursor = s.get("precursor_mz")
@@ -108,10 +103,11 @@ def calc_matchms_score(s, precursors, references):
     )
     if len(reference_spectrum) == 0:
         return None, None
-
-    match_scores = calculate_scores(
-        references=reference_spectrum, queries=[s], similarity_function=CosineGreedy()
-    )
+    
+    try:
+        match_scores = calculate_scores(references = reference_spectrum, queries = [s], similarity_function = CosineGreedy())
+    except:
+        return None, None
     # match_scores = match_scores.scores.to_array()
     match_scores = np.array([s[0].tolist()[0] for s in match_scores.scores.to_array()])
     w = np.argsort(-match_scores)
@@ -135,7 +131,7 @@ def calc_matchms_score(s, precursors, references):
 def calc_multiomics_score(s, association_data):
     associated_id = s.get("associated_gene")
     if associated_id is None:
-        return None
+        return None, None
     else:
         get_fp = lambda x: AllChem.GetMorganFingerprintAsBitVect(x, radius=2)
         get_sim = lambda x, y: DataStructs.FingerprintSimilarity(x, y)
@@ -165,8 +161,8 @@ def calc_multiomics_score(s, association_data):
         except:
             pass
     if len(associated_smiles) == 0:
-        return None
-
+        return None, None
+    
     k, associated_fp = [], []
     for i, smi in enumerate(associated_smiles):
         try:

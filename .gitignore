@@ -13,6 +13,10 @@ temp/
 *.pickle
 *.db
 *.sqllite3
+data/*
+model/*
+backup/*
+document/site/*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -170,4 +174,4 @@ backend/config
 backend/temp
 **.db
 **.sqlite3
-
+/backend/config/config.yaml

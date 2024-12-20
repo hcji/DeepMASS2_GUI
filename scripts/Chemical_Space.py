@@ -22,7 +22,7 @@ from sklearn.preprocessing import scale
 from spec2vec import SpectrumDocument
 from spec2vec.vector_operations import calc_vector
 
-from core.identification import identify_unknown, match_spectrum
+from core.main import identify_unknown, match_spectrum
 
 
 def plot_spectrum_comparison(s1, s2, mzrange, loss=False):
@@ -39,7 +39,7 @@ def plot_spectrum_comparison(s1, s2, mzrange, loss=False):
     plt.xlim(mzrange)
 
 
-database = pd.read_csv('data/DeepMassStructureDB-v1.0.csv')
+database = pd.read_csv('data/DeepMassStructureDB-v1.1.csv')
 spectrums = [s for s in load_from_mgf("D:/DeepMASS2_Data_Processing/Example/CASMI/all_casmi.mgf")]
 
 # Example 1
@@ -56,7 +56,7 @@ precursors = [s.get('precursor_mz') for s in references]
 precursors = np.array(precursors)
 
 s_metadata = s.metadata
-s_matchms = match_spectrum(s, precursors, references)
+s_matchms = match_spectrum(s, precursors, references, database)
 s_matchms_metadata = s_matchms.metadata
 s_deepmass = identify_unknown(s, p, model, references, database)
 s_deepmass_metadata = s_deepmass.metadata
@@ -91,13 +91,11 @@ Draw.MolToFile(Chem.MolFromSmiles(s.get('smiles')), 'temp/temp1.png')
 a, b = len(deepmass_candidate_vector), len(deepmass_reference_vector)
 plt.figure(dpi = 300, figsize = (3.5, 3.5))
 plt.scatter(X_r[1:a,0], X_r[1:a,1], color = 'green', alpha = 0.5, label = 'Candidates')
-plt.scatter(X_r[a:a+10,0], X_r[a:a+10,1], color = 'blue', alpha = 0.5, label = 'Top 10 Neigbors')
+plt.scatter(X_r[a:a+20,0], X_r[a:a+20,1], color = 'blue', alpha = 0.5, label = 'Top 20 Neigbors')
 plt.scatter(X_r[0,0], X_r[0,1], color = 'red', alpha = 0.8, label = 'True Annotation')
 plt.scatter(X_r[55,0], X_r[55,1], color = 'orange', alpha = 0.5)
 plt.xlabel('Dim 1')
 plt.ylabel('Dim 2')
-plt.xlim(24, 41)
-plt.ylim(-16, -9)
 plt.legend(loc = 'upper right')
 plt.show()
 
@@ -138,7 +136,7 @@ precursors = [s.get('precursor_mz') for s in references]
 precursors = np.array(precursors)
 
 s_metadata = s.metadata
-s_matchms = match_spectrum(s, precursors, references)
+s_matchms = match_spectrum(s, precursors, references, database)
 s_matchms_metadata = s_matchms.metadata
 s_deepmass = identify_unknown(s, p, model, references, database)
 s_deepmass_metadata = s_deepmass.metadata
