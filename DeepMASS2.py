@@ -80,7 +80,7 @@ class DeepMASS2(QMainWindow, main.Ui_MainWindow):
         self.default_reference_positive = "data/references_spectrums_positive.pickle"
         self.default_reference_negative = "data/references_spectrums_negative.pickle"
         try:
-            self.default_database = pd.read_csv("data/DeepMassStructureDB-v1.0.csv")
+            self.default_database = pd.read_csv("data/DeepMassStructureDB-v1.1.csv")
         except:
             self.ErrorMsg("Missing data files")
             return

@@ -67,7 +67,7 @@ def plot_spectrum_comparison(s1, s2, mzrange, loss=False):
     plt.xlim(mzrange)
 
 
-database = pd.read_csv("data/DeepMassStructureDB-v1.0.csv")
+database = pd.read_csv("data/DeepMassStructureDB-v1.1.csv")
 spectrums = [
     s for s in load_from_mgf("D:/DeepMASS2_Data_Processing/Example/CASMI/all_casmi.mgf")
 ]
