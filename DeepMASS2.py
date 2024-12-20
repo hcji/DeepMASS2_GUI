@@ -80,7 +80,7 @@ class DeepMASS2(QMainWindow, main.Ui_MainWindow):
         self.default_reference_positive = "data/references_spectrums_positive.pickle"
         self.default_reference_negative = "data/references_spectrums_negative.pickle"
         try:
-            self.default_database = pd.read_csv("data/DeepMassStructureDB-v1.0.csv")
+            self.default_database = pd.read_csv("data/DeepMassStructureDB-v1.1.csv")
         except:
             self.ErrorMsg("Missing data files")
             return
@@ -578,10 +578,10 @@ class DeepMASS2(QMainWindow, main.Ui_MainWindow):
                 self.WarnMsg("Invalid path")
                 return
             for s in self.identified_spectrums:
-                name = s.metadata["compound_name"]
-                name = re.sub(r"[^ \w+]", "", name)
-                if "annotation" in s.metadata.keys():
-                    annotation = s.metadata["annotation"]
+                name = s.metadata['compound_name']
+                name = re.sub(r'[^ \w+]', '', name)
+                if s.get('annotation') is not None:
+                    annotation = s.metadata['annotation']
                 else:
                     annotation = pd.DataFrame(
                         columns=[

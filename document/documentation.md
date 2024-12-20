@@ -50,7 +50,7 @@ Recommended Hardware:
 
     1) put the following files into *data* folder:
     
-                DeepMassStructureDB-v1.0.csv
+                DeepMassStructureDB-v1.1.csv
                 references_index_negative_spec2vec.bin
                 references_index_positive_spec2vec.bin
                 references_spectrums_negative.pickle

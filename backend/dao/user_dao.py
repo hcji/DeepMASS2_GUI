@@ -1,5 +1,6 @@
 # 导入SQLAlchemy模块
 import uuid
+import hashlib
 
 from sqlalchemy import select
 
@@ -13,6 +14,9 @@ class UserDAO(BaseDao):
         super().__init__()
 
     def login(self, email, password):
+        # 对密码取sha256
+        password = hashlib.new("sha256", password.encode("utf-8")).hexdigest()
+
         # 在数据库中查询username与passwd是否匹配，username设置为unique
         results = self.session.execute(
             select(User.passwd).where(User.contact_info.in_([email]))
@@ -29,6 +33,8 @@ class UserDAO(BaseDao):
         return len(results) > 0
 
     def add_user(self, email, password, name):
+        # 对密码取sha256
+        password = hashlib.new("sha256", password.encode("utf-8")).hexdigest()
         user = User(id=uuid.uuid4().hex, name=name, contact_info=email, passwd=password)
         self.session.add(user)
         self.session.commit()
