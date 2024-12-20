@@ -7,6 +7,9 @@ DeepMASS2 is a cross-platform GUI software tool, which enables deep-learning bas
  metabolites and assist in ranking candidates obtained from molecular structure databases. 
 
 
+## News
+[10/2024] Using DeepMASS2, we made a web UI interface, check it out! [Website](http://218.245.102.112/)
+
 ## Installation
 Please follow the following installation steps:
 
@@ -28,7 +31,7 @@ Please follow the following installation steps:
 5. Download the [dependent data](https://github.com/hcji/DeepMASS2_GUI/releases/tag/v0.99.0).    
     1) put the following files into *data* folder:
     
-                DeepMassStructureDB-v1.0.csv
+                DeepMassStructureDB-v1.1.csv
                 references_index_negative_spec2vec.bin
                 references_index_positive_spec2vec.bin
                 references_spectrums_negative.pickle
@@ -54,7 +57,7 @@ Please follow the following installation steps:
 
 ## Documentation
 
-For the details on how to use DeepMASS, please check [Ducomentation](https://github.com/hcji/DeepMASS2_GUI/blob/main/document/documentation.md).
+For the details on how to use DeepMASS, please check [Ducomentation](https://hcji.github.io/DeepMASS2_GUI/).
 
 ## Citation
 
