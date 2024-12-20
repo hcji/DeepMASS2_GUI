@@ -578,10 +578,10 @@ class DeepMASS2(QMainWindow, main.Ui_MainWindow):
                 self.WarnMsg("Invalid path")
                 return
             for s in self.identified_spectrums:
-                name = s.metadata["compound_name"]
-                name = re.sub(r"[^ \w+]", "", name)
-                if "annotation" in s.metadata.keys():
-                    annotation = s.metadata["annotation"]
+                name = s.metadata['compound_name']
+                name = re.sub(r'[^ \w+]', '', name)
+                if s.get('annotation') is not None:
+                    annotation = s.metadata['annotation']
                 else:
                     annotation = pd.DataFrame(
                         columns=[

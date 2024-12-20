@@ -1,12 +1,13 @@
 site_name: DeepMASS
 theme:
-  name: materia
+  name: material
 
 nav:
     - Home: index.md
     - Installation: install.md
-    - Getting started: getting_started.md
-    - Parameters: parameters.md
-    - Library: library.md
-    - API guide: API_guide.md
+    - Getting Started: start.md
+    - User Guide: guide.md
     - About: about.md
+    
+plugins:
+    - mkdocs-video
