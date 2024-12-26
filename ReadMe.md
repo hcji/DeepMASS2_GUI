@@ -29,7 +29,7 @@ Please follow the following installation steps:
 
         pip install -r requirements.txt
         
-5. Download the [dependent data](https://github.com/hcji/DeepMASS2_GUI/releases/tag/v0.99.0).    
+5. Download the [dependent data](https://github.com/hcji/DeepMASS2_GUI/releases/tag/v0.99.1).    
     1) put the following files into *data* folder:
     
                 DeepMassStructureDB-v1.1.csv
