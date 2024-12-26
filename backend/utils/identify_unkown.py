@@ -22,7 +22,7 @@ default_index_negative = "data/references_index_negative_spec2vec.bin"
 default_reference_positive = "data/references_spectrums_positive.pickle"
 default_reference_negative = "data/references_spectrums_negative.pickle"
 print("Start Loading database")
-default_database = pd.read_csv("data/database.csv")
+default_database = pd.read_csv("data/DeepMassStructureDB-v1.1.csv")
 print("Start Loading Word2Vec")
 deepmass_positive = Word2Vec.load("model/Ms2Vec_allGNPSpositive.hdf5")
 deepmass_negative = Word2Vec.load("model/Ms2Vec_allGNPSnegative.hdf5")
