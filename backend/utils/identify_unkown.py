@@ -8,7 +8,7 @@ from gensim.models import Word2Vec
 from hnswlib import Index
 
 from backend.utils.theme import Seafoam
-from core.identification import identify_unknown, match_spectrum
+from core.main import identify_unknown, match_spectrum
 
 # matplotlib.use('Agg')
 
@@ -22,7 +22,7 @@ default_index_negative = "data/references_index_negative_spec2vec.bin"
 default_reference_positive = "data/references_spectrums_positive.pickle"
 default_reference_negative = "data/references_spectrums_negative.pickle"
 print("Start Loading database")
-default_database = pd.read_csv("data/database.csv")
+default_database = pd.read_csv("data/DeepMassStructureDB-v1.1.csv")
 print("Start Loading Word2Vec")
 deepmass_positive = Word2Vec.load("model/Ms2Vec_allGNPSpositive.hdf5")
 deepmass_negative = Word2Vec.load("model/Ms2Vec_allGNPSnegative.hdf5")
@@ -67,11 +67,11 @@ def identify_neg(spectrum):
 
 
 def match_pos(spectrum):
-    return match_spectrum(spectrum, precursors_positive, reference_positive)
+    return match_spectrum(spectrum, precursors_positive, reference_positive, default_database)
 
 
 def match_neg(spectrum):
-    return match_spectrum(spectrum, precursors_negative, reference_negative)
+    return match_spectrum(spectrum, precursors_negative, reference_negative, default_database)
 
 
 def id_spectrum_list(spectrum_list, progress=None, is_deepmass=True):
