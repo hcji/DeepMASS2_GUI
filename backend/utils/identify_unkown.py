@@ -8,7 +8,7 @@ from gensim.models import Word2Vec
 from hnswlib import Index
 
 from backend.utils.theme import Seafoam
-from core.identification import identify_unknown, match_spectrum
+from core.main import identify_unknown, match_spectrum
 
 # matplotlib.use('Agg')
 
@@ -67,11 +67,11 @@ def identify_neg(spectrum):
 
 
 def match_pos(spectrum):
-    return match_spectrum(spectrum, precursors_positive, reference_positive)
+    return match_spectrum(spectrum, precursors_positive, reference_positive, default_database)
 
 
 def match_neg(spectrum):
-    return match_spectrum(spectrum, precursors_negative, reference_negative)
+    return match_spectrum(spectrum, precursors_negative, reference_negative, default_database)
 
 
 def id_spectrum_list(spectrum_list, progress=None, is_deepmass=True):
