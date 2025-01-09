@@ -6,6 +6,7 @@ DeepMASS2 is a cross-platform GUI software tool, which enables deep-learning bas
  structurally related metabolites provide valuable information about the potential location of the unknown 
  metabolites and assist in ranking candidates obtained from molecular structure databases. 
 
+https://github.com/hcji/DeepMASS2_GUI/assets/17610691/16589373-3c8f-4e85-9e7b-41310dfb34b2
 
 ## News
 [10/2024] Using DeepMASS2, we made a web UI interface, check it out! [Website](http://218.245.102.112/)
@@ -19,20 +20,16 @@ Please follow the following installation steps:
         conda create -n deepmass python=3.8.13
         conda activate deepmass
 
-3. Clone the repository and enter:
+3. Download the [lastest released version](https://github.com/hcji/DeepMASS2_GUI/tags) of source codes, unzip, enter:
 
-        git clone https://github.com/hcji/DeepMASS2_GUI.git
+        # download and unzip, then,
         cd DeepMASS2_GUI
     
 4. Install dependency (note, for *MacOS* some dependency may install with conda manually):
 
         pip install -r requirements.txt
-
-   Or use the following method to Install dependency:
-
-        conda env create -f deepmass2_env.yml
-
-5. Download the [dependent data](https://github.com/hcji/DeepMASS2_GUI/releases/tag/v0.99.0).    
+        
+5. Download the [dependent data](https://github.com/hcji/DeepMASS2_GUI/releases/tag/v0.99.1).    
     1) put the following files into *data* folder:
     
                 DeepMassStructureDB-v1.1.csv
@@ -58,6 +55,7 @@ Please follow the following installation steps:
 ## Release
 
 * [Version 0.99.0](https://github.com/hcji/DeepMASS2_GUI/releases/tag/v0.99.0)
+* [Version 0.99.1](https://github.com/hcji/DeepMASS2_GUI/releases/tag/v0.99.1)
 
 ## Documentation
 
