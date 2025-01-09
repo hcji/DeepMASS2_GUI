@@ -293,7 +293,7 @@ def save_identification_csv(res_state, target_zip_file_name_state):
         # name = s.metadata["compound_name"]
         name = get_title_from_spectrum(spectrum=s, idx=idx)
         # 判断是否有鉴定结果，若无，则给空表
-        if "annotation" in s.metadata.keys():
+        if "annotation" in s.metadata.keys() and s.metadata["annotation"] is not None:
             annotation = s.metadata["annotation"]
         else:
             annotation = pd.DataFrame(
