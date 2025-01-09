@@ -27,7 +27,11 @@ Please follow the following installation steps:
 4. Install dependency (note, for *MacOS* some dependency may install with conda manually):
 
         pip install -r requirements.txt
-        
+
+   Or use the following method to Install dependency:
+
+        conda env create -f deepmass2_env.yml
+
 5. Download the [dependent data](https://github.com/hcji/DeepMASS2_GUI/releases/tag/v0.99.0).    
     1) put the following files into *data* folder:
     
