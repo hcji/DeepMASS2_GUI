@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact Us</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+            background: linear-gradient(45deg, rgba(132, 236, 206, 0.76), rgba(146, 203, 220, 0.61), rgba(208, 221, 225, 0.75), rgba(238, 210, 136, 0.73));
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+            font-weight: bolder;
+        }
+
+        p {
+            color: #e3b315;
+            font-family: fangsong;
+        }
+
+        @keyframes gradientBG {
+            0% {
+                background-position: 0% 50%;
+            }
+            50% {
+                background-position: 100% 50%;
+            }
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+
+        .contact-container {
+            background-color: rgb(240, 243, 246);
+            padding: 20px;
+            border-radius: 300px;
+            box-shadow: 2px 2px 10px rgba(162, 236, 236, 0.69);
+            text-align: center;
+            animation: fadeIn 2s ease-in-out;
+            width: 500px;
+            height: 500px;
+
+
+        }
+
+        .contact-info {
+            margin-top: 20px;
+            opacity: 0;
+            animation: slideIn 1s forwards;
+        }
+
+        .contact-info p {
+            margin: 10px 0;
+            color: #333;
+        }
+
+        .contact-info a {
+            color: #007bff;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .contact-info a:hover {
+            color: #0056b3;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="contact-container">
+    <h1 style="color: #333;">Contact</h1>
+    <p>Ji Hongchao</p>
+    <div class="contact-info">
+        <p style="color: #555;">E-mail:&nbsp;&nbsp;<a href="mailto:jihongchao@caas.cn">jihongchao@caas.cn</a>
+        </p><br>
+        <p style="color: #555;">E-mail:&nbsp;&nbsp;<a href="mailto:ji.hongchao@foxmail.com">ji.hongchao@foxmail.com</a>
+        </p><br>
+        <p style="color: #555;">ORCID iD:&nbsp;&nbsp;<a href="https://orcid.org/0000-0002-7364-0741">https://orcid.org/0000-0002-7364-0741</a>
+        </p><br>
+        <p style="color: #555;">WeChat public account:&nbsp;&nbsp;Chemocode</p>
+        <a target="_blank" rel="noopener noreferrer" href="https://github.com/hcji/hcji/blob/main/img/qrcode.jpg">
+            <img align="center" src="https://github.com/hcji/hcji/raw/main/img/qrcode.jpg" width="20%"
+                 style="max-width: 100%;">
+        </a>
+    </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+
+    <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <link href="https://cdn.bootcdn.net/ajax/libs/layui/2.8.17/css/layui.min.css" rel="stylesheet" crossorigin="anonymous" referrerpolicy="no-referrer">
+    <script src="https://cdn.bootcdn.net/ajax/libs/layui/2.8.17/layui.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <link href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+
+    <style>
+        body {
+            overflow: hidden;
+            height: 100vh;
+            width: 100vw;
+            margin: 0;
+            padding: 0;
+        }
+        #logo {
+            height: 50px;
+            width: auto;
+            float: left;
+
+        }
+
+        img {
+            width: 60px;
+            height: 80px;
+        }
+
+        .navbar {
+            background-color: #99d7ef;
+            color: white;
+        }
+
+        .nav-link {
+            color: white;
+            text-decoration: none;
+        }
+
+        .nav-link:hover {
+            color: #4c7daf;
+        }
+
+        .dropdown-menu {
+            background-color: #87CEEB;
+            color: white;
+        }
+
+        .dropdown-item {
+            color: white;
+            text-decoration: none;
+        }
+
+        .dropdown-item:hover {
+            color: #4c7aaf;
+        }
+
+        .active {
+            background-color: #a4a5ee;
+            color: white;
+        }
+
+        @keyframes changeColor {
+            0% {
+                background-color: #87CEEB;
+            }
+            25% {
+                background-color: #ADD8E6;
+            }
+            50% {
+                background-color: #00FFFF;
+            }
+            75% {
+                background-color: #E0FFFF;
+            }
+            100% {
+                background-color: #87CEEB;
+            }
+        }
+
+        .navbar:hover {
+            animation-name: changeColor;
+            animation-duration: 5s;
+            animation-iteration-count: infinite;
+        }
+
+        nav {
+            box-shadow: 2px 4px 6px #6495ED;
+            background-image: linear-gradient(to right, white, #87CEEB);
+        }
+
+        .bar {
+            margin: 40px 0 0 0;
+            /* background-color: rgb(126, 224, 237); */
+            width: 195px;
+            height: 105px;
+            background-size: 100% 100%;
+            background-repeat: no-repeat;
+            position: absolute;
+        }
+
+        .barr {
+            margin: 160px 0 0 80px;
+            /* background-color: rgb(126, 224, 237); */
+            width: 190px;
+            height: 109px;
+            background-size: 100% 100%;
+            background-repeat: no-repeat;
+            position: absolute;
+        }
+
+        .boo {
+            background-image: url(icon/snow.png);
+
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            /* background-size: cover; */
+            width: auto;
+            height: 280px;
+
+        }
+
+        .midd {
+
+            background-color: white;
+            width: auto;
+            height: 850px;
+
+        }
+
+        .midd .pptt {
+            font-size: 22px;
+            font-style: normal;
+            /* margin-top:50px; */
+            /* margin-bottom:10px; */
+            margin-left: 20px;
+            margin-right: 20px;
+        }
+
+        .bcfoot {
+            background-color: #a9dff3;
+            width: auto;
+            height: 650px;
+            font-size: 12px;
+
+        }
+
+
+        .footbor {
+            background-color: #d7edf3;
+            width: 100%;
+            /* height: 70px; */
+            display: flex;
+            justify-content: space-around;
+            font-size: 12px;
+            position: absolute;
+            bottom: 0;
+
+            /* text-align: center; */
+            /* position: absolute; */
+            /* padding: 0px; */
+        }
+
+        .demotext {
+            padding-left: 4em;
+            text-indent: -2em;
+        }
+
+        p {
+            padding: 10px ;
+
+            line-height: 1.5;
+            margin: 0;
+
+            page-break-inside: avoid;
+
+        }
+
+
+    </style>
+</head>
+<body>
+<!-- background="../icon/bacup.jpg" -->
+<nav class="navbar navbar-expand-md">
+    <img id="logo" src="icon/DeepMass.ico" alt="">
+    <a class="navbar-brand" >DeepMASS2</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#myNavbar">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="myNavbar">
+        <ul class="navbar-nav ml-auto">
+
+            <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="#" data-toggle="dropdown">Utilities</a>
+                <div class="dropdown-menu">
+                    <a class="dropdown-item" href="http://218.245.102.112:12341/" target="_self">Spectra Identification</a>->
+                </div>
+            </li>
+
+
+            <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="#" data-toggle="dropdown">Link</a>
+                <div class="dropdown-menu">
+                    <a class="dropdown-item"
+                       href="https://www.agis.org.cn/kydw/kydwyjzx/zxjsyjzx/00358335c1a44a9f83fd7918cfc225ec.htm">Links
+                        to Papers</a>
+                    <a class="dropdown-item"
+                       href="https://www.agis.org.cn/kydw/kydwyjzx/zxjsyjzx/00358335c1a44a9f83fd7918cfc225ec.htm">research
+                        groups</a>
+                    <!--                    <a class="dropdown-item" href="#">Data Versions</a>-->
+                    <a class="dropdown-item" href="https://github.com/hcji/DeepMASS2_GUI/invitations">github</a>
+                </div>
+            </li>
+
+
+            <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="#" data-toggle="dropdown">About</a>
+                <div class="dropdown-menu">
+                    <a class="dropdown-item" href="handbooks.html">Handbook</a>
+                    <a class="dropdown-item" href="introduce.html">Product Introduction</a>
+                    <a class="dropdown-item" href="User_Reviews.html">User Reviews</a>
+                </div>
+            </li>
+
+
+            <li class="nav-item">
+                <a class="nav-link" href="register.html">Register</a>
+            </li>
+
+
+            <li class="nav-item">
+                <a class="nav-link active" href="contactus.html">Contact Us</a>
+            </li>
+
+
+        </ul>
+    </div>
+</nav>
+<div class="boo">
+
+    <a href="http://218.245.102.112:12341/">
+        <div class="bar"></div>
+    </a>
+
+    <a href="http://218.245.102.112:12341/">
+        <div class="barr"></div>
+    </a>
+</div>
+
+
+<div class="midd">
+    <div class="midd pptt">
+        <h4>Welcome to DeepMASS 2 !</h4>
+        <!-- <HR  width=300 color=#987cb9 SIZE=1> -->
+        <hr color="blue" size="10px">
+        <div class="bcfoot">
+
+            <p>(1) Ji, H.#; Lu, X.#; Zhao, S.; Wang, Q.; Bin, L.; Huber, K. V. M.; Luo, R.; Tian, R.; Tan, C. S. H. Matrix-Augmented Pooling Strategy for High-Throughput Target Deconvolution Reveals Cell Type Specific Off-Targets and Responses. Cell Chem. Biol. 2023, Just Accepted. (#Co-first author)</p>
+            <p>(2) Yang, Q.#; Ji, H.#; Xu, Z.; Li, Y.; Wang, P.; Sun, J.; Fan, X.; Zhang, H.; Lu, H.; Zhang, Z. Ultra-Fast and Accurate Electron Ionization Mass Spectrum Matching for Compound Identification with Million-Scale in-Silico Library. Nat. Commun. 2023, 14 (1), 3722. (#Co-first author)</p>"""i, H.; Zeng, F.; Xu, Y.; Lu, H.; Zhang, Z. KPIC2: An Effective Framework for Mass Spectrometry-Based Metabolomics Using Pure Ion Chromatograms. Anal. Chem. 2017, 89 (14), 7631–7640.</p>
+            <p>(8) Ji, H.; Xu, Y.; Lu, H.; Zhang, Z. Deep MS/MS-Aided Structural-Similarity Scoring for Unknown Metabolite Identification. Anal. Chem. 2019, 91 (9), 5629–5637.</p>
+            <p>(9) Ji, H.; Lu, H.; Zhang, Z. Pure Ion Chromatogram Extraction: Via Optimal k -Means Clustering. RSC Adv. 2016, 6 (62), 56977–56985.</p>
+            <p>(10) Yang, Q.; Ji, H.; Lu, H.; Zhang, Z. Prediction of Liquid Chromatographic Retention Time with Graph Neural Networks to Assist in Small Molecule Identification. Anal. Chem. 2021, 93 (4), 2200–2206.</p>
+            <p>(11) Yang, Q.; Ji, H.; Fan, X.; Zhang, Z.; Lu, H. Retention Time Prediction in Hydrophilic Interaction Liquid Chromatography with Graph Neural Network and Transfer Learning. J. Chromatogr. A 2021, 1656.</p>
+            <p>(12) Wu, Q.; Xu, Y.; Ji, H.; Wang, Y.; Zhang, Z.; Lu, H. Enhancing Coverage in LC–MS-Based Untargeted Metabolomics by a New Sample Preparation Procedure Using Mixed-Mode Solid-Phase Extraction and Two Derivatizations. Anal Bioanal Chem 2019, 411 (23), 6189–6202.</p>
+            <p>(13) Zhu, H.; Chen, Y.; Liu, C.; Wang, R.; Zhao, G.; Hu, B.; Ji, H.; Zhang, Z.-M.; Lu, H. Feature Extraction for LC-MS via Hierarchical Density Clustering. Chromatographia 2019, 82 (10), 1449–1457.</p>
+            <p>(14) Fu, C.; Wu, Q.; Zhang, Z.; Xia, Z.; Ji, H.; Lu, H.; Wang, Y. UPLC-ESI-IT-TOF-MS Metabolomic Study of the Therapeutic Effect of Xuefu Zhuyu Decoction on Rats with Traumatic Brain Injury. Journal of Ethnopharmacology 201
+            urnal of Ethnopharmacology 2019, 245, 112149.</p>
+            <p>(15) Li, W.; Ye, H.; Liu, G.; Ji, H.; Zhou, Y.; Han, K. The Role of Graphene Coating on Cordierite-Supported Pd Monolithic Catalysts for Low-Temperature Combustion of Toluene. Cuihua Xuebao/Chinese Journal of Catalysis 2018, 39 (5), 946–954.</p>
+<!--            <p>(16) He, Y.; Zhang, Z. ; Ma, P.; Ji, H. .; Lu, H. GC-MS Profiling of Leukemia Cells: An Optimized Preparation Protocol for the Intracellular Metabolome. Anal. Methods 2018, 10 (10), 1266–1274.</p>-->
+<!--            <p>(17) Zeng, F.; Ji, H.; Zhang, Z.; Luo, J.; Lu, H. ; Wang, Y. Metabolic Profiling Putatively Identifies Plasma Biomarkers of Male Infertility Using UPLC-ESI-IT-TOFMS. RSC Adv. 2018, 8 (46), 25974–25982.</p>-->
+<!--            <p>(18) Wang, R.; Ji, H.; Ma, P.; Zeng, H.; Xu, Y.; Zhang, Z.-M.; Lu, H.-M. Fast Pure Ion Chromatograms Extraction Method for LC-MS. Chemom. Intell. Lab. Syst. 2017, 170, 68–74.</p>-->
+<!--            <p>(19) Lin, Z.; Vicente Gonçalves, C. M.; Dai, L.; Lu, H.; Huang, J.; Ji, H.; Wang, D.; Yi, L.; Liang, Y. Exploring Metabolic Syndrome Serum Profiling Based on Gas Chromatography Mass Spectrometry and Random Forest Models. Analytica Chimica Acta 2014, 827, 22–27.</p>-->
+<!--        </div>-->
+    </div>
+
+
+</div>
+
+<!--<footer class="footbor layui-footer">-->
+<!--    <div>-->
+<!--        <ul>-->
+<!--            <li>copyright notice:xxxxxxx</li>-->
+<!--            <li> contact information:xxxxxxx</li>-->
+<!--            <li>certification and registration information:xxxxxxx</li>-->
+<!--        </ul>-->
+
+<!--    </div>-->
+<!--    <div>-->
+<!--        <ul>-->
+<!--            <li> company service terms:xxxxxxx</li>-->
+<!--            <li> extended links:xxxxxxx</li>-->
+<!--            <li>others:xxxxx</li>-->
+<!--        </ul>-->
+
+<!--    </div>-->
+<!--</footer>-->
+
+
+</body>
+</html>

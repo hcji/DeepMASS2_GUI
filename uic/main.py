@@ -34,7 +34,9 @@ class Ui_MainWindow(object):
         self.label_logo.setMinimumSize(QtCore.QSize(200, 110))
         self.label_logo.setMaximumSize(QtCore.QSize(200, 110))
         self.label_logo.setText("")
-        self.label_logo.setPixmap(QtGui.QPixmap("ui\\../../DeepMASS2_GUI/icon/logo_deepmass.png"))
+        self.label_logo.setPixmap(
+            QtGui.QPixmap("ui\\../../DeepMASS2_GUI/icon/logo_deepmass.png")
+        )
         self.label_logo.setScaledContents(True)
         self.label_logo.setAlignment(QtCore.Qt.AlignCenter)
         self.label_logo.setObjectName("label_logo")
@@ -44,7 +46,11 @@ class Ui_MainWindow(object):
         self.butt_open.setLayoutDirection(QtCore.Qt.LeftToRight)
         self.butt_open.setAutoFillBackground(True)
         icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap("ui\\../../DeepMASS2_GUI/icon/opened-folder.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon.addPixmap(
+            QtGui.QPixmap("ui\\../../DeepMASS2_GUI/icon/opened-folder.png"),
+            QtGui.QIcon.Normal,
+            QtGui.QIcon.Off,
+        )
         self.butt_open.setIcon(icon)
         self.butt_open.setIconSize(QtCore.QSize(30, 30))
         self.butt_open.setCheckable(False)
@@ -55,7 +61,11 @@ class Ui_MainWindow(object):
         self.butt_save.setLayoutDirection(QtCore.Qt.LeftToRight)
         self.butt_save.setAutoFillBackground(True)
         icon1 = QtGui.QIcon()
-        icon1.addPixmap(QtGui.QPixmap("ui\\../../DeepMASS2_GUI/icon/save.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon1.addPixmap(
+            QtGui.QPixmap("ui\\../../DeepMASS2_GUI/icon/save.png"),
+            QtGui.QIcon.Normal,
+            QtGui.QIcon.Off,
+        )
         self.butt_save.setIcon(icon1)
         self.butt_save.setIconSize(QtCore.QSize(30, 30))
         self.butt_save.setCheckable(False)
@@ -66,7 +76,11 @@ class Ui_MainWindow(object):
         self.butt_run.setLayoutDirection(QtCore.Qt.LeftToRight)
         self.butt_run.setAutoFillBackground(True)
         icon2 = QtGui.QIcon()
-        icon2.addPixmap(QtGui.QPixmap("ui\\../../DeepMASS2_GUI/icon/start.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon2.addPixmap(
+            QtGui.QPixmap("ui\\../../DeepMASS2_GUI/icon/start.png"),
+            QtGui.QIcon.Normal,
+            QtGui.QIcon.Off,
+        )
         self.butt_run.setIcon(icon2)
         self.butt_run.setIconSize(QtCore.QSize(30, 30))
         self.butt_run.setCheckable(False)
@@ -81,7 +95,9 @@ class Ui_MainWindow(object):
         self.butt_match.setCheckable(False)
         self.butt_match.setObjectName("butt_match")
         self.verticalLayout_5.addWidget(self.butt_match)
-        spacerItem = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
+        spacerItem = QtWidgets.QSpacerItem(
+            20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding
+        )
         self.verticalLayout_5.addItem(spacerItem)
         self.splitter_3 = QtWidgets.QSplitter(self.splitter_4)
         self.splitter_3.setOrientation(QtCore.Qt.Vertical)
@@ -179,7 +195,9 @@ class Ui_MainWindow(object):
         self.page_spectrum.setObjectName("page_spectrum")
         self.gridLayout_4 = QtWidgets.QGridLayout(self.page_spectrum)
         self.gridLayout_4.setObjectName("gridLayout_4")
-        spacerItem1 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
+        spacerItem1 = QtWidgets.QSpacerItem(
+            40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum
+        )
         self.gridLayout_4.addItem(spacerItem1, 1, 0, 1, 1)
         self.butt_spectrum = QtWidgets.QPushButton(self.page_spectrum)
         self.butt_spectrum.setObjectName("butt_spectrum")
@@ -207,7 +225,9 @@ class Ui_MainWindow(object):
         self.verticalLayout_6.addLayout(self.horizontalLayout)
         self.horizontalLayout_3 = QtWidgets.QHBoxLayout()
         self.horizontalLayout_3.setObjectName("horizontalLayout_3")
-        spacerItem2 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
+        spacerItem2 = QtWidgets.QSpacerItem(
+            40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum
+        )
         self.horizontalLayout_3.addItem(spacerItem2)
         self.butt_plotComm = QtWidgets.QPushButton(self.page_structure)
         self.butt_plotComm.setObjectName("butt_plotComm")
@@ -233,7 +253,9 @@ class Ui_MainWindow(object):
         self.gridLayout.addWidget(self.splitter_4, 0, 0, 1, 1)
         self.horizontalLayout_2 = QtWidgets.QHBoxLayout()
         self.horizontalLayout_2.setObjectName("horizontalLayout_2")
-        spacerItem3 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
+        spacerItem3 = QtWidgets.QSpacerItem(
+            40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum
+        )
         self.horizontalLayout_2.addItem(spacerItem3)
         self.progressBar = QtWidgets.QProgressBar(self.centralwidget)
         self.progressBar.setMinimumSize(QtCore.QSize(0, 0))
@@ -264,16 +286,26 @@ class Ui_MainWindow(object):
         self.label_4.setText(_translate("MainWindow", "Reference Spectrums"))
         self.butt_spectrum.setText(_translate("MainWindow", "Spectrum"))
         self.butt_loss.setText(_translate("MainWindow", "Loss"))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.page_spectrum), _translate("MainWindow", "Spectrum"))
+        self.tabWidget.setTabText(
+            self.tabWidget.indexOf(self.page_spectrum),
+            _translate("MainWindow", "Spectrum"),
+        )
         self.groupBoxAnno.setTitle(_translate("MainWindow", "Annotated Structure"))
         self.groupBoxRef.setTitle(_translate("MainWindow", "Reference Structure"))
         self.butt_plotComm.setText(_translate("MainWindow", "Highlight"))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.page_structure), _translate("MainWindow", "Structure"))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.page_compound), _translate("MainWindow", "Information"))
+        self.tabWidget.setTabText(
+            self.tabWidget.indexOf(self.page_structure),
+            _translate("MainWindow", "Structure"),
+        )
+        self.tabWidget.setTabText(
+            self.tabWidget.indexOf(self.page_compound),
+            _translate("MainWindow", "Information"),
+        )
 
 
 if __name__ == "__main__":
     import sys
+
     app = QtWidgets.QApplication(sys.argv)
     MainWindow = QtWidgets.QMainWindow()
     ui = Ui_MainWindow()

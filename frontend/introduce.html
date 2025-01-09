@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background: #1e1e1e;
+        }
+
+        canvas {
+            position: absolute;
+            z-index: 1;
+        }
+
+        #content {
+            position: absolute;
+            z-index: 2;
+            color: white;
+            padding: 20px;
+        }
+
+        h1 {
+            color: #00FF00;
+            margin-left: 20px;
+        }
+
+
+        p {
+            line-height: 1.5;
+            margin-left: 20px;
+        }
+
+        video {
+            display: block;
+            /*max-width: 100%;*/
+            height: 320px;
+            width: 720px;
+            z-index: 2;
+            /*padding: 20px;*/
+            margin-left: 20px;
+            animation: fadeIn 3s ease-in-out;
+            /*filter: sepia(30%);*/
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        h4 {
+            margin-left: 20px;
+        }
+    </style>
+</head>
+<body>
+<div id="content">
+    <h1>DeepMASS2</h1>
+    <p>DeepMASS2 is a cross-platform GUI software tool, which enables deep-learning based metabolite annotation via
+        semantic
+        similarity analysis of mass spectral language. This approach enables the prediction of structurally related
+        metabolites for the unknown compounds. By considering the chemical space, these structurally related metabolites
+        provide valuable information about the potential location of the unknown metabolites and assist in ranking
+        candidates obtained from molecular structure databases.</p>
+    <br>
+    <h4>video_DeepMASS</h4>
+    <video controls>
+        <source src="./icon/2024329.mp4" type="video/mp4">
+
+    </video>
+
+</div>
+<canvas id="rainCanvas"></canvas>
+<script>
+    var canvas = document.getElementById('rainCanvas');
+    var ctx = canvas.getContext('2d');
+
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    var raindrops = [];
+
+    function Raindrop() {
+        this.x = Math.random() * canvas.width;
+        this.y = Math.random() * canvas.height;
+        this.length = Math.random() * 5 + 5; // 雨滴长度
+        this.opacity = Math.random() * 0.5 + 0.5;
+        this.speed = Math.random() * 10 + 10; // 增加雨滴下落速度
+    }
+
+    Raindrop.prototype.fall = function () {
+        this.y += this.speed;
+        // 移除速度增加部分以保持雨滴形状不变
+
+        if (this.y > canvas.height) {
+            this.y = -this.length;
+            this.speed = Math.random() * 10 + 10; // 重置速度
+        }
+    };
+
+    Raindrop.prototype.show = function () {
+        ctx.beginPath();
+        ctx.moveTo(this.x, this.y);
+        ctx.lineTo(this.x, this.y + this.length);
+        ctx.strokeStyle = 'rgba(0,100,0,' + this.opacity + ')'; // 墨绿色
+        ctx.lineWidth = 2; // 雨滴宽度
+        ctx.stroke();
+    };
+
+    function createRain() {
+        for (var i = 0; i < 300; i++) { // 增加雨滴数量以使其更密集
+            raindrops.push(new Raindrop());
+        }
+    }
+
+    function drawRain() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        for (var i = 0; i < raindrops.length; i++) {
+            raindrops[i].fall();
+            raindrops[i].show();
+        }
+    }
+
+    createRain();
+    setInterval(drawRain, 30); // 减少间隔时间以加快动画速度
+</script>
+</body>
+</html>

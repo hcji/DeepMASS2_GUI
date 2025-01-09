@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>User Rating System</title>
+     <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdn.bootcdn.net/ajax/libs/layui/2.8.17/layui.min.js"></script>
+    <link href="https://cdn.bootcdn.net/ajax/libs/layui/2.8.17/css/layui.min.css" rel="stylesheet">
+    <style>
+        /* CSS styles for form appearance */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f9fcfc;
+        }
+
+        header {
+          background-color: #165b2a;
+          color: #fff;
+          padding: 20px;
+          text-align: center;
+          padding: 20px;
+          margin-bottom: 20px;
+        }
+        h1 {
+          margin: 0;
+          font-size: 2em;
+        }
+
+        form {
+
+            width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            border: 1px solid #cccccc;
+            background-color: #d6f3ed;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        input, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #cccccc;
+        }
+
+        input[type="radio"] {
+            width: auto;
+        }
+
+        .rating {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .star {
+            font-size: 30px;
+            color: #ffffff;
+            cursor: pointer;
+        }
+
+        .star:hover, .star.active {
+            color: #ecab21;
+        }
+
+        button {
+            width: 120px;
+            margin-top: 20px;
+            padding: 10px;
+            border: none;
+            background-color: #333333;
+            color: #ffffff;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #f1dd79;
+        }
+    </style>
+</head>
+<body>
+<header>
+    <h1>User Rating System</h1>
+  </header>
+
+    <form action="mailto:your_email@example.com" method="post" enctype="text/plain">
+        <label for="name">Name:</label>
+        <input type="text" id="name" name="name" placeholder="Enter your name" required>
+
+
+        <label for="gender">Gender:</label>
+        <input type="radio" id="male" name="gender" value="male" checked>
+        <label for="male">Male</label>
+        <input type="radio" id="female" name="gender" value="female">
+        <label for="female">Female</label>
+        <input type="radio" id="other" name="gender" value="other">
+        <label for="other">Prefer not to disclose</label>
+
+        <label for="rating">Rating:</label>
+        <div class="rating">
+            <span class="star" data-value="1">★</span>
+            <span class="star" data-value="2">★</span>
+            <span class="star" data-value="3">★</span>
+            <span class="star" data-value="4">★</span>
+            <span class="star" data-value="5">★</span>
+            <input type="hidden" id="rating" name="rating" value="0">
+        </div>
+
+        <label for="comment">Comment:</label>
+        <textarea id="comment" name="comment" placeholder="Enter your comment" rows="5" required></textarea>
+
+        <button type="submit">Submit</button>
+    </form>
+    <script>
+        var stars = document.querySelectorAll(".star");
+        var ratingInput = document.getElementById("rating");
+        for (var i = 0; i < stars.length; i++) {
+            stars[i].addEventListener("click", function() {
+                var value = this.dataset.value;
+                ratingInput.value = value;
+                for (var j = 0; j < stars.length; j++) {
+                    if (j < value) {
+                                            stars[j].classList.add("active");
+                    } else {
+                        stars[j].classList.remove("active");
+                    }
+                }
+            });
+            stars[i].addEventListener("mouseover", function() {
+                var value = this.dataset.value;
+                for (var j = 0; j < stars.length; j++) {
+                    if (j < value) {
+                        stars[j].classList.add("active");
+                    } else {
+                        stars[j].classList.remove("active");
+                    }
+                }
+            });
+            stars[i].addEventListener("mouseout", function() {
+                var value = ratingInput.value;
+                for (var j = 0; j < stars.length; j++) {
+                    if (j < value) {
+                        stars[j].classList.add("active");
+                    } else {
+                        stars[j].classList.remove("active");
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>

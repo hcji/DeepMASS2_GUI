@@ -12,8 +12,8 @@ import pandas as pd
 from core.pycdk import IsotopeFromString, IsotopeSimilarity, getFormulaExactMass
 from core.annotating.subformula.mass_spectrum import MassSpectrum
 
-
 def check_inputs(s):
+    print(s)
     if s.get('annotation') is None:
         return False
     elif s.isotopic_pattern is None:

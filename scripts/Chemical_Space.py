@@ -6,19 +6,19 @@ Created on Thu Sep  7 08:49:29 2023
 """
 
 
-import umap
-import hnswlib
 import pickle
+
+import hnswlib
+import matchms.filtering as msfilters
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
-import matchms.filtering as msfilters
-from sklearn.preprocessing import scale
-from sklearn.decomposition import PCA
-from matchms.importing import load_from_mgf
+import umap
 from gensim.models import Word2Vec
+from matchms.importing import load_from_mgf
 from rdkit import Chem
 from rdkit.Chem import DataStructs, AllChem, Draw
+from sklearn.preprocessing import scale
 from spec2vec import SpectrumDocument
 from spec2vec.vector_operations import calc_vector
 

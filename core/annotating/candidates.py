@@ -7,9 +7,10 @@ Created on Wed Nov 15 09:51:53 2023
 
 
 import json
-import requests
+
 import numpy as np
 import pandas as pd
+import requests
 from bs4 import BeautifulSoup
 from rdkit import Chem
 from rdkit.Chem import AllChem

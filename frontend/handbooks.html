@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>manual</title>
+    <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <link href="https://cdn.bootcdn.net/ajax/libs/layui/2.8.17/css/layui.min.css" rel="stylesheet"
+          crossorigin="anonymous" referrerpolicy="no-referrer">
+    <script src="https://cdn.bootcdn.net/ajax/libs/layui/2.8.17/layui.min.js" crossorigin="anonymous"
+            referrerpolicy="no-referrer"></script>
+    <link href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            overflow: auto;
+            background: #1e1e1e;
+        }
+
+        canvas {
+            position: fixed;
+            z-index: 1;
+        }
+
+        #content {
+            position: absolute;
+            z-index: 2;
+            color: white;
+            padding: 20px;
+            /*left: 50%;*/
+            /*top: 50%;*/
+            /*transform: translate(-50%, -50%);*/
+        }
+
+        h1 {
+            color: #00FF00;
+            margin-left: 20px;
+            text-align: center;
+        }
+
+
+        p {
+            line-height: 1.5;
+            margin-left: 20px;
+            text-align: center;
+        }
+
+        h4 {
+            margin-left: 20px;
+        }
+
+        .container {
+            margin: 20px auto;
+            width: 80%;
+            /*background-color: #fff;*/
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            align-items: center;
+        }
+
+
+        .header h1 {
+            font-size: 37px;
+            font-weight: bold;
+            color: #ffffff;
+        }
+
+        .content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .content img {
+            width: 60%;
+            height: auto;
+            border: none;
+            border-radius: 5px;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .content ul {
+            width: 35%;
+            list-style: none;
+            padding: 0;
+        }
+
+        .content ul li {
+            margin: 10px 0;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            /*background-color: #f9f9f9;*/
+        }
+
+        .content ul li span {
+            font-weight: bold;
+            color: #1E9FFF;
+            border: none;
+        }
+
+    </style>
+</head>
+<body>
+<div id="content">
+    <h1>Manual</h1>
+    <p>This is a simple manual that introduces the basic functions and operation methods of mass spectrometry
+        identification.</p>
+    <div class="container">
+        <div class="content">
+            <img src="icon/document_ui_1.png" alt="website">
+            <ul>
+                <li><span>1. Upload file</span>：Requires you to upload a file in MGF format</li>
+                <li><span>2. Identification methods</span>：Choose one of the two different identification methods, and
+                    the
+                    corresponding results will be generated later
+                </li>
+            </ul>
+        </div>
+        <!--        <hr style="border-color: #b2efd3; box-shadow: 0 0 10px #69d0ef;">-->
+        <div class="content">
+            <img src="icon/document_ui_2.png" alt="website">
+
+            <ul>
+                <li><span>3. Navigator</span>：Choose one, and the corresponding results will be generated later</li>
+                <li><span>4. Formula Finder</span>：Choose one, and the corresponding results will be generated later
+                </li>
+                <li><span>5. Structure Finder</span>：Choose one, and the corresponding results will be generated later
+                </li>
+                <li><span>6. Reference Spectrums</span>：Choose one, and the corresponding results will be generated
+                    later
+                </li>
+                <li><span>7. Spectrum | structure | Information</span>：Check out the different build results</li>
+                <li><span>8. Save</span>：Choose to save all or one</li>
+            </ul>
+        </div>
+    </div>
+
+</div>
+<canvas id="rainCanvas"></canvas>
+<script>
+    var canvas = document.getElementById('rainCanvas');
+    var ctx = canvas.getContext('2d');
+
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    var raindrops = [];
+
+    function Raindrop() {
+        this.x = Math.random() * canvas.width;
+        this.y = Math.random() * canvas.height;
+        this.length = Math.random() * 5 + 5; // 雨滴长度
+        this.opacity = Math.random() * 0.5 + 0.5;
+        this.speed = Math.random() * 10 + 10; // 增加雨滴下落速度
+    }
+
+    Raindrop.prototype.fall = function () {
+        this.y += this.speed;
+        // 移除速度增加部分以保持雨滴形状不变
+
+        if (this.y > canvas.height) {
+            this.y = -this.length;
+            this.speed = Math.random() * 10 + 10; // 重置速度
+        }
+    };
+
+    Raindrop.prototype.show = function () {
+        ctx.beginPath();
+        ctx.moveTo(this.x, this.y);
+        ctx.lineTo(this.x, this.y + this.length);
+        ctx.strokeStyle = 'rgba(0, 100, 0' + this.opacity + ')'; // 墨绿色
+        ctx.lineWidth = 2; // 雨滴宽度
+        ctx.stroke();
+    };
+
+    function createRain() {
+        for (var i = 0; i < 300; i++) { // 增加雨滴数量以使其更密集
+            raindrops.push(new Raindrop());
+        }
+    }
+
+    function drawRain() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        for (var i = 0; i < raindrops.length; i++) {
+            raindrops[i].fall();
+            raindrops[i].show();
+        }
+    }
+
+    createRain();
+    setInterval(drawRain, 30); // 减少间隔时间以加快动画速度
+</script>
+</body>
+</html>

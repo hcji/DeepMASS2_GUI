@@ -14,6 +14,7 @@ If not, see <https://www.gnu.org/licenses/>.
 
 
 import itertools
+
 from core.annotating.subformula.formula import Formula, FormulaGenerator
 
 

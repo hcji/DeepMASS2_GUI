@@ -6,8 +6,9 @@ Created on Tue Nov 14 15:53:12 2023
 """
 
 
-import numpy as np
 from typing import Optional
+
+import numpy as np
 from matchms.Spectrum import Fragments
 from matchms.Spectrum import Spectrum as mSpectrum
 

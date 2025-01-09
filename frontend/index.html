@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8"/>
+    <title>DeepMass</title>
+    <link rel="icon" href="img/DeepMass.ico">
+    <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/3.4.1/css/bootstrap.min.css"
+          integrity="sha384-HSMxcRTRxnN+Bdg0JdbxYKrThecOKuH5zCYotlSAcp1+c8xmyTe9GYg1l9a69psu" crossorigin="anonymous">
+    <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js"
+            integrity="sha384-aJ21OjlMXNL5UyIl/XNwTMqvzeRMZH2w8c5cRVpzpU8Y5bApTppSuUkhZXN0VxHd" crossorigin="anonymous">
+    </script>
+
+</head>
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    a {
+        text-decoration: none;
+        color: black;
+    }
+
+    a:hover {
+        text-decoration: none;
+    }
+
+    li {
+        list-style-type: none;
+    }
+
+
+    .top {
+        padding: 0 15px;
+        height: 50px;
+        width: 100%;
+        box-sizing: border-box;
+        background-color: rgb(64, 158, 255);
+    }
+
+    .tmic-banner {
+        position: relative;
+        height: 60px;
+        background-image: url("icon/1.jpg"), url("icon/2.jpg");
+        background-repeat: no-repeat, no-repeat;
+        background-size: 264px 60px, 264px 60px;
+        background-position: left, right;
+        background-color: #e4f8fc;
+    }
+
+    .home-banner {
+        position: relative;
+        width: 100%;
+        overflow-x: hidden;
+    }
+
+    .banner {
+        height: 80%;
+        width: 100%;
+    }
+
+    .banner-text {
+        font-family: 'Maven Pro', sans-serif;
+        position: absolute;
+        top: 25%;
+        height: 50%;
+        background-color: rgba(255, 255, 255, 0.59);
+        width: 100%;
+    }
+
+    .banner-logo {
+        height: 90%;
+        margin-top: 1%;
+        margin-left: 10%;
+        float: left;
+    }
+
+    .link-bar {
+        height: 10%;
+        float: right;
+        background-color: rgba(64, 158, 255, 0.83);
+        display: table;
+        white-space: nowrap;
+        padding: 1%;
+        margin-top: 3%;
+        position: relative;
+        width: 2px;
+        overflow: hidden;
+    }
+
+    .home-banner .banner-text .link-bar a {
+        box-sizing: border-box;
+        padding: 1% 3%;
+        color: white;
+        display: table-cell;
+        vertical-align: middle;
+    }
+
+    .home-banner .banner-text .link-bar a:hover {
+        color: #202752;
+        text-decoration: none;
+    }
+
+    .home-text {
+        margin: 15px;
+    }
+
+    .version-title {
+        font-family: 'Maven Pro', sans-serif;
+        font-weight: bold;
+        text-align: center;
+        color: #409EFF;
+        font-size: 20px;
+        margin-bottom: 10px;
+    }
+
+    .citation-box {
+        margin-top: 25px;
+        color: white;
+        padding: 15px;
+        box-sizing: border-box;
+        background-color: #363D63;
+    }
+
+    .more-about {
+        text-align: right;
+        margin: 5px 0px;
+    }
+
+    .citation-box ol {
+        margin-top: 0;
+        margin-bottom: 10px;
+        padding-left: 40px;
+    }
+
+    /* ol li{
+        list-style: none;
+    } */
+
+
+    h3 {
+        font-size: 16px;
+    }
+
+    .twitter-timeline {
+        color: #337ab7;
+        text-decoration: none;
+    }
+
+    .wishart-twitter {
+        margin-top: 40px;
+    }
+
+    .tmic-banner-content {
+        width: 590px;
+        margin-left: auto;
+        margin-right: auto;
+        height: 60px;
+        padding-left: 15px;
+        padding-right: 15px;
+        padding-top: 10px;
+        padding-bottom: 10px;
+    }
+
+    .tmic-banner-logo {
+        background-color: transparent;
+        background-image: url("icon/4.png");
+        height: 40px;
+        width: 100px;
+        margin-left: 133px;
+        background-size: 100px 40px;
+        display: inline-block;
+    }
+
+    .tmic-banner-vertical-rule {
+        height: 40px;
+        border-left: 2px solid #343433;
+        margin-left: 10px;
+        margin-right: 10px;
+        display: inline-block;
+    }
+
+    .tmic-banner-message-list {
+        position: absolute;
+        width: 280px;
+        height: 40px;
+        display: inline-block;
+    }
+
+    .tmic-banner-message {
+        position: absolute;
+        line-height: 14px;
+        padding-top: 7px;
+        opacity: 0;
+        color: #343433;
+        display: inline-block;
+        animation: fadeInOut 6s infinite;
+    }
+
+    .tmic-banner-message:not(:first-child) {
+        display: none;
+    }
+
+    @keyframes fadeInOut {
+        0% {
+            opacity: 0;
+        }
+
+        25% {
+            opacity: 1;
+        }
+
+        50% {
+            opacity: 1;
+        }
+
+        75% {
+            opacity: 1;
+        }
+
+        100% {
+            opacity: 0;
+        }
+    }
+
+    /* .navbar-icon {
+        float: left;
+        display: block;
+        margin: 10px 5px 10px 0px;
+        background-image: url("img/DeepMass.ico");
+        background-size: 20px 30px;
+        height: 30px;
+        width: 20px;
+    } */
+
+    .navbar-brand {
+        font-size: 28px !important;
+        float: left;
+        display: block;
+        height: 48px;
+        font-weight: bold;
+        padding: 15px 5px;
+        margin-left: 0px !important;
+        color: #fff;
+    }
+
+    .navbar-header {
+        margin: 0;
+    }
+
+    .navbar-nav > li {
+        margin-right: 10px;
+    }
+
+    .navbar-nav > li > a {
+        color: #fff;
+        font-size: 15px;
+    }
+
+    .navbar-nav > li > a:hover {
+        background-color: transparent;
+        color: #000;
+    }
+
+    .navbar-nav > li > a:focus {
+        background-color: #6943f3;
+        color: #92bbea;
+    }
+
+    .btn {
+        background-color: #202752;
+        border: 1px solid #202752;
+        color: #fff;
+        margin-left: 5px;
+    }
+
+    .btn:hover {
+        background-color: #171d3f;
+        border: 1px solid #171d3f;
+        color: #fff;
+
+    }
+
+    .dropdown-item {
+        color: #4aaacc;
+        text-decoration: none;
+
+    }
+
+    .dropdown-item:hover {
+        color: #4c7aaf;
+
+
+    }
+
+    .dropdown-menu {
+        background-color: rgba(240, 250, 255, 0.76);
+        color: #f8f7f6;
+    }
+
+    @keyframes shake {
+        0% {
+            transform: translateX(0);
+        }
+        25% {
+            transform: translateX(-5px);
+        }
+        50% {
+            transform: translateX(5px);
+        }
+        75% {
+            transform: translateX(-5px);
+        }
+        100% {
+            transform: translateX(0);
+        }
+    }
+
+    @keyframes rotate {
+        0% {
+            transform: rotate(0);
+        }
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+
+    @keyframes blink {
+        0% {
+            opacity: 1;
+        }
+        50% {
+            opacity: 0;
+        }
+        100% {
+            opacity: 1;
+        }
+    }
+
+    @keyframes bounce {
+        0%, 20%, 50%, 80%, 100% {
+            transform: translateY(0);
+        }
+        40% {
+            transform: translateY(-30px);
+        }
+        60% {
+            transform: translateY(-15px);
+        }
+    }
+
+    @keyframes color-change {
+        0% {
+            color: #58e3c2;
+        }
+        50% {
+            color: #faf2d0;
+        }
+        100% {
+            color: #aaece6;
+        }
+    }
+
+    @keyframes swing {
+        0% {
+            transform: rotate(0);
+        }
+        10% {
+            transform: rotate(15deg);
+        }
+        20% {
+            transform: rotate(-10deg);
+        }
+        30% {
+            transform: rotate(5deg);
+        }
+        40% {
+            transform: rotate(-5deg);
+        }
+        50% {
+            transform: rotate(3deg);
+        }
+        60% {
+            transform: rotate(-3deg);
+        }
+        70% {
+            transform: rotate(2deg);
+        }
+        80% {
+            transform: rotate(-2deg);
+        }
+        90% {
+            transform: rotate(1deg);
+        }
+        100% {
+            transform: rotate(0);
+        }
+    }
+
+
+    .dropdown-item {
+        transition: transform 0.3s;
+    }
+
+    .dropdown-item:hover,
+    .dropdown-item:focus {
+        transform: translateY(-5px);
+        background-color: rgba(154, 205, 50, 0.94) !important;
+        font-size: 20px;
+        color: black;
+
+
+    }
+</style>
+<body>
+<div>
+    <div class="top">
+        <div class="navbar-header">
+
+            <a class="navbar-brand" data-no-turbolink="true" href="http://218.245.102.112:12341/">DeepMass</a>
+        </div>
+
+        <div class="navbar-collapse collapse" id="main-nav" aria-expanded="false" style="height: 0.8px;">
+            <ul class="nav navbar-nav">
+
+
+                <li class="dropdown">
+                    <a class="dropdown-toggle" data-toggle="dropdown" href="#">Link <b
+                            class="caret"></b></a>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item"
+                               href="https://www.agis.org.cn/kydw/kydwyjzx/zxjsyjzx/00358335c1a44a9f83fd7918cfc225ec.htm">Links
+                            to Papers</a></li>
+                        <li><a class="dropdown-item"
+                               href="https://www.agis.org.cn/kydw/kydwyjzx/zxjsyjzx/00358335c1a44a9f83fd7918cfc225ec.htm">Research
+                            Groups</a></li>
+                        <!--                    <a class="dropdown-item" href="#">Data Versions</a>-->
+                        <li><a class="dropdown-item" href="https://github.com/hcji/DeepMASS2_GUI/invitations">GitHub</a>
+                        </li>
+                    </ul>
+                </li>
+
+
+                <li class="dropdown">
+                    <a class="dropdown-toggle" data-toggle="dropdown" href="#">About <b
+                            class="caret"></b>
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li>
+                            <a class="dropdown-item" href="handbooks.html">Handbook</a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="introduce.html">Product Introduction</a>
+                        </li>
+                        <li>
+                            <!--                            <a class="dropdown-item" href="http://218.245.102.112:7860/">User Reviews</a>-->
+                        </li>
+                    </ul>
+
+
+                </li>
+
+                <!--                <li class="dropdown">-->
+                <!--                    <a class="dropdown-toggle" data-toggle="dropdown" href="#">Search <b-->
+                <!--                            class="caret"></b></a>-->
+
+
+                <!--                </li>-->
+                <!--                <li><a href="#">Downloads</a></li>-->
+                <!--                <li class="dropdown"><a class="dropdown-toggle" data-toggle="dropdown" href="#">About <b-->
+                <!--                        class="caret"></b></a>-->
+
+                <!--                </li>-->
+                <li><a data-no-turbolink="true" href="contactus.html">Contact Us</a></li>
+                <li><a data-no-turbolink="true" href="register.html">Register</a></li>
+            </ul>
+            <!--            <form class="navbar-form navbar-right" accept-charset="UTF-8" method="get">-->
+            <!--                <input name="utf8" type="hidden" value="✓">-->
+            <!--                <div class="form-group"><span class="search-tooltip tooltip-format" data-html="true"-->
+            <!--                                              data-placement="left" data-toggle="tooltip" title=""-->
+            <!--                                              data-original-title=""><span-->
+            <!--                        class="glyphicon glyphicon-question-sign"> </span></span></div>-->
+            <!--                <div class="form-group"><input type="text" name="query" id="query"-->
+            <!--                                               class="search-query form-control input-sm" placeholder="Search"></div>-->
+            <!--                <div class="form-group"><select name="searcher" id="searcher" class="form-control input-sm">-->
+            <!--                    <option value="metabolites">metabolites</option>-->
+            <!--                    <option value="diseases">diseases</option>-->
+            <!--                    <option value="pathways">pathways</option>-->
+            <!--                    <option value="proteins">proteins</option>-->
+            <!--                    <option value="reactions">reactions</option>-->
+            <!--                </select></div>-->
+            <!--                <button name="button" type="submit"-->
+            <!--                        class="btn btn-default btn-sm btn-search"><span class="glyphicon glyphicon-search"> </span>-->
+            <!--                    Search-->
+            <!--                </button>-->
+            <!--            </form>-->
+        </div>
+    </div>
+    <div class="home-banner">
+        <img class="banner" src="icon/6.jpg"/>
+        <div class="banner-text">
+            <img class="banner-logo" src="icon/DeepMass.ico" alt="DeepMass logo"/>
+            <div class="link-bar" id="one" style="right: 0%;width: 60%;">
+                <div class="link-text">
+                    <a href="http://218.245.102.112:12341/">Compound Identification <span
+                            class="glyphicon glyphicon-chevron-right">
+								</span><span class="glyphicon glyphicon-chevron-right"> </span></a>
+                </div>
+            </div>
+            <div class="link-bar" id="two" style="right: 0%;width: 50%;">
+                <div class="link-text">
+                    <a href="introduce.html">Product Introduction <span class="glyphicon glyphicon-chevron-right">
+								</span><span class="glyphicon glyphicon-chevron-right"> </span></a>
+                </div>
+            </div>
+            <div class="link-bar" id="three" style="right: 0%;width: 40%;">
+                <div class="link-text">
+                    <a href="contactus.html">Contact Us <span class="glyphicon glyphicon-chevron-right"> </span><span
+                            class="glyphicon glyphicon-chevron-right"> </span></a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="home-text">
+        <div class="row" style="margin: 0;">
+            <div class="intro">
+                <div class="version-title">Welcome to DeepMass Version 2.0</div>
+                DeepMASS2 is a cross-platform GUI software tool, which enables deep-learning based metabolite
+                annotation via semantic similarity analysis of mass spectral language. This approach enables the
+                prediction of structurally related metabolites for the unknown compounds. By considering the
+                chemical space, these structurally related metabolites provide valuable information about the
+                potential location of the unknown metabolites and assist in ranking candidates obtained from
+                molecular structure databases.
+
+                <div class="more-about">
+                    <a href="#" style="color: #337ab7;">More about the DeepMass <span
+                            class="glyphicon glyphicon-circle-arrow-right"> </span> </a>
+                </div>
+                <div class="citation-box">
+                    <h3>Citing the DeepMass software:</h3>
+                    <ol>
+                        <li> Yang, Q.#; Ji, H.#; Xu, Z.; Li, Y.; Wang, P.; Sun, J.; Fan, X.; Zhang, H.; Lu,
+                            H.; Zhang, Z. Ultra-Fast and Accurate Electron Ionization Mass Spectrum Matching for
+                            Compound Identification with Million-Scale in-Silico Library. Nat. Commun. 2023, 14
+                            (1), 3722. (#Co-first author)
+                        </li>
+                        <li> Ji, H.; Xu, Y.; Lu, H.; Zhang, Z. Deep MS/MS-Aided Structural-Similarity Scoring
+                            for Unknown Metabolite Identification. Anal. Chem. 2019, 91 (9), 5629–5637.
+                        </li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div></div>
+</div>
+
+</body>
+</html>

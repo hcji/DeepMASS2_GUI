@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Demo</title>
+
+    <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <link href="https://cdn.bootcdn.net/ajax/libs/layui/2.8.17/css/layui.min.css" rel="stylesheet"
+          crossorigin="anonymous" referrerpolicy="no-referrer">
+    <script src="https://cdn.bootcdn.net/ajax/libs/layui/2.8.17/layui.min.js" crossorigin="anonymous"
+            referrerpolicy="no-referrer"></script>
+    <link href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+            /*background: linear-gradient(45deg, rgba(78, 213, 176, 0.89), rgba(176, 214, 225, 0.61), rgba(208, 221, 225, 0.75), rgba(243, 212, 132, 0.73));*/
+            /*background: linear-gradient(to bottom left, rgba(213, 189, 29, 0.82), rgba(191, 236, 200, 0.62), rgba(148, 195, 225, 0.73), rgba(195, 183, 213, 0.72), rgb(225, 34, 23));*/
+            /*background: radial-gradient(closest-side, #88e3d2, rgba(0, 0, 255, 0));*/
+            /*background-size: 400% 400%;*/
+            /*animation: gradientBG 10s ease infinite;*/
+            /*font-weight: bold;*/
+
+            /*background-image: radial-gradient(closest-side, rgba(215, 202, 239, 0.79), rgba(235, 105, 78, 0));*/
+            /*background-size: 130vw 130vh;*/
+            /*background-position: -80vw -80vh;*/
+
+        }
+
+        .radial-gradient-demo {
+            background-color: rgb(240, 245, 252);
+            background-image: radial-gradient(closest-side, rgb(240, 245, 252), rgba(235, 105, 78, 0)), radial-gradient(closest-side, rgba(177, 215, 146, 0.9), rgba(243, 11, 164, 0)), radial-gradient(closest-side, rgb(255, 248, 220), rgba(240, 245, 252, 0)), radial-gradient(closest-side, rgba(222, 157, 0, 0.2), rgba(240, 245, 252));
+            background-size: 130vw 130vh, 120vw 120vh, 100vw 150vh, 120vw 130vh;
+            background-position: -80vw -80vh, 30vw -20vh, -20vw 20vh, 30vw 20vh;
+            background-repeat: no-repeat;
+            animation: 15s moiveAnimation infinite;
+        }
+
+        @keyframes moiveAnimation {
+            0%,
+            100% {
+                background-size: 130vw 130vh, 120vw 120vh, 100vw 150vh, 120vw 130vh;
+                background-position: -80vw -80vh, 30vw -20vh, -20vw 20vh, 30vw 20vh;
+            }
+            25% {
+                background-size: 120vw 120vh, 130vw 150vh, 130vw 120vh, 100vw 110vh;
+                background-position: -30vw -30vh, 40vw -10vh, 0vw 10vh, -10vw 20vh;
+            }
+            50% {
+                background-size: 130vw 130vh, 140vw 100vh, 100vw 150vh, 90vw 110vh;
+                background-position: 10vw -60vh, 20vw 10vh, 10vw 30vh, 10vw -20vh;
+            }
+            75% {
+                background-size: 140vw 140vh, 100vw 130vh, 100vw 150vh, 130vw 110vh;
+                background-position: -70vw -70vh, 0vw -10vh, 30vw -20vh, 20vw 30vh;
+            }
+        }
+
+
+        p {
+            color: #e3b315;
+            font-family: fangsong;
+        }
+
+        @keyframes gradientBG {
+            0% {
+                background-position: 0% 50%;
+            }
+            50% {
+                background-position: 100% 50%;
+            }
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+
+        .contact-container {
+            background-color: rgb(240, 243, 246);
+            padding: 20px;
+            border-radius: 300px;
+            box-shadow: 2px 2px 10px rgba(162, 236, 236, 0.69);
+            text-align: center;
+            animation: fadeIn 2s ease-in-out;
+            width: 500px;
+            height: 500px;
+
+
+        }
+
+        .contact-info {
+            margin-top: 20px;
+            opacity: 0;
+            animation: slideIn 1s forwards;
+        }
+
+        .contact-info p {
+            margin: 10px 0;
+            color: #333;
+        }
+
+        .contact-info a {
+            color: #007bff;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .contact-info a:hover {
+            color: #0056b3;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .demo-reg-container {
+            width: 320px;
+            margin: 21px auto 0;
+        }
+
+        .demo-reg-other .layui-icon {
+            position: relative;
+            display: inline-block;
+            margin: 0 2px;
+            top: 2px;
+            font-size: 26px;
+        }
+    </style>
+
+
+</head>
+<body class="radial-gradient-demo">
+<form class="layui-form" id="addForm">
+    <div class="demo-reg-container">
+        <div class="layui-form-item">
+            <div class="layui-row">
+                <div class="layui-col-xs7">
+                    <div class="layui-input-wrap">
+                        <div class="layui-input-prefix">
+                            <i class="layui-icon layui-icon-email"></i>
+                        </div>
+                        <input type="text" name="contact_info" value="" lay-verify="required|email" placeholder="email"
+                               lay-reqtext="please enter email" autocomplete="off" class="layui-input"
+                               id="reg-cellphone">
+                    </div>
+                </div>
+                <div class="layui-col-xs5">
+                    <div style="margin-left: 11px;">
+                        <button type="button" class="layui-btn layui-btn-fluid " onclick="mail()"
+                                lay-on="reg-get-vercode" name="btnSendCode" id="btnSendCode">Get verify code
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-input-wrap">
+                <div class="layui-input-prefix">
+                    <i class="layui-icon layui-icon-vercode"></i>
+                </div>
+                <input type="text" name="vercode" value="" lay-verify="required" placeholder="verification code"
+                       lay-reqtext="please enter verification code" autocomplete="off" class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-input-wrap">
+                <div class="layui-input-prefix">
+                    <i class="layui-icon layui-icon-password"></i>
+                </div>
+                <input type="password" name="passwd" value="" lay-verify="required" placeholder="password"
+                       autocomplete="off" class="layui-input" id="reg-password" lay-affix="eye">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-input-wrap">
+                <div class="layui-input-prefix">
+                    <i class="layui-icon layui-icon-password"></i>
+                </div>
+                <input type="password" name="confirmPassword" value="" lay-verify="required|confirmPassword"
+                       placeholder="Confirm  password" autocomplete="off" class="layui-input" lay-affix="eye">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-input-wrap">
+                <div class="layui-input-prefix">
+                    <i class="layui-icon layui-icon-username"></i>
+                </div>
+                <input type="text" name="name" value="" lay-verify="required" placeholder="nickname" autocomplete="off"
+                       class="layui-input" lay-affix="clear">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <input type="checkbox" name="agreement" lay-verify="required" lay-skin="primary" title="Agree">
+            <a href="#terms" target="_blank" style="position: relative; top: 6px; left: -15px;">
+                <ins>User Agreement</ins>
+            </a>
+        </div>
+        <div class="layui-form-item">
+            <button class="layui-btn layui-btn-fluid " lay-submit lay-filter="demo-reg">register</button>
+        </div>
+        <a href="http://218.245.102.112:12341/">Login to existing account</a>
+    </div>
+</form>
+
+<script src="./layui/layui.js"></script>
+<script src="https://cdn.bootcdn.net/ajax/libs/axios/1.5.0/axios.js"></script>
+<script src="https://cdn.staticfile.org/jquery/1.10.2/jquery.min.js"></script>
+<script>
+    layui.use(function () {
+        var $ = layui.$;
+        var form = layui.form;
+        var layer = layui.layer;
+        var util = layui.util;
+
+        // 自定义验证规则
+        form.verify({
+            // 确认密码
+            confirmPassword: function (value, item) {
+                var passwordValue = $('#reg-password').val();
+                if (value !== passwordValue) {
+                    return 'The two password inputs are inconsistent';
+                }
+            }
+        });
+
+        // 提交事件
+        form.on('submit(demo-reg)', function (data) {
+            var field = data.field; // 获取表单字段值
+
+            // 是否勾选同意
+            if (!field.agreement) {
+                layer.msg('您必须勾选同意用户协议才能注册');
+                return false;
+            }
+
+            var json = JSON.stringify(field);
+            
+            $.ajax({
+                url: 'http://218.245.102.112:8000/register', // 服务器地址
+                type: 'POST',           // 请求方式
+                contentType: 'application/json;', // 设置请求内容类型
+                data: json, // 将JSON对象转换为字符串并发送
+                dataType: 'json',       // 预期服务器返回的数据类型
+                success: function (res) {
+                    // 请求成功后的回调函数
+                    console.log(res); // 打印返回的数据
+                    // 在这里你可以根据返回的数据进行页面更新等操作
+                    if (res['msg'] == "注册成功"){
+                        window.open('http://218.245.102.112:12341/', '_self')
+                    }
+
+                },
+                error: function (err) {
+                    // 请求失败后的回调函数
+                    console.error(err); // 打印错误信息
+                }
+            });
+
+
+
+            return false; // 阻止默认 form 跳转
+        });
+    });
+</script>
+<script>
+
+    var $ = layui.jquery, element = layui.element; //Tab的切换功能，切换事件监听等，需要依赖element模块
+    var form = layui.form;
+
+
+    var InterValObj; //timer变量，控制时间
+    var count = 60; //间隔函数，1秒执行
+    var curCount;//当前剩余秒数
+    //发送验证码
+    function mail() {
+        curCount = count;
+        const email = document.getElementsByName("contact_info")[0].value;
+
+        layer.msg('请稍后');
+        document.getElementById("btnSendCode").setAttribute("disabled", "true");//设置按钮为禁用状态
+        $('#btnSendCode').addClass('layui-btn-disabled');
+        $('#btnSendCode').text(curCount + "秒后重获");
+        InterValObj = window.setInterval(SetRemainTime, 1000); // 启动计时器timer处理函数，1秒执行一次
+        $.get(`http://218.245.102.112:8000/sendmail?email=${email}`);
+
+    }
+
+    //timer处理函数
+    function SetRemainTime() {
+        if (curCount == 0) {
+            $('#btnSendCode').removeClass('layui-btn-disabled');
+            $('#btnSendCode').text("重获验证码");
+            window.clearInterval(InterValObj);// 停止计时器
+            document.getElementById("btnSendCode").removeAttribute("disabled");//移除禁用状态改为可用
+        } else {
+            curCount--;
+            $('#btnSendCode').text(curCount + "秒后重获");
+        }
+    }
+</script>
+</body>
+</html>
+</body>
+</html>
