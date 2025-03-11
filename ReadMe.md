@@ -15,21 +15,30 @@ https://github.com/hcji/DeepMASS2_GUI/assets/17610691/16589373-3c8f-4e85-9e7b-41
 Please follow the following installation steps:
 
 1. Install [Anaconda](https://www.anaconda.com/)  or [Miniconda](https://docs.conda.io/en/latest/miniconda.html)   
-2. Create a new conda environment and activate:
 
-        conda create -n deepmass python=3.8.13
-        conda activate deepmass
-
-3. Download the [lastest released version](https://github.com/hcji/DeepMASS2_GUI/tags) of source codes, unzip, enter:
+2. Download the [lastest released version](https://github.com/hcji/DeepMASS2_GUI/tags) of source codes, unzip, enter:
 
         # download and unzip, then,
         cd DeepMASS2_GUI
-    
-4. Install dependency (note, for *MacOS* some dependency may install with conda manually):
 
-        pip install -r requirements.txt
+3. For the installation of dependencies
+   
+   Use the following step for installation:
+
+        conda env create -f environment.yml
+        conda activate deepmass
         
-5. Download the [dependent data](https://github.com/hcji/DeepMASS2_GUI/releases/tag/v0.99.1).    
+   Or follow the steps below:
+
+        (1) Create a new conda environment and activate:
+                conda create -n deepmass python=3.8.13
+                conda activate deepmass
+
+        (2) Install dependency (note, for *MacOS* some dependency may install with conda manually):
+
+                pip install -r requirements.txt
+        
+4. Download the [dependent data](https://github.com/hcji/DeepMASS2_GUI/releases/tag/v0.99.1).    
     1) put the following files into *data* folder:
     
                 DeepMassStructureDB-v1.1.csv
@@ -47,7 +56,7 @@ Please follow the following installation steps:
                 Ms2Vec_allGNPSpositive.hdf5.syn1neg.npy
                 Ms2Vec_allGNPSpositive.hdf5.wv.vectors.npy
 
-6. Run DeepMASS
+5. Run DeepMASS
 
         python DeepMASS2.py
 
