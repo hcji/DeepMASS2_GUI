@@ -42,7 +42,8 @@ class EmailSenderService:
         self.dao.commit()
 
     def gen_random_code(self):
-        code = random.sample(list(range(10, 101)), 6)
-        code = list(map(lambda x: str(x), code))
-        code = "".join(code)
+        # code = random.sample(list(range(10, 101)), 6)
+        # code = list(map(lambda x: str(x), code))
+        # code = "".join(code)
+        code = str(random.randint(100000, 999999))
         return code
