@@ -275,7 +275,11 @@
                     console.log(res); // 打印返回的数据
                     // 在这里你可以根据返回的数据进行页面更新等操作
                     if (res['msg'] == "注册成功"){
-                        window.open('http://218.245.102.112:12341/', '_self')
+                        window.open('http://218.245.102.112:12341/', '_self');
+                    } else if (res['msg'] === "用户已经注册") {
+                        layer.msg("该邮箱已注册，请直接登录或使用其它邮箱");
+                    } else {
+                        layer.msg(res['msg']);
                     }
 
                 },
