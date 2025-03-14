@@ -26,3 +26,21 @@ class UserService:
             return {"msg": "用户已经注册"}
         self.dao.add_user(email, password, name)
         return {"msg": "注册成功"}
+
+    def reset_password(self, email, new_password, captcha):
+        """
+        重置密码接口逻辑：
+          1. 验证验证码是否正确
+          2. 检查用户是否存在
+          3. 更新用户密码
+        """
+        validate_flag = CaptchaService().validate(email, captcha)
+        if validate_flag:
+            return {"msg": "验证码错误或已过期"}
+        if not self.dao.query_email_exist(email):
+            return {"msg": "用户不存在"}
+        update_flag = self.dao.update_password(email, new_password)
+        if update_flag:
+            return {"msg": "密码重置成功"}
+        else:
+            return {"msg": "密码重置失败"}

@@ -15,10 +15,11 @@ class CaptchaDAO(BaseDao):
 
     def insert_log(self, email, code):
         # 把验证码存入数据，附带当前时间，email、code、time，实际列名称以数据库为准
-        verify_time = datetime.now().timestamp()
 
-        ed_code = Code(contact_info=email, verify_code=code, verify_time=verify_time)
+        # 先删除同一 email 之前的验证码记录，再添加新记录
         self.session.query(Code).filter(Code.contact_info == email).delete()
+        verify_time = datetime.now().timestamp()
+        ed_code = Code(contact_info=email, verify_code=code, verify_time=verify_time)
         self.session.add(ed_code)
 
     def query_captcha_code(self, email):
