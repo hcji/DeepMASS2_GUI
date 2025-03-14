@@ -37,9 +37,32 @@ class Register(BaseModel):
 
 @app.post("/register")
 def register(reg: Register):
+
+    if reg.passwd != reg.confirmPassword:
+        return JSONResponse({"msg": "两次输入的密码不一致"})
+    
     res = UserService().user_register(
         reg.contact_info, reg.passwd, reg.name, reg.vercode
     )
+    return JSONResponse(res)
+
+
+# 密码重置接口使用的数据模型
+class ResetPassword(BaseModel):
+    contact_info: str
+    vercode: str
+    passwd: str
+    confirmPassword: str
+
+@app.post("/reset_password")
+def reset_password(reg: ResetPassword):
+    print("reset_password 接口参数：", reg)
+    if reg.passwd != reg.confirmPassword:
+        return JSONResponse({"msg": "两次输入的密码不一致"})
+    res = UserService().reset_password(
+        reg.contact_info, reg.passwd, reg.vercode
+    )
+    print("reset_password 返回：", res)
     return JSONResponse(res)
 
 
