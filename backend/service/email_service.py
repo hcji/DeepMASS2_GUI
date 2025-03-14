@@ -37,7 +37,8 @@ class EmailSenderService:
 
     def send_captcha(self,email):
         code = self.gen_random_code()
-        self.dao.insert_log(code, email)
+        # 修正insert_log 方法中传入的参数顺序正确
+        self.dao.insert_log(email, code)
         self.send_mail(email,code)
         self.dao.commit()
 

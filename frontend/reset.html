@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>DeepMASS</title>
+
+    <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <link href="https://cdn.bootcdn.net/ajax/libs/layui/2.8.17/css/layui.min.css" rel="stylesheet" crossorigin="anonymous" referrerpolicy="no-referrer">
+    <script src="https://cdn.bootcdn.net/ajax/libs/layui/2.8.17/layui.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <link href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+        .radial-gradient-demo {
+            background-color: rgb(240, 245, 252);
+            background-image: radial-gradient(closest-side, rgb(240, 245, 252), rgba(235, 105, 78, 0)),
+                              radial-gradient(closest-side, rgba(177, 215, 146, 0.9), rgba(243, 11, 164, 0)),
+                              radial-gradient(closest-side, rgb(255, 248, 220), rgba(240, 245, 252, 0)),
+                              radial-gradient(closest-side, rgba(222, 157, 0, 0.2), rgba(240, 245, 252));
+            background-size: 130vw 130vh, 120vw 120vh, 100vw 150vh, 120vw 130vh;
+            background-position: -80vw -80vh, 30vw -20vh, -20vw 20vh, 30vw 20vh;
+            background-repeat: no-repeat;
+            animation: 15s moiveAnimation infinite;
+        }
+        @keyframes moiveAnimation {
+            0%, 100% {
+                background-size: 130vw 130vh, 120vw 120vh, 100vw 150vh, 120vw 130vh;
+                background-position: -80vw -80vh, 30vw -20vh, -20vw 20vh, 30vw 20vh;
+            }
+            25% {
+                background-size: 120vw 120vh, 130vw 150vh, 130vw 120vh, 100vw 110vh;
+                background-position: -30vw -30vh, 40vw -10vh, 0vw 10vh, -10vw 20vh;
+            }
+            50% {
+                background-size: 130vw 130vh, 140vw 100vh, 100vw 150vh, 90vw 110vh;
+                background-position: 10vw -60vh, 20vw 10vh, 10vw 30vh, 10vw -20vh;
+            }
+            75% {
+                background-size: 140vw 140vh, 100vw 130vh, 100vw 150vh, 130vw 110vh;
+                background-position: -70vw -70vh, 0vw -10vh, 30vw -20vh, 20vw 30vh;
+            }
+        }
+        .contact-container {
+            background-color: rgb(240, 243, 246);
+            padding: 20px;
+            border-radius: 300px;
+            box-shadow: 2px 2px 10px rgba(162, 236, 236, 0.69);
+            text-align: center;
+            animation: fadeIn 2s ease-in-out;
+            width: 500px;
+            height: 500px;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .demo-reg-container {
+            width: 320px;
+            margin: 21px auto 0;
+        }
+    </style>
+</head>
+<body class="radial-gradient-demo">
+<form class="layui-form" id="addForm">
+    <div class="demo-reg-container">
+        <!-- Email input with Get Code button -->
+        <div class="layui-form-item">
+            <div class="layui-row">
+                <div class="layui-col-xs7">
+                    <div class="layui-input-wrap">
+                        <div class="layui-input-prefix">
+                            <i class="layui-icon layui-icon-email"></i>
+                        </div>
+                        <input type="text" name="contact_info" value="" lay-verify="required|email" placeholder="email" lay-reqtext="please enter email" autocomplete="off" class="layui-input" id="reg-cellphone">
+                    </div>
+                </div>
+                <div class="layui-col-xs5">
+                    <div style="margin-left: 11px;">
+                        <button type="button" class="layui-btn layui-btn-fluid" onclick="mail()" lay-on="reg-get-vercode" name="btnSendCode" id="btnSendCode">Get verify code</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Verification code input -->
+        <div class="layui-form-item">
+            <div class="layui-input-wrap">
+                <div class="layui-input-prefix">
+                    <i class="layui-icon layui-icon-vercode"></i>
+                </div>
+                <input type="text" name="vercode" value="" lay-verify="required" placeholder="verification code" lay-reqtext="please enter verification code" autocomplete="off" class="layui-input">
+            </div>
+        </div>
+        <!-- Password input -->
+        <div class="layui-form-item">
+            <div class="layui-input-wrap">
+                <div class="layui-input-prefix">
+                    <i class="layui-icon layui-icon-password"></i>
+                </div>
+                <input type="password" name="passwd" value="" lay-verify="required" placeholder="password" autocomplete="off" class="layui-input" id="reg-password" lay-affix="eye">
+            </div>
+        </div>
+        <!-- Confirm password input -->
+        <div class="layui-form-item">
+            <div class="layui-input-wrap">
+                <div class="layui-input-prefix">
+                    <i class="layui-icon layui-icon-password"></i>
+                </div>
+                <input type="password" name="confirmPassword" value="" lay-verify="required|confirmPassword" placeholder="Confirm password" autocomplete="off" class="layui-input" lay-affix="eye">
+            </div>
+        </div>
+        <!-- Removed: Nickname and User Agreement sections -->
+
+        <!-- Register button -->
+        <div class="layui-form-item">
+            <button class="layui-btn layui-btn-fluid" lay-submit lay-filter="demo-reg">reset</button>
+        </div>
+        <div style="margin-bottom: 10px;">
+            <a href="http://218.245.102.112:12341/">Login to existing account</a>
+        </div>
+    </div>
+</form>
+
+<script src="./layui/layui.js"></script>
+<script src="https://cdn.bootcdn.net/ajax/libs/axios/1.5.0/axios.js"></script>
+<script src="https://cdn.staticfile.org/jquery/1.10.2/jquery.min.js"></script>
+<script>
+    layui.use(function () {
+        var $ = layui.$;
+        var form = layui.form;
+        var layer = layui.layer;
+
+        // Custom validation rule for confirming password
+        form.verify({
+            confirmPassword: function (value, item) {
+                var passwordValue = $('#reg-password').val();
+                if (value !== passwordValue) {
+                    return 'The two password inputs are inconsistent';
+                }
+            }
+        });
+
+        // Form submission event
+        form.on('submit(demo-reg)', function (data) {
+            var field = data.field; // Get form field values
+            // Removed: agreement check
+
+            var json = JSON.stringify(field);
+            
+            $.ajax({
+                url: 'http://218.245.102.112:8000/reset_password', // Server URL
+                type: 'POST',           // Request method
+                contentType: 'application/json;', // Set request content type
+                data: json, // Convert JSON object to string and send
+                dataType: 'json',       // Expected data type from server
+                success: function (res) {
+                    console.log(res);
+                    // Handle response data and update page as needed
+                    if (res['msg'] == "密码重置成功"){
+                        window.open('http://218.245.102.112:12341/', '_self');
+                    }
+                },
+                error: function (err) {
+                    console.error(err);
+                }
+            });
+            return false; // Prevent default form submission
+        });
+    });
+
+    // Send verification code function and timer
+    var InterValObj; // Timer variable
+    var count = 60; // Interval time (seconds)
+    var curCount; // Current remaining seconds
+    function mail() {
+        curCount = count;
+        const email = document.getElementsByName("contact_info")[0].value;
+        layer.msg('请稍后');
+        document.getElementById("btnSendCode").setAttribute("disabled", "true"); // Disable button
+        $('#btnSendCode').addClass('layui-btn-disabled');
+        $('#btnSendCode').text(curCount + "秒后重获");
+        InterValObj = window.setInterval(SetRemainTime, 1000); // Start timer
+        $.get(`http://218.245.102.112:8000/sendmail?email=${email}`);
+    }
+    function SetRemainTime() {
+        if (curCount == 0) {
+            $('#btnSendCode').removeClass('layui-btn-disabled');
+            $('#btnSendCode').text("重获验证码");
+            window.clearInterval(InterValObj); // Stop timer
+            document.getElementById("btnSendCode").removeAttribute("disabled"); // Enable button
+        } else {
+            curCount--;
+            $('#btnSendCode').text(curCount + "秒后重获");
+        }
+    }
+</script>
+</body>
+</html>
