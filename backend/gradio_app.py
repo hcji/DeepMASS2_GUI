@@ -1,32 +1,37 @@
+import base64
 import os
 
 import gradio as gr
 
-from backend.service.gradio_service import (
-    show_ref_spectrum,
-    save_identification_csv,
-    show_structure,
-    deepms_click_fn,
-    show_formula,
-    load_files,
-    clear_files,
-    get_structure_data_frame,
-    show_default_ref_spectrum,
-)
+from backend.service.gradio_service import (clear_files, deepms_click_fn,
+                                            get_structure_data_frame,
+                                            load_files,
+                                            save_identification_csv,
+                                            show_default_ref_spectrum,
+                                            show_formula, show_ref_spectrum,
+                                            show_structure)
 from backend.utils.auth import auth_ps
-from backend.utils.plot_utils import (
-    show_mol,
-    show_ref_spectrums,
-    get_reference_table,
-    show_default_mol,
-)
+from backend.utils.plot_utils import (get_reference_table, show_default_mol,
+                                      show_mol, show_ref_spectrums)
 from backend.utils.theme import Seafoam
 
 # matplotlib.use('Agg')
 os.environ["MPLCONFIGDIR"] = os.getcwd() + "/configs/"
 
 seafoam = Seafoam()
+import os
 
+# path = "./frontend/icon/beian.png"
+# print("绝对路径:", os.path.abspath(path))
+# print("文件是否存在:", os.path.exists(path))
+
+"""读取图片并转换为 base64 编码，返回 'data:image/png;base64,...' 形式的字符串"""
+def get_beian_image_as_base64(img_path: str) -> str:
+    
+    with open(img_path, 'rb') as f:
+        data = f.read()
+    base64_str = base64.b64encode(data).decode('utf-8')
+    return f"data:image/png;base64,{base64_str}"
 
 with gr.Blocks(
     title="DeepMS 2", theme=seafoam, css="footer {visibility: hidden}"
@@ -234,6 +239,34 @@ with gr.Blocks(
         inputs=[res_state, target_zip_file_name_state],
         outputs=[download],
     )
+    # 在所有组件之后添加备案信息组件
+    beian_img_src = get_beian_image_as_base64("./frontend/icon/beian.png")
+    # print("**************beian_img_src*************",beian_img_src[:100])
+    gr.HTML(f"""
+    <div style="width:360px; margin:36px auto 0 auto; 
+                display: flex; 
+                align-items: center; 
+                justify-content: center; 
+                gap: 16px; 
+                font-size: 10px;">
+
+        <a href="https://beian.mps.gov.cn/#/query/webSearch?code=43010402002088"
+        target="_blank" rel="noreferrer"
+        style="display: flex; align-items: center; text-decoration: none; color: #a5aaa3;">
+        <img src="{beian_img_src}" alt="公安备案图标"
+                style="width: 13px; height: 13px; margin-right: 4px;">
+        <span>湘公网安备43010402002088号</span>
+        </a>
+
+
+        <a href="https://beian.miit.gov.cn/#/Integrated/index"
+        target="_blank" rel="noreferrer"
+        style="display: flex; align-items: center; text-decoration: none; color: #a5aaa3;">
+        <span>湘ICP备2025102844号-1</span>
+        </a>
+    </div>
+    """)
+
 
 if __name__ == "__main__":
     print("Starting Webui!!!!")
