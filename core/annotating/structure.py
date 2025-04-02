@@ -41,10 +41,16 @@ def calc_deepmass_score(s, p, model, references):
     query_vector = calc_vector(model, SpectrumDocument(s, n_decimals=2), allowed_missing_percentage=100)
     xq = np.array(query_vector).astype('float32')
     I, D = p.knn_query(xq, 300)
-    reference_spectrum = np.array(references)[I[0,:]]
-    reference_spectrum = [s for s in reference_spectrum if s.get('smiles') is not None]
-    reference_smile = [s.metadata['smiles'] for s in reference_spectrum]
-    reference_vector = np.array(p.get_items(I[0, :]))
+
+    raw_reference_spectrum = np.array(references)[I[0, :]]
+    raw_reference_vector = np.array(p.get_items(I[0, :]))
+    # 找到有效的索引：只保留那些在 raw_reference_spectrum 中存在 'smiles' 的记录
+    valid_indices = [i for i, rec in enumerate(raw_reference_spectrum) if rec.get('smiles') is not None]
+    # 同时过滤参考谱、参考向量和距离
+    reference_spectrum = raw_reference_spectrum[valid_indices]
+    reference_vector = raw_reference_vector[valid_indices]
+    reference_smile = [rec.metadata['smiles'] for rec in reference_spectrum]
+
 
     k, reference_fp = [], []
     for i, smi in enumerate(reference_smile):
