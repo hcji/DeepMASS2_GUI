@@ -1,5 +1,5 @@
 # Data
-temp/
+temp/*.png
 *.npy
 *.npz
 *.bin
