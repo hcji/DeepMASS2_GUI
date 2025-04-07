@@ -6,37 +6,37 @@ Created on Fri Sep 30 10:13:32 2022
 """
 
 import os
-import re
-import hnswlib
-import string
-import random
-import shutil
 import pickle
+import random
+import re
+import shutil
+import string
+from itertools import chain
+
+import hnswlib
+import matchms.filtering as msfilters
 import numpy as np
 import pandas as pd
-
-from itertools import chain
-# from PyQt5.Qt import QThread
-from PyQt5.QtCore import Qt, QVariant, QThread
-from PyQt5 import QtCore, QtWidgets, QtGui
-from PyQt5.QtGui import QPixmap
-from PyQt5.QtWidgets import QApplication, QMainWindow, QGridLayout, QLabel
-
-from matplotlib.figure import Figure
-from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
-from matplotlib.backends.backend_qt5 import NavigationToolbar2QT as NavigationToolbar
-
-import matchms.filtering as msfilters
+from gensim.models import Word2Vec
 from hnswlib import Index
+from matplotlib.backends.backend_qt5 import \
+    NavigationToolbar2QT as NavigationToolbar
+from matplotlib.backends.backend_qt5agg import \
+    FigureCanvasQTAgg as FigureCanvas
+from matplotlib.figure import Figure
+from molmass import Formula
+from PyQt5 import QtCore, QtGui, QtWidgets
+# from PyQt5.Qt import QThread
+from PyQt5.QtCore import Qt, QThread, QVariant
+from PyQt5.QtGui import QPixmap
+from PyQt5.QtWidgets import QApplication, QGridLayout, QLabel, QMainWindow
 from rdkit import Chem
 from rdkit.Chem import Draw, rdFMCS
-from molmass import Formula
-from gensim.models import Word2Vec
 
-from uic import main
-from core.Spectrum import Spectrum
-from core.main import identify_unknown, match_spectrum
 from core.importing.load_from_files import load_from_files
+from core.main import identify_unknown, match_spectrum
+from core.Spectrum import Spectrum
+from uic import main
 
 
 class DeepMASS2(QMainWindow, main.Ui_MainWindow):
@@ -396,7 +396,7 @@ class DeepMASS2(QMainWindow, main.Ui_MainWindow):
             self.WarnMsg('No available structures')
             return               
         annotation = self.current_spectrum.metadata['annotation']
-        if len(annotation) == 0:
+        if annotation is None or annotation.empty:
             self.WarnMsg('No available structures')
             return            
         formula = np.unique(annotation['MolecularFormula'])
