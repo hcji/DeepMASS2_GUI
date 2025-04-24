@@ -440,12 +440,12 @@ class DeepMASS2(QMainWindow, Ui_MainWindow):
                         if self.tab_structure.rowCount() > 0:
                             self.tab_structure.setCurrentCell(0, 0)
                             # 4. Reference Spectrum
-                            self.fill_reference_table()
-                            if self.tab_reference.rowCount() > 0:
-                                self.tab_reference.setCurrentCell(0, 0)
-                                # 5. Spectrum 绘图
-                                self.plot_spectrum()
-
+                            if self.current_spectrum.metadata.get('reference'):
+                                self.fill_reference_table()
+                                if self.tab_reference.rowCount() > 0:
+                                    self.tab_reference.setCurrentCell(0, 0)
+                                    # 5. Spectrum 绘图
+                                    self.plot_spectrum()
             except Exception as e:
                 QtWidgets.QMessageBox.critical(self,'Error',f'分布式出错: {e}')
             finally:
