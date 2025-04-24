@@ -651,6 +651,11 @@ class MakeFigure(FigureCanvas):
         mz1, abunds1 = reference.peaks.mz, reference.peaks.intensities
         if loss:
             try:
+                if not hasattr(spectrum, '_losses'):
+                    spectrum._losses = None
+                if not hasattr(reference, '_losses'):
+                    reference._losses = None
+
                 spectrum = msfilters.add_parent_mass(spectrum)
                 spectrum = msfilters.add_losses(spectrum, loss_mz_from=10.0, loss_mz_to=2000.0)
                 reference = msfilters.add_parent_mass(reference)
