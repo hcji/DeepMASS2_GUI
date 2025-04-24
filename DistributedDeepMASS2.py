@@ -536,6 +536,11 @@ class DeepMASS2(QMainWindow, Ui_MainWindow):
         if idx<0: return
         form=self.tab_formula.item(idx,0).text()
         ann=self.current_spectrum.metadata['annotation']
+
+        if ann is None or not hasattr(ann, 'shape') or ann.shape[0] == 0:
+            QtWidgets.QMessageBox.warning(self, 'Warning', 'No available structures for selected formula')
+            return
+
         sub=ann[ann['MolecularFormula']==form].reset_index(drop=True)
         if sub.empty: QtWidgets.QMessageBox.warning(self,'Warning','No structures for selected formula');return
         self._set_table_widget(self.tab_structure,sub)
