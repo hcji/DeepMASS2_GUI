@@ -374,7 +374,7 @@ class DeepMASS2(QMainWindow, Ui_MainWindow):
         return f.isotope.mass
 
     def prompt_server(self):
-        txt,ok=QInputDialog.getText(self,'分布式设置','请输入 IP:Port:')
+        txt,ok=QInputDialog.getText(self,'Distributed system','Please enter IP:Port:')
         if not ok: 
             return
         inp=txt.strip()
@@ -382,18 +382,18 @@ class DeepMASS2(QMainWindow, Ui_MainWindow):
             
             try:
                 ip,pt=inp.split(':');self.server_ip, self.server_port=ip, int(pt)
-                self.butt_IP.setText(f"远程→{ip}:{pt}")
-                QtWidgets.QMessageBox.information(self,'Information',f"分布式模式: {ip}:{pt}")
+                self.butt_IP.setText(f"Connect IP→{ip}:{pt}")
+                QtWidgets.QMessageBox.information(self,'Information',f"Distributed mode: {ip}:{pt}")
                 
                 for b in (self.butt_open, self.butt_run, self.butt_save):
                     b.setEnabled(True)
             except:
-                QtWidgets.QMessageBox.warning(self,'Warning','格式错误，请输入 IP:Port')
+                QtWidgets.QMessageBox.warning(self,'Warning','Format error, please enter IP:Port (e.g. 192.168.1.10:5002)')
 
         else:
             parts = inp.split(':')
             if len(parts) != 2 or not parts[1].isdigit():
-                QtWidgets.QMessageBox.warning(self, 'Warning', '格式错误，请输入 IP:Port（例如 192.168.1.10:6678）')
+                QtWidgets.QMessageBox.warning(self, 'Warning', 'Format error, please enter IP:Port (e.g. 192.168.1.10:5002)')
             
     def load_spectrums(self):
         self._set_busy()
