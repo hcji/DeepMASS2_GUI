@@ -374,7 +374,7 @@ class DeepMASS2(QMainWindow, Ui_MainWindow):
         return f.isotope.mass
 
     def prompt_server(self):
-        txt,ok=QInputDialog.getText(self,'分布式设置','请输入 IP:Port:')
+        txt,ok=QInputDialog.getText(self,'Distributed system','Please enter IP:Port:')
         if not ok: 
             return
         inp=txt.strip()
@@ -382,18 +382,18 @@ class DeepMASS2(QMainWindow, Ui_MainWindow):
             
             try:
                 ip,pt=inp.split(':');self.server_ip, self.server_port=ip, int(pt)
-                self.butt_IP.setText(f"远程→{ip}:{pt}")
-                QtWidgets.QMessageBox.information(self,'Information',f"分布式模式: {ip}:{pt}")
+                self.butt_IP.setText(f"Connect IP→{ip}:{pt}")
+                QtWidgets.QMessageBox.information(self,'Information',f"Distributed mode: {ip}:{pt}")
                 
                 for b in (self.butt_open, self.butt_run, self.butt_save):
                     b.setEnabled(True)
             except:
-                QtWidgets.QMessageBox.warning(self,'Warning','格式错误，请输入 IP:Port')
+                QtWidgets.QMessageBox.warning(self,'Warning','Format error, please enter IP:Port (e.g. 192.168.1.10:5002)')
 
         else:
             parts = inp.split(':')
             if len(parts) != 2 or not parts[1].isdigit():
-                QtWidgets.QMessageBox.warning(self, 'Warning', '格式错误，请输入 IP:Port（例如 192.168.1.10:6678）')
+                QtWidgets.QMessageBox.warning(self, 'Warning', 'Format error, please enter IP:Port (e.g. 192.168.1.10:5002)')
             
     def load_spectrums(self):
         self._set_busy()
@@ -440,12 +440,12 @@ class DeepMASS2(QMainWindow, Ui_MainWindow):
                         if self.tab_structure.rowCount() > 0:
                             self.tab_structure.setCurrentCell(0, 0)
                             # 4. Reference Spectrum
-                            self.fill_reference_table()
-                            if self.tab_reference.rowCount() > 0:
-                                self.tab_reference.setCurrentCell(0, 0)
-                                # 5. Spectrum 绘图
-                                self.plot_spectrum()
-
+                            if self.current_spectrum.metadata.get('reference'):
+                                self.fill_reference_table()
+                                if self.tab_reference.rowCount() > 0:
+                                    self.tab_reference.setCurrentCell(0, 0)
+                                    # 5. Spectrum 绘图
+                                    self.plot_spectrum()
             except Exception as e:
                 QtWidgets.QMessageBox.critical(self,'Error',f'分布式出错: {e}')
             finally:
@@ -536,6 +536,11 @@ class DeepMASS2(QMainWindow, Ui_MainWindow):
         if idx<0: return
         form=self.tab_formula.item(idx,0).text()
         ann=self.current_spectrum.metadata['annotation']
+
+        if ann is None or not hasattr(ann, 'shape') or ann.shape[0] == 0:
+            QtWidgets.QMessageBox.warning(self, 'Warning', 'No available structures for selected formula')
+            return
+
         sub=ann[ann['MolecularFormula']==form].reset_index(drop=True)
         if sub.empty: QtWidgets.QMessageBox.warning(self,'Warning','No structures for selected formula');return
         self._set_table_widget(self.tab_structure,sub)
@@ -651,6 +656,11 @@ class MakeFigure(FigureCanvas):
         mz1, abunds1 = reference.peaks.mz, reference.peaks.intensities
         if loss:
             try:
+                if not hasattr(spectrum, '_losses'):
+                    spectrum._losses = None
+                if not hasattr(reference, '_losses'):
+                    reference._losses = None
+
                 spectrum = msfilters.add_parent_mass(spectrum)
                 spectrum = msfilters.add_losses(spectrum, loss_mz_from=10.0, loss_mz_to=2000.0)
                 reference = msfilters.add_parent_mass(reference)

@@ -9,8 +9,8 @@ DeepMASS2 is a cross-platform GUI software tool, which enables deep-learning bas
 https://github.com/hcji/DeepMASS2_GUI/assets/17610691/16589373-3c8f-4e85-9e7b-41310dfb34b2
 
 ## News
-[10/2024] Using DeepMASS2, we made a web UI interface, check it out! [Website](http://218.245.102.112/)
-
+- [10/2024] Using DeepMASS2, we made a web UI interface, check it out! [Website](http://218.245.102.112/)
+- [04/2025] We've enhanced DeepMASS with a distributed search feature. Curious how it works? See the guide: [Distributed_ReadMe.md](./Distributed_ReadMe.md)
 ## Installation
 Please follow the following installation steps:
 
