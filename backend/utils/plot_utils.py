@@ -39,15 +39,32 @@ _annotation_reverse_kws = {
 
 
 def show_mol(structure_state, cur_spectrum, evt: gr.SelectData):
-    line_num = evt.index[0]
-    return show_default_mol(structure_state, cur_spectrum, line_num)
+    # ① 空值保护
+    if cur_spectrum is None or structure_state is None:
+        return None, None
+    
+    try:
+        if evt is None or evt.index is None:
+            return None, None
 
+        line_num = evt.index[0]
+        return show_default_mol(structure_state, cur_spectrum, line_num)
+    except Exception as e:
+        logging.error(f"Error in show_mol: {e}")
+        return None, None
 
 def show_default_mol(structure_state, cur_spectrum, idx=0):
-    ref_smi = cur_spectrum.metadata["reference"][idx].metadata["smiles"]
-    anno_img, ref_img = plot_2_mol(structure_state, ref_smi)
-    return anno_img, ref_img
-
+    # ① 空值保护
+    if cur_spectrum is None or not hasattr(cur_spectrum, "metadata"):
+        return None, None
+    
+    try:
+        ref_smi = cur_spectrum.metadata["reference"][idx].metadata["smiles"]
+        anno_img, ref_img = plot_2_mol(structure_state, ref_smi)
+        return anno_img, ref_img
+    except Exception as e:
+        logging.error(f"Error in show_default_mol: {e}")
+        return None, None
 
 def get_formula_mass(formula: str):
     f = Formula(formula.replace("-", ""))
@@ -143,44 +160,50 @@ def plot_2_mol(smi_anno, smi_ref, hightlight=True):
 
 
 def show_ref_spectrums(spectrum_state, structure_obj, evt: gr.SelectData):
-    line_num = evt.index[0]
-    return get_reference_table(spectrum_state, structure_obj, line_num)
-
+    try:
+        line_num = evt.index[0]
+        return get_reference_table(spectrum_state, structure_obj, line_num)
+    except Exception as e:
+        logging.error(f"Error in show_ref_spectrum: {e}")
+        return None, None
 
 def get_reference_table(spectrum_state, structure_obj, idx=0):
-    smi_anno = structure_obj["CanonicalSMILES"][idx]
-    current_reference = spectrum_state.metadata["reference"]
-    annotation = spectrum_state.metadata["annotation"]
-    i = np.where(annotation["CanonicalSMILES"].values == smi_anno)[0][0]
-    reference_table = []
-    for s in current_reference:
-        if "smiles" in s.metadata.keys():
-            smiles = s.metadata["smiles"]
-        else:
-            smiles = ""
-        if "compound_name" in s.metadata.keys():
-            name = s.metadata["compound_name"]
-        else:
-            name = smiles
-        if "adduct" in s.metadata.keys():
-            adduct = s.metadata["adduct"]
-        else:
-            adduct = ""
-        if "parent_mass" in s.metadata.keys():
-            parent_mass = s.metadata["parent_mass"]
-        else:
-            parent_mass = ""
-        if "database" in s.metadata.keys():
-            ref_database = s.metadata["database"]
-        else:
-            ref_database = ""
-        reference_table.append([name, adduct, smiles, parent_mass, ref_database])
-    reference_table = pd.DataFrame(
-        reference_table, columns=["name", "adduct", "smiles", "parent_mass", "database"]
-    )  # 创建一个DataFrame对象，用于存储参考表格的数据
+    try:                
+        smi_anno = structure_obj["CanonicalSMILES"][idx]
+        current_reference = spectrum_state.metadata["reference"]
+        annotation = spectrum_state.metadata["annotation"]
+        i = np.where(annotation["CanonicalSMILES"].values == smi_anno)[0][0]
+        reference_table = []
+        for s in current_reference:
+            if "smiles" in s.metadata.keys():
+                smiles = s.metadata["smiles"]
+            else:
+                smiles = ""
+            if "compound_name" in s.metadata.keys():
+                name = s.metadata["compound_name"]
+            else:
+                name = smiles
+            if "adduct" in s.metadata.keys():
+                adduct = s.metadata["adduct"]
+            else:
+                adduct = ""
+            if "parent_mass" in s.metadata.keys():
+                parent_mass = s.metadata["parent_mass"]
+            else:
+                parent_mass = ""
+            if "database" in s.metadata.keys():
+                ref_database = s.metadata["database"]
+            else:
+                ref_database = ""
+            reference_table.append([name, adduct, smiles, parent_mass, ref_database])
+        reference_table = pd.DataFrame(
+            reference_table, columns=["name", "adduct", "smiles", "parent_mass", "database"]
+        )  # 创建一个DataFrame对象，用于存储参考表格的数据
 
-    return reference_table, smi_anno
-
+        return reference_table, smi_anno
+    except Exception as e:
+        logging.error(f"Error in get_reference_table: {e}")
+        return pd.DataFrame(columns=["name", "adduct", "smiles", "parent_mass", "database"]), ""
 
 if __name__ == "__main__":
     print(dpi_config, width_config, length_config)

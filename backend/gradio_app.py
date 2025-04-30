@@ -142,6 +142,8 @@ with gr.Blocks(
             ann_structure_fig,
             ref_structure_fig,
             information_obj,
+            target_zip_file_name_state,  # 确保目标文件名称也被重置
+            download,
         ],
     )
     run_deepms_btn.click(
