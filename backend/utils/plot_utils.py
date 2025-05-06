@@ -205,5 +205,26 @@ def get_reference_table(spectrum_state, structure_obj, idx=0):
         logging.error(f"Error in get_reference_table: {e}")
         return pd.DataFrame(columns=["name", "adduct", "smiles", "parent_mass", "database"]), ""
 
+def show_structure_select_all(spectrum_state, structure_obj, evt: gr.SelectData):
+    try:
+        # 先更新 Reference Spectrums 表格 & structure_state
+        ref_spectrums, structure_state = show_ref_spectrums(spectrum_state, structure_obj, evt)
+        # 再用刚更新的 structure_state 和 spectrum_state 直接画分子图
+        anno_img, ref_img = show_default_mol(structure_state, spectrum_state)
+        return ref_spectrums, structure_state, anno_img, ref_img
+    except Exception as e:
+        logging.error(f"Error in on_structure_select_all: {e}")
+        return pd.DataFrame(columns=["name", "adduct", "smiles", "parent_mass", "database"]), "", None, None
+def get_default_structure_select_all(spectrum_state, structure_obj):
+    try:
+        # 先更新 Reference Spectrums 表格 & structure_state
+        ref_spectrums, structure_state = get_reference_table(spectrum_state, structure_obj)
+        # 再用刚更新的 structure_state 和 spectrum_state 直接画分子图
+        anno_img, ref_img = show_default_mol(structure_state, spectrum_state)
+        return ref_spectrums, structure_state, anno_img, ref_img
+    except Exception as e:
+        logging.error(f"Error in on_structure_select_all: {e}")
+        return pd.DataFrame(columns=["name", "adduct", "smiles", "parent_mass", "database"]), "", None, None
+    
 if __name__ == "__main__":
     print(dpi_config, width_config, length_config)
