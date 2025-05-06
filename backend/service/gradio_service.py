@@ -7,6 +7,7 @@ from zipfile import ZipFile
 import gradio as gr
 import numpy as np
 import pandas as pd
+from gradio import update
 
 from backend.load_config import GLOBAL_CONFIG
 from backend.service.job_service import JobService
@@ -37,38 +38,42 @@ def show_formula_from_state(res_state, idx):
             当前选中质谱的元数据
 
     """
-    formula_list = []
-    # 判断是否已经被鉴定
-    if "Identified Spectrum" not in res_state.keys():
-        raise gr.Error("Missing Identified Spectrum")
-    # 选中质谱
-    cur_spectrum = res_state["Identified Spectrum"][idx]
-    # 判断当前选中质谱是否拥有注释
-    if "annotation" not in cur_spectrum.metadata.keys():
-        raise gr.Error("Missing Identified Spectrum annotation")
-    annotation = cur_spectrum.metadata["annotation"]
-    # 判断返回结果是否含有分子式
-    if "MolecularFormula" not in annotation.keys():
-        raise gr.Error("Missing Annotation MolecularFormula")
-    # 获取分子式列表
-    formula_list = np.unique(annotation["MolecularFormula"])
-    # 获取分子式的相对分子质量
-    mass = [get_formula_mass(f) for f in formula_list]
-    # 获取相对分子质量与母离子质量差
-    if cur_spectrum and ("parent_mass" in cur_spectrum.metadata.keys()):
-        parent_mass = float(cur_spectrum.metadata["parent_mass"])
-        diff = np.array([abs(m - parent_mass) for m in mass])
-    else:
-        diff = np.repeat(np.nan, len(mass))
-        gr.Warning("Spectrum Missing Parent Mass")
-    # 分子式表格
-    formula_df = pd.DataFrame(
-        {"formula": formula_list, "mass": mass, "error (mDa)": 1000 * diff}
-    )
-    formula_df = formula_df.round(3)
+    try:
+        formula_list = []
+        # 判断是否已经被鉴定
+        if "Identified Spectrum" not in res_state.keys():
+            raise gr.Error("Missing Identified Spectrum")
+        # 选中质谱
+        cur_spectrum = res_state["Identified Spectrum"][idx]
+        # 判断当前选中质谱是否拥有注释
+        if "annotation" not in cur_spectrum.metadata.keys():
+            raise gr.Error("Missing Identified Spectrum annotation")
+        annotation = cur_spectrum.metadata["annotation"]
+        # 判断返回结果是否含有分子式
+        if "MolecularFormula" not in annotation.keys():
+            raise gr.Error("Missing Annotation MolecularFormula")
+        # 获取分子式列表
+        formula_list = np.unique(annotation["MolecularFormula"])
+        # 获取分子式的相对分子质量
+        mass = [get_formula_mass(f) for f in formula_list]
+        # 获取相对分子质量与母离子质量差
+        if cur_spectrum and ("parent_mass" in cur_spectrum.metadata.keys()):
+            parent_mass = float(cur_spectrum.metadata["parent_mass"])
+            diff = np.array([abs(m - parent_mass) for m in mass])
+        else:
+            diff = np.repeat(np.nan, len(mass))
+            gr.Warning("Spectrum Missing Parent Mass")
+        # 分子式表格
+        formula_df = pd.DataFrame(
+            {"formula": formula_list, "mass": mass, "error (mDa)": 1000 * diff}
+        )
+        formula_df = formula_df.round(3)
 
-    return cur_spectrum, formula_df, show_info(cur_spectrum)
-
+        return cur_spectrum, formula_df, show_info(cur_spectrum)
+    
+    except Exception as e:
+        logging.error(f"Error in show_formula_from_state: {e}")
+        return None, pd.DataFrame(columns=["Formula"]), pd.DataFrame()
 
 def show_structure(spectrum_state, evt: gr.SelectData):
     """
@@ -83,59 +88,88 @@ def show_structure(spectrum_state, evt: gr.SelectData):
             候选结构表
 
     """
-    # 获取点击行号
-    line_num = evt.index[0]
+    try:
+        # 获取点击行号
+        line_num = evt.index[0]
 
-    structural_table = get_structure_data_frame(spectrum_state, line_num)
-    return structural_table
+        structural_table = get_structure_data_frame(spectrum_state, line_num)
+        return structural_table
+    except Exception as e:
+        logging.error(f"Error in show_structure: {e}")
+        return pd.DataFrame(columns=["Title", "MolecularFormula", "CanonicalSMILES", "InChIKey", "DeepMass Score"])
 
 
 def get_structure_data_frame(spectrum_state, idx=0):
-    formula_list = spectrum_state.metadata["annotation"]["MolecularFormula"]
-    select_formula = formula_list[idx]
+    try:
+            
+        formula_list = spectrum_state.metadata["annotation"]["MolecularFormula"]
+        select_formula = formula_list[idx]
 
-    annotation = spectrum_state.metadata["annotation"]
-    structural_table = annotation.loc[
-        annotation["MolecularFormula"] == select_formula, :
-    ]
-    structural_table = structural_table.reset_index(drop=True)
-    structural_table = structural_table.round(3)
-    return structural_table
+        annotation = spectrum_state.metadata["annotation"]
+        structural_table = annotation.loc[
+            annotation["MolecularFormula"] == select_formula, :
+        ]
+        structural_table = structural_table.reset_index(drop=True)
+        structural_table = structural_table.round(3)
+        return structural_table
 
+    except Exception as e:
+        logging.error(f"Error in get_structure_data_frame: {e}")
+        return pd.DataFrame(columns=["Title", "MolecularFormula", "CanonicalSMILES", "InChIKey", "DeepMass Score"])
 
 def show_ref_spectrum(cur_spectrum, evt: gr.SelectData):
-    line_num = evt.index[0]
-    return show_default_ref_spectrum(cur_spectrum, line_num)
 
+    # ① 空值保护
+    if cur_spectrum is None:
+        return None, None
+    try:
+        # ② evt 也要保护
+        if evt is None or evt.index is None:
+            return None, None
+            
+        line_num = evt.index[0]
+        return show_default_ref_spectrum(cur_spectrum, line_num)
+    except Exception as e:
+        logging.error(f"Error in show_ref_spectrum: {e}")
+        return None, None
 
 def show_default_ref_spectrum(cur_spectrum, idx=0):
-    fig_loss = plot_2_spectrum(
-        cur_spectrum, cur_spectrum.metadata["reference"][idx], loss=True
-    )
-    fig = plot_2_spectrum(
-        cur_spectrum, cur_spectrum.metadata["reference"][idx], loss=False
-    )
-    return fig_loss, fig
-
+    # ① 空值保护
+    if cur_spectrum is None or not hasattr(cur_spectrum, "metadata"):
+        return None, None
+    try:
+        fig_loss = plot_2_spectrum(
+            cur_spectrum, cur_spectrum.metadata["reference"][idx], loss=True
+        )
+        fig = plot_2_spectrum(
+            cur_spectrum, cur_spectrum.metadata["reference"][idx], loss=False
+        )
+        return fig_loss, fig
+    except Exception as e:
+        logging.error(f"Error in show_default_ref_spectrum: {e}")
+        return None, None
 
 def show_info(cur_spectrum):
-    logging.info("点击结构行")
-    if "reference" not in cur_spectrum.metadata.keys():
-        gr.Error("No reference")
     try:
-        d = cur_spectrum.metadata.copy()
-        del d["reference"]
-        del d["annotation"]
-    except:
-        logging.info("没有选中的质谱")
+        logging.info("点击结构行")
+        if "reference" not in cur_spectrum.metadata.keys():
+            gr.Error("No reference")
+        try:
+            d = cur_spectrum.metadata.copy()
+            del d["reference"]
+            del d["annotation"]
+        except:
+            logging.info("没有选中的质谱")
+            return pd.DataFrame()
+        # 输出质谱元数据
+        df = pd.DataFrame.from_dict(d, orient="index", columns=["value"])
+        df.reset_index(inplace=True)
+        df.rename(columns={"index": "key"}, inplace=True)
+        logging.info("获取质谱元数据成功")
+        return df
+    except Exception as e:
+        logging.error(f"Error in show_info: {e}")
         return pd.DataFrame()
-    # 输出质谱元数据
-    df = pd.DataFrame.from_dict(d, orient="index", columns=["value"])
-    df.reset_index(inplace=True)
-    df.rename(columns={"index": "key"}, inplace=True)
-    logging.info("获取质谱元数据成功")
-    return df
-
 
 def show_formula(res_state, evt: gr.SelectData):
     """
@@ -280,47 +314,69 @@ def get_default_formula_dataframe(state_df):
 
 
 def save_identification_csv(res_state, target_zip_file_name_state):
-    gr.Info('Saving identification CSV"')
-    file_list = []
-    dir_path = "./backend/temp/"
-    dir_path = os.path.join(dir_path, uuid.uuid4().hex)
-    if not os.path.exists(dir_path):
-        os.makedirs(dir_path)
-    # 判断是否有鉴定结果
-    if res_state is None or "Identified Spectrum" not in res_state.columns:
-        gr.Error("Missing Identified results, Run Identify First")
-    for idx, s in enumerate(res_state["Identified Spectrum"]):
-        # name = s.metadata["compound_name"]
-        name = get_title_from_spectrum(spectrum=s, idx=idx)
-        # 判断是否有鉴定结果，若无，则给空表
-        if "annotation" in s.metadata.keys() and s.metadata["annotation"] is not None:
-            annotation = s.metadata["annotation"]
-        else:
-            annotation = pd.DataFrame(
-                columns=["Title", "MolecularFormula", "CanonicalSMILES", "InChIKey"]
-            )
-        # 生成文件名
-        path = os.path.join(dir_path, f"{name}.csv")
-        # 转csv文件
-        csv = annotation.to_csv(path)
-        file_list.append(path)
-    # 计算压缩包文件名和路径
-    zip_path = os.path.join(dir_path, target_zip_file_name_state)
-    # 生成压缩文件
-    with ZipFile(zip_path, "w") as zip_obj:
-        for f in file_list:
-            zip_obj.write(
-                f, compress_type=zipfile.ZIP_DEFLATED, arcname=os.path.basename(f)
-            )
-    file_list.insert(0, zip_path)
-    # 返回文件列表，第一个是压缩包，其他的是单个谱的鉴定结果
-    return gr.File(file_list, visible=True)
+    try:
+
+        gr.Info('Saving identification CSV"')
+        file_list = []
+        dir_path = "./backend/temp/"
+        dir_path = os.path.join(dir_path, uuid.uuid4().hex)
+        if not os.path.exists(dir_path):
+            os.makedirs(dir_path)
+        # 判断是否有鉴定结果
+        if res_state is None or "Identified Spectrum" not in res_state.columns:
+            gr.Error("Missing Identified results, Run Identify First")
+        for idx, s in enumerate(res_state["Identified Spectrum"]):
+            # name = s.metadata["compound_name"]
+            name = get_title_from_spectrum(spectrum=s, idx=idx)
+            # 判断是否有鉴定结果，若无，则给空表
+            if "annotation" in s.metadata.keys() and s.metadata["annotation"] is not None:
+                annotation = s.metadata["annotation"]
+            else:
+                annotation = pd.DataFrame(
+                    columns=["Title", "MolecularFormula", "CanonicalSMILES", "InChIKey"]
+                )
+            # 生成文件名
+            path = os.path.join(dir_path, f"{name}.csv")
+            # 转csv文件
+            csv = annotation.to_csv(path)
+            file_list.append(path)
+        # 计算压缩包文件名和路径
+        zip_path = os.path.join(dir_path, target_zip_file_name_state)
+        # 生成压缩文件
+        with ZipFile(zip_path, "w") as zip_obj:
+            for f in file_list:
+                zip_obj.write(
+                    f, compress_type=zipfile.ZIP_DEFLATED, arcname=os.path.basename(f)
+                )
+        file_list.insert(0, zip_path)
+        # 返回文件列表，第一个是压缩包，其他的是单个谱的鉴定结果
+        return gr.File(file_list, visible=True)
+    except Exception as e:
+        logging.error(f"Error in save_identification_csv: {e}")
+        return gr.Error("Error saving identification CSV")
+    
 
 
 def clear_files():
     """
     删除文件时，清空所有显示的状态
     Returns:
-
+        清空后的状态和组件，确保与组件匹配
     """
-    return None, None, None, None, None, None, None, None, None, None, None, None
+    return (
+        [],  # res_state
+        [],  # spectrum_state
+        [],  # structure_state
+        pd.DataFrame(columns=["name"]),  # nav_obj
+        pd.DataFrame(columns=["Formula"]),  # formula_obj
+        pd.DataFrame(columns=["Title", "MolecularFormula", "CanonicalSMILES", "InChIKey", "DeepMass Score"]),  # structure_obj
+        pd.DataFrame(columns=["name", "adduct", "smiles", "parent_mass", "database"]),  # ref_spectrums
+        None,  # spectrum_plot_fig
+        None,  # spectrum_loss_plot_fig
+        None,  # ann_structure_fig
+        None,  # ref_structure_fig
+        pd.DataFrame(),  # information_obj
+        [],  # target_zip_file_name_state
+        update(value=None, visible=False)  # download
+
+    )
