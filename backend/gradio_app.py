@@ -11,8 +11,10 @@ from backend.service.gradio_service import (clear_files, deepms_click_fn,
                                             show_formula, show_ref_spectrum,
                                             show_structure)
 from backend.utils.auth import auth_ps
-from backend.utils.plot_utils import (get_reference_table, show_default_mol,
-                                      show_mol, show_ref_spectrums)
+from backend.utils.plot_utils import (show_default_mol,
+                                      show_mol,
+                                      show_structure_select_all,
+                                      get_default_structure_select_all)
 from backend.utils.theme import Seafoam
 
 # matplotlib.use('Agg')
@@ -188,15 +190,15 @@ with gr.Blocks(
     )
     # 选中Structure Finder的一行
     structure_obj.select(
-        fn=show_ref_spectrums,
+        fn=show_structure_select_all,
         inputs=[spectrum_state, structure_obj],
-        outputs=[ref_spectrums, structure_state],
+        outputs=[ref_spectrums, structure_state, ann_structure_fig, ref_structure_fig],
     )
     # Structure Finder的内容改变，，继续触发Reference Spectrums的内容改变
     structure_obj.change(
-        fn=get_reference_table,
+        fn=get_default_structure_select_all,
         inputs=[spectrum_state, structure_obj],
-        outputs=[ref_spectrums, structure_state],
+        outputs=[ref_spectrums, structure_state, ann_structure_fig, ref_structure_fig],
     )
 
     # 选中Reference Spectrums的时候更新对比质谱图
