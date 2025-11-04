@@ -26,6 +26,10 @@ def identify_unknown(s, p, model, references, database):
     
     formula_score = calc_formula_score(s)
     structure_score, reference_spectrum = calc_deepmass_score(s, p, model, references)
+
+    if structure_score is None:
+        return s
+
     for i in candidate.index:
         k = candidate.loc[i, 'InChIKey']
         f = candidate.loc[i, 'MolecularFormula']
