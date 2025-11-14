@@ -29,6 +29,7 @@ def search_from_database(s, database, ppm = 10):
         candidates['Formula Score'] = np.nan
         candidates['Structure Score'] = np.nan
         candidates['Consensus Score'] = np.nan
+        candidates['DeepMASS_raw'] = np.nan
     s.set('annotation', candidates)
     return s
 
@@ -52,6 +53,7 @@ def search_from_pubchem(s, ppm = 10):
         candidates['Formula Score'] = np.nan
         candidates['Structure Score'] = np.nan
         candidates['Consensus Score'] = np.nan
+        candidates['DeepMASS_raw'] = np.nan
     s.set('annotation', candidates)
     return s
 

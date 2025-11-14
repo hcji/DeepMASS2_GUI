@@ -31,7 +31,7 @@ def check_inputs(s):
 
 def calc_deepmass_score(s, p, model, references):
     if not check_inputs(s):
-        return None, None
+        return None, None, None
     else:
         pass
     get_fp = lambda x: AllChem.GetMorganFingerprintAsBitVect(x, radius=2)
@@ -66,14 +66,16 @@ def calc_deepmass_score(s, p, model, references):
         reference_vector = np.array(reference_vector)[k,:]
     
     if len(candidate_mol) == 0:
-        return None, None
+        return None, None, None
     
     deepmass_score = []
+    deepmass_score_raw = []
     for i in range(len(candidate_mol)):
         try:
             candidate_fp_i = get_fp(candidate_mol[i])
         except:
             deepmass_score.append(0)
+            deepmass_score_raw.append(0)
         candidate_vecsim_i = [get_corr(query_vector, reference_vector_) for reference_vector_ in reference_vector]
         candidate_vecsim_i = np.array(candidate_vecsim_i)
         candidate_fpsim_i = [get_sim(candidate_fp_i, reference_fp_) for reference_fp_ in reference_fp]
@@ -81,10 +83,14 @@ def calc_deepmass_score(s, p, model, references):
         top20 = np.argsort(-np.array(candidate_fpsim_i))[:20]
         candidate_score_i = np.sqrt(np.sum(candidate_vecsim_i[top20] * candidate_fpsim_i[top20]))
         deepmass_score.append(candidate_score_i / 20)
+        deepmass_score_raw.append(float(candidate_score_i))
     deepmass_score = np.array(deepmass_score)
+    deepmass_score_raw = np.array(deepmass_score_raw, dtype=float)
     deepmass_score /= (np.max(deepmass_score) + 10 ** -10)
     deepmass_score = dict(zip(s.get('annotation')['InChIKey'], deepmass_score))
-    return deepmass_score, reference_spectrum
+    deepmass_score_raw_dict = dict(zip(s.get('annotation')['InChIKey'], deepmass_score_raw))
+
+    return deepmass_score, deepmass_score_raw_dict, reference_spectrum
 
 
 def calc_matchms_score(s, precursors, references):
