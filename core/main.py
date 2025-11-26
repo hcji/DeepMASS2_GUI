@@ -25,17 +25,17 @@ def identify_unknown(s, p, model, references, database):
         return s
     
     formula_score = calc_formula_score(s)
-    structure_score, reference_spectrum = calc_deepmass_score(s, p, model, references)
+    structure_score, structure_score_raw, reference_spectrum = calc_deepmass_score(s, p, model, references)
 
     if structure_score is None:
         return s
-
     for i in candidate.index:
         k = candidate.loc[i, 'InChIKey']
         f = candidate.loc[i, 'MolecularFormula']
         candidate.loc[i, 'Formula Score'] = formula_score[f]
         candidate.loc[i, 'Structure Score'] = structure_score[k]
         candidate.loc[i, 'Consensus Score'] = 0.3*formula_score[f] + 0.7*structure_score[k]
+        candidate.loc[i, 'DeepMASS_raw'] = structure_score_raw[k]
     candidate = candidate.sort_values('Consensus Score', ignore_index = True, ascending = False)
     s.set('annotation', candidate)
     s.set('reference', reference_spectrum)
