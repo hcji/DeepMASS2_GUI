@@ -11,6 +11,34 @@ https://github.com/hcji/DeepMASS2_GUI/assets/17610691/16589373-3c8f-4e85-9e7b-41
 ## News
 - [10/2024] Using DeepMASS2, we made a web UI interface, check it out! [Website](http://218.245.102.112/)
 - [04/2025] We've enhanced DeepMASS with a distributed search feature. Curious how it works? See the guide: [Distributed_ReadMe.md](./Distributed_ReadMe.md)
+
+## Data Input Specifications
+
+To ensure **DeepMASS2** accurately identifies metabolites and correctly names output files, your input data must include specific metadata tags. While various formats are supported, the following specifications use the **.mgf** format as a reference.
+
+For a practical example of a compatible `.mgf` file structure, please refer to the [CASMI Example Dataset](https://github.com/hcji/DeepMASS2_Data_Processing/blob/master/Example/CASMI/all_casmi.mgf).
+
+**Mandatory Metadata Tags**
+
+1. **Precursor m/z** - **Required**  
+   This tag specifies the precursor ion mass-to-charge ratio ($m/z$). This is a fundamental requirement for the search engine to filter candidates within the structural databases.  
+   - **Example**: `PRECURSOR_MZ=517.22098`
+
+2. **Ion Mode** - **Required**  
+   This specifies the polarity of the data, ensuring DeepMASS2 utilizes the correct deep-learning model (Positive vs. Negative) and reference libraries.  
+   - **Positive mode**: `IONMODE=positive`
+   - **Negative mode**: `IONMODE=negative`
+
+**Optional & Recommended Tags**
+
+3. **Automatic Naming** - **Recommended**  
+   DeepMASS2 uses this tag to define the output filename for the exported semantic similarity analysis. If provided, the results will be saved as `<COMPOUND_NAME>.csv`.  
+   - **Example**: `COMPOUND_NAME=challenge_0` will export results to `challenge_0.csv`.
+
+4. **Molecular Formula** - **Optional**  
+   Adding the molecular formula helps the semantic similarity engine constrain potential chemical space, significantly improving the ranking accuracy of structurally related metabolites.  
+   - **Example**: `FORMULA=C25H38O9`
+   
 ## Installation
 Please follow the following installation steps:
 

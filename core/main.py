@@ -12,35 +12,39 @@ from core.annotating.structure import calc_deepmass_score, calc_matchms_score
 
 
 def identify_unknown(s, p, model, references, database):
-    s = search_from_database(s, database, ppm = 50)
-    candidate = s.get('annotation')
-    if candidate is None:
-        try:
-            s = search_from_pubchem(s, ppm = 50)
-        except:
+    try:
+        s = search_from_database(s, database, ppm = 50)
+        candidate = s.get('annotation')
+        if candidate is None:
+            try:
+                s = search_from_pubchem(s, ppm = 50)
+            except:
+                return s
+        
+        candidate = s.get('annotation')
+        if candidate is None:
             return s
-    
-    candidate = s.get('annotation')
-    if candidate is None:
-        return s
-    
-    formula_score = calc_formula_score(s)
-    structure_score, structure_score_raw, reference_spectrum = calc_deepmass_score(s, p, model, references)
+        
+        formula_score = calc_formula_score(s)
+        structure_score, structure_score_raw, reference_spectrum = calc_deepmass_score(s, p, model, references)
 
-    if structure_score is None:
+        if structure_score is None:
+            return s
+        for i in candidate.index:
+            k = candidate.loc[i, 'InChIKey']
+            f = candidate.loc[i, 'MolecularFormula']
+            candidate.loc[i, 'Formula Score'] = formula_score[f]
+            candidate.loc[i, 'Structure Score'] = structure_score[k]
+            candidate.loc[i, 'Consensus Score'] = 0.3*formula_score[f] + 0.7*structure_score[k]
+            candidate.loc[i, 'DeepMASS_raw'] = structure_score_raw[k]
+        candidate = candidate.sort_values('Consensus Score', ignore_index = True, ascending = False)
+        s.set('annotation', candidate)
+        s.set('reference', reference_spectrum)
         return s
-    for i in candidate.index:
-        k = candidate.loc[i, 'InChIKey']
-        f = candidate.loc[i, 'MolecularFormula']
-        candidate.loc[i, 'Formula Score'] = formula_score[f]
-        candidate.loc[i, 'Structure Score'] = structure_score[k]
-        candidate.loc[i, 'Consensus Score'] = 0.3*formula_score[f] + 0.7*structure_score[k]
-        candidate.loc[i, 'DeepMASS_raw'] = structure_score_raw[k]
-    candidate = candidate.sort_values('Consensus Score', ignore_index = True, ascending = False)
-    s.set('annotation', candidate)
-    s.set('reference', reference_spectrum)
-    return s
-
+    except Exception as e:
+        print(f"{s.metadata['compound_name']} 运行过程中出错: {e}")
+        s.set('annotation', None)  # 捕获到错误时直接设置 annotation 为空
+        return s
 
 def match_spectrum(s, precursors, references, database):
     s = search_from_database(s, database, ppm = 50)
